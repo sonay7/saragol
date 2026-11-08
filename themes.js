@@ -1,46 +1,33 @@
-const savedTheme = localStorage.getItem('site-theme') || 'dark';
-document.documentElement.setAttribute('data-theme', savedTheme);
+var THEMES = {
+  'مودبانه': ['تازه‌وارد', 'کوشا', 'پیگیر', 'پرتلاش', 'توانمند', 'برتر', 'سرآمد', 'نمونه', 'افتخارآفرین', 'الگو'],
+  'گیمینگ': ['مبتدی', 'ماجراجو', 'حرفه‌ای', 'استاد', 'اسطوره', 'قهرمان', 'افسانه', 'اوبی', 'باس', 'گاد'],
+  'ورزشی': ['آماتور', 'تمرین‌کار', 'بازیکن', 'حرفه‌ای', 'ستاره', 'کاپیتان', 'ملی‌پوش', 'اسطوره', 'قهرمان جهان', 'افسانه'],
+  'فضایی': ['ستاره‌ی کوچک', 'سیارک', 'سیاره', 'ستاره', 'ابرنواختر', 'کهکشان', 'خوشه‌ی کهکشانی', 'کائنات', 'سیاه‌چاله', 'بیگ‌بنگ'],
+  'آتش': ['جرقه', 'شعله', 'شعله‌ور', 'آتشین', 'سوزان', 'تب‌دار', 'کوره', 'آتش‌فشان', 'خورشید', 'ابرخورشید'],
+  'سفر': ['مسافر', 'رهرو', 'رهنورد', 'کاوشگر', 'ماجراجو', 'پیشرو', 'پیشگام', 'فاتح', 'سرآمد', 'اسطوره'],
+  'پادشاهی': ['سرباز', 'نگهبان', 'سردار', 'فرمانده', 'سپهسالار', 'وزیر', 'شاهزاده', 'پادشاه', 'امپراتور', 'اسطوره']
+};
 
-function createThemeSwitcher() {
-  if (document.getElementById('themeSwitcherBtn')) return;
+var LEVEL_HOURS = [0, 3, 8, 16, 30, 50, 80, 120, 170, 250];
 
-  const userArea = document.querySelector('.user-area');
-  if (!userArea) return;
-
-  const btn = document.createElement('button');
-  btn.id = 'themeSwitcherBtn';
-  btn.className = 'theme-btn';
-  btn.innerHTML = '🎨';
-  btn.title = 'تغییر تم سایت';
-
-  userArea.insertBefore(btn, userArea.firstChild);
-
-  btn.addEventListener('click', function() {
-    const themes = ['dark', 'light', 'sakura', 'cafe', 'galaxy', 'ocean', 'lavender', 'peach', 'forest'];
-    let current = localStorage.getItem('site-theme') || 'dark';
-    let currentIndex = themes.indexOf(current);
-    let nextIndex = (currentIndex + 1) % themes.length;
-    let newTheme = themes[nextIndex];
-
-    let msgMap = {
-      'dark': 'شب 🌙', 'light': 'روز ☀️', 'sakura': 'ساکورا 🌸', 
-      'cafe': 'کافه ☕', 'galaxy': 'کهکشان 🌌', 'ocean': 'اقیانوس 🌊',
-      'lavender': 'اسطوخودوس 🪻', 'peach': 'هلویی 🍑', 'forest': 'جنگل 🌲'
-    };
-
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('site-theme', newTheme);
-    
-    let toast = document.createElement('div');
-    toast.textContent = 'تم تغییر کرد به: ' + msgMap[newTheme];
-    toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:10px 20px; border-radius:20px; z-index:9999; font-family:inherit; font-size:0.85rem; box-shadow:0 4px 10px rgba(0,0,0,0.2); transition: opacity 0.3s;';
-    document.body.appendChild(toast);
-    
-    setTimeout(() => { 
-      toast.style.opacity = '0'; 
-      setTimeout(() => toast.remove(), 300); 
-    }, 2000);
-  });
+function getLevel(minutes) {
+  var hours = minutes / 60;
+  var level = 1;
+  for (var i = 0; i < LEVEL_HOURS.length; i++) {
+    if (hours >= LEVEL_HOURS[i]) level = i + 1;
+  }
+  return level;
 }
 
-document.addEventListener('DOMContentLoaded', createThemeSwitcher);
+function getTitle(level, theme) {
+  var t = THEMES[theme] || THEMES['پیش فرض'];
+  var idx = level - 1;
+  if (idx < 0) idx = 0;
+  if (idx > 9) idx = 9;
+  return t[idx];
+}
+
+function getNextLevelHours(level) {
+  if (level >= 10) return null;
+  return LEVEL_HOURS[level];
+}
