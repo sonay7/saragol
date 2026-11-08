@@ -10,7 +10,7 @@ supabaseClient.auth.getUser().then(function(res) {
     if (!p.data) return;
     var profile = p.data;
     userClassName = profile.class_name;
-    var titleTheme = profile.level_theme || 'پیش فرض'; // تم لقب (گیمینگ، ورزشی و...)
+    var titleTheme = profile.level_theme || 'پیش فرض';
 
     document.querySelector('.profile-name').textContent = profile.username;
     document.querySelector('.profile-class').textContent = profile.class_name;
@@ -20,8 +20,8 @@ supabaseClient.auth.getUser().then(function(res) {
     document.getElementById('myClassName').textContent = profile.class_name;
 
     var stats = document.querySelectorAll('.stat-value');
-    stats[0].textContent = profile.total_minutes || 0;
-    stats[1].textContent = profile.xp || 0;
+    if(stats[0]) stats[0].textContent = profile.total_minutes || 0;
+    if(stats[1]) stats[1].textContent = profile.xp || 0;
 
     // ===== سطح =====
     var minutes = profile.total_minutes || 0;
@@ -47,7 +47,6 @@ supabaseClient.auth.getUser().then(function(res) {
     }
 
     // ===== بارگذاری باغ/کافه =====
-    // اینجا از تم رنگی استفاده می‌کنیم (همونی که با دکمه 🎨 عوض میشه)
     var colorTheme = localStorage.getItem('site-theme') || 'dark';
     loadGarden(uid, colorTheme);
 
@@ -70,7 +69,7 @@ supabaseClient.auth.getUser().then(function(res) {
       var rows = s.data || [];
       var totalQ = 0;
       rows.forEach(function(r) { totalQ += r.questions || 0; });
-      stats[3].textContent = totalQ;
+      if(stats[3]) stats[3].textContent = totalQ;
 
       var days = {};
       rows.forEach(function(r) {
@@ -88,8 +87,9 @@ supabaseClient.auth.getUser().then(function(res) {
         else if (i === 0) { continue; }
         else { break; }
       }
-      stats[2].textContent = streak;
-      document.querySelector('.streak-number').textContent = streak;
+      if(stats[2]) stats[2].textContent = streak;
+      var streakNumberEl = document.querySelector('.streak-number');
+      if(streakNumberEl) streakNumberEl.textContent = streak;
 
       var weekMinutes = [0, 0, 0, 0, 0, 0, 0];
       rows.forEach(function(r) {
@@ -115,23 +115,31 @@ function loadGarden(uid, theme) {
   var widget = document.getElementById('gardenWidget');
   if (!widget) return;
   
-  // بررسی تم رنگی
   if (theme !== 'cafe' && theme !== 'sakura') {
-    widget.innerHTML = '<div style="font-size: 3rem; margin-bottom: 10px;">🚧</div><p style="color:var(--text-dim); font-size:0.9rem;">سیستم همراه روزانه برای این تم به زودی اضافه می‌شه!<br>(از دکمه 🎨 تم کافه یا ساکورا رو انتخاب کن)</p>';
+    widget.innerHTML = '<div style="font-size: 3rem; margin-bottom: 10px;">🚧</div><p style="color:var(--text-dim); font-size:0.9rem;">برای دیدن همراه روزانه، از دکمه 🎨 تم کافه یا ساکورا رو انتخاب کن.</p>';
     return;
   }
 
   supabaseClient.from('user_gardens').select('*').eq('user_id', uid).single().then(function(res) {
+    if (res.error && res.error.code !== 'PGRST116') {
+       widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطای دیتابیس: ' + res.error.message + '</p>';
+       return;
+    }
+    
     if (!res.data) {
-      supabaseClient.from('user_gardens').insert({ user_id: uid }).then(function() {
+      supabaseClient.from('user_gardens').insert({ user_id: uid }).then(function(insRes) {
+        if (insRes.error) {
+          widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطا در ساخت: ' + insRes.error.message + '</p>';
+          return;
+        }
         loadGarden(uid, theme); 
       });
       return;
     }
 
     var garden = res.data;
-    
     var todayStr = new Date().toISOString().split('T')[0];
+    
     if (garden.last_active_date !== todayStr) {
       supabaseClient.from('user_gardens').update({ last_active_date: todayStr, minutes_today: 0 }).eq('user_id', uid).then(function() {
         garden.minutes_today = 0;
@@ -197,6 +205,10 @@ function loadExams() {
     var uid = res.data.user.id;
 
     supabaseClient.from('exams').select('*').or('is_public.eq.true,user_id.eq.' + uid).order('exam_date', { ascending: true }).then(function(examRes) {
+      if (examRes.error) {
+         listEl.innerHTML = '<p style="color:red; font-size:0.8rem;">خطای آزمون‌ها: ' + examRes.error.message + '</p>';
+         return;
+      }
       var rows = examRes.data || [];
       var today = new Date();
       today.setHours(0, 0, 0, 0);
