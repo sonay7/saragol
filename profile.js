@@ -12,12 +12,12 @@ supabaseClient.auth.getUser().then(function(res) {
     userClassName = profile.class_name;
     var titleTheme = profile.level_theme || 'پیش فرض';
 
+    // آپدیت هدر و کارت پروفایل
     document.querySelector('.profile-name').textContent = profile.username;
     document.querySelector('.profile-class').textContent = profile.class_name;
     document.querySelector('.profile-avatar').textContent = profile.username.charAt(0);
     document.querySelector('.user-name').textContent = profile.username;
     document.querySelector('.avatar').textContent = profile.username.charAt(0);
-    document.getElementById('myClassName').textContent = profile.class_name;
 
     var stats = document.querySelectorAll('.stat-value');
     if(stats[0]) stats[0].textContent = profile.total_minutes || 0;
@@ -27,42 +27,30 @@ supabaseClient.auth.getUser().then(function(res) {
     var minutes = profile.total_minutes || 0;
     var level = getLevel(minutes);
     var title = getTitle(level, titleTheme);
-    document.getElementById('levelBox').textContent = 'سطح ' + level + ' • ' + title;
+    
+    var levelBox = document.getElementById('levelBox');
+    if(levelBox) levelBox.textContent = 'سطح ' + level + ' • ' + title;
 
     var nextH = getNextLevelHours(level);
     var bar = document.getElementById('levelBar');
     var nextEl = document.getElementById('levelNext');
 
     if (nextH === null) {
-      bar.style.width = '100%';
-      nextEl.textContent = 'به بالاترین سطح رسیدی! 🏆';
+      if(bar) bar.style.width = '100%';
+      if(nextEl) nextEl.textContent = 'به بالاترین سطح رسیدی! 🏆';
     } else {
       var currentH = LEVEL_HOURS[level - 1];
       var progress = ((minutes / 60) - currentH) / (nextH - currentH) * 100;
       if (progress < 0) progress = 0;
       if (progress > 100) progress = 100;
-      bar.style.width = progress + '%';
+      if(bar) bar.style.width = progress + '%';
       var remainMin = Math.ceil((nextH * 60) - minutes);
-      nextEl.textContent = 'تا سطح بعدی: ' + remainMin + ' دقیقه';
+      if(nextEl) nextEl.textContent = 'تا سطح بعدی: ' + remainMin + ' دقیقه';
     }
 
     // ===== بارگذاری باغ/کافه =====
     var colorTheme = localStorage.getItem('site-theme') || 'dark';
     loadGarden(uid, colorTheme);
-
-    // ===== محاسبه‌ی رتبه‌ی کلاس =====
-    supabaseClient.from('profiles').select('class_name, total_minutes').then(function(cr) {
-      var totals = {};
-      (cr.data || []).forEach(function(row) {
-        if (!row.class_name) return;
-        if (!totals[row.class_name]) totals[row.class_name] = 0;
-        totals[row.class_name] += row.total_minutes || 0;
-      });
-      var sorted = Object.keys(totals).sort(function(a, b) { return totals[b] - totals[a]; });
-      var rank = sorted.indexOf(profile.class_name) + 1;
-      var rankEl = document.getElementById('myClassRank');
-      if (rankEl) rankEl.textContent = rank > 0 ? 'رتبه ' + rank + ' در لیگ' : 'بدون رتبه';
-    });
 
     // ===== آمار مطالعه =====
     supabaseClient.from('study_sessions').select('questions, minutes, created_at').eq('user_id', uid).then(function(s) {
@@ -87,6 +75,7 @@ supabaseClient.auth.getUser().then(function(res) {
         else if (i === 0) { continue; }
         else { break; }
       }
+      
       if(stats[2]) stats[2].textContent = streak;
       var streakNumberEl = document.querySelector('.streak-number');
       if(streakNumberEl) streakNumberEl.textContent = streak;
@@ -262,12 +251,12 @@ function updateGenreUI() {
   var list = document.getElementById('myGenresList');
 
   if (selectedGenres.length > 0) {
-    display.style.display = 'inline-block';
-    text.textContent = title;
-    list.textContent = selectedGenres.join(' + ');
+    if(display) display.style.display = 'inline-block';
+    if(text) text.textContent = title;
+    if(list) list.textContent = selectedGenres.join(' + ');
   } else {
-    display.style.display = 'none';
-    list.textContent = 'هنوز ژانری انتخاب نکردی!';
+    if(display) display.style.display = 'none';
+    if(list) list.textContent = 'هنوز ژانری انتخاب نکردی!';
   }
 }
 
@@ -291,20 +280,20 @@ var genreOptions = document.getElementById('genreOptions');
 
 if (selectGenreBtn) {
   selectGenreBtn.addEventListener('click', function() {
-    genreModal.classList.remove('hidden');
+    if(genreModal) genreModal.classList.remove('hidden');
     renderGenreOptions();
   });
-  closeGenreBtn.addEventListener('click', function() { genreModal.classList.add('hidden'); });
+  if(closeGenreBtn) closeGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.add('hidden'); });
 
-  saveGenreBtn.addEventListener('click', function() {
+  if(saveGenreBtn) saveGenreBtn.addEventListener('click', function() {
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) return;
       var uid = res.data.user.id;
       supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
-        if (selectedGenres.length === 0) { genreModal.classList.add('hidden'); updateGenreUI(); return; }
+        if (selectedGenres.length === 0) { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); return; }
         var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
         supabaseClient.from('user_genres').insert(inserts).then(function() {
-          genreModal.classList.add('hidden');
+          if(genreModal) genreModal.classList.add('hidden');
           updateGenreUI();
         });
       });
@@ -313,6 +302,7 @@ if (selectGenreBtn) {
 }
 
 function renderGenreOptions() {
+  if(!genreOptions) return;
   genreOptions.innerHTML = '';
   allGenres.forEach(function(g) {
     var btn = document.createElement('button');
@@ -335,9 +325,9 @@ var closeThemeBtn = document.getElementById('closeThemeBtn');
 var themeList = document.getElementById('themeList');
 
 if (changeThemeBtn) {
-  changeThemeBtn.addEventListener('click', function() { themeModal.classList.remove('hidden'); });
-  closeThemeBtn.addEventListener('click', function() { themeModal.classList.add('hidden'); });
-  Object.keys(THEMES).forEach(function(name) {
+  changeThemeBtn.addEventListener('click', function() { if(themeModal) themeModal.classList.remove('hidden'); });
+  if(closeThemeBtn) closeThemeBtn.addEventListener('click', function() { if(themeModal) themeModal.classList.add('hidden'); });
+  if(themeList) Object.keys(THEMES).forEach(function(name) {
     var btn = document.createElement('button');
     btn.className = 'theme-option';
     btn.textContent = name + ' (' + THEMES[name][0] + ' → ' + THEMES[name][9] + ')';
@@ -345,7 +335,7 @@ if (changeThemeBtn) {
       supabaseClient.auth.getUser().then(function(res) {
         if (!res.data.user) return;
         supabaseClient.from('profiles').update({ level_theme: name }).eq('id', res.data.user.id).then(function() {
-          themeModal.classList.add('hidden');
+          if(themeModal) themeModal.classList.add('hidden');
           location.reload();
         });
       });
