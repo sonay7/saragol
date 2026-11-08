@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ورود | مدرسه‌ی ما</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">مدرسه‌ی ما</div>
+  </header>
+
+  <main class="container">
+
+    <section class="profile-card">
+      <h2 class="profile-name">ورود</h2>
+      <p class="profile-class">خوش برگشتی!</p>
+    </section>
+
+    <section>
+      <label class="label">اسم کاربری</label>
+      <input id="username" type="text" class="input" placeholder="اسم کاربری‌ت رو بزن">
+
+      <label class="label" style="margin-top: 12px;">رمز</label>
+      <input id="password" type="password" class="input" placeholder="رمزت">
+
+      <button id="loginBtn" class="btn btn-green btn-full" style="margin-top: 16px;">ورود</button>
+
+      <p id="loginMsg" style="margin-top: 12px; text-align: center; font-size: 0.85rem;"></p>
+
+      <p style="margin-top: 16px; text-align: center; font-size: 0.85rem; color: var(--text-dim);">
+        هنوز ثبت‌نام نکردی؟ <a href="signup.html" style="color: var(--green);">ثبت‌نام کن</a>
+      </p>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+    <script src="theme.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پنل ادمین | مدرسه‌ی ما</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .badge { background-color: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-right: 4px; vertical-align: middle; }
+    .toggle-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; cursor: pointer; background: var(--bg-card); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); }
+    
+    /* استایل برای لیست کاربران کتابخوانی */
+    .user-accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+    .user-accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; }
+    .user-accordion-header:hover { background: rgba(255,255,255,0.05); }
+    .user-accordion-content { display: none; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg); }
+    .user-accordion.active .user-accordion-content { display: block; }
+    .user-accordion.active .user-accordion-header { border-bottom: 1px solid var(--border); }
+    
+    /* استایل برای آیتم‌های داخل کشو */
+    .mini-book-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
+    .mini-book-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .mini-book-item img { width: 30px; height: 45px; object-fit: cover; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">پنل ادمین</div>
+    <div class="user-area">
+      <span class="user-name">—</span>
+      <div class="avatar">—</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <div class="tabs main-admin-tabs" style="margin-bottom: 20px;">
+      <button class="tab active" data-admin-tab="tab-users">👥 کاربران</button>
+      <button class="tab" data-admin-tab="tab-announcements">📢 اطلاع‌رسانی</button>
+      <button class="tab" data-admin-tab="tab-content">📱 محتوا</button>
+      <button class="tab" data-admin-tab="tab-inbox">📩 پیام‌ها <span id="inboxBadge" class="badge hidden">0</span></button>
+    </div>
+
+    <!-- ===== تب کاربران ===== -->
+    <div id="tab-users" class="admin-tab-content">
+      <section>
+        <h2>👥 درخواست‌های عضویت</h2>
+        <div id="requestsList"><p class="lock-note">در حال بارگذاری...</p></div>
+      </section>
+      <section>
+        <h2>🛡 مدیریت نقش‌ها</h2>
+        <div id="usersList"><p class="lock-note">در حال بارگذاری...</p></div>
+      </section>
+
+      <!-- بخش اعضای انجمن کتاب‌خوانی (کشویی) -->
+      <section style="margin-top: 30px;">
+        <div class="toggle-header" id="toggleBooksBtn">
+          <h2 style="margin: 0;">📚 اعضای انجمن کتاب‌خوانی</h2>
+          <span id="booksArrow" style="font-size: 1.2rem; transition: transform 0.3s;">▼</span>
+        </div>
+        <div id="booksContainer" class="hidden">
+          <div id="bookClubUsersList"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== تب اطلاع‌رسانی ===== -->
+    <div id="tab-announcements" class="admin-tab-content hidden">
+      <section>
+        <h2>📌 اعلان جدید</h2>
+        <input id="noticeText" type="text" class="input" placeholder="متن اعلان...">
+        <select id="noticeType" class="select" style="margin-top: 8px;">
+          <option value="عادی">عادی</option>
+          <option value="مهم">مهم</option>
+          <option value="فوری">فوری</option>
+        </select>
+        <button id="addNoticeBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت اعلان</button>
+        <p id="noticeMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
+      </section>
+      <section>
+        <h2>📅 افزودن آزمون رسمی</h2>
+        <input id="examSubject" type="text" class="input" placeholder="نام درس">
+        <input id="examDate" type="date" class="input" style="margin-top: 8px;">
+        <select id="examClass" class="select" style="margin-top: 8px;">
+          <option value="همه">همه پایه‌ها</option>
+          <option value="هفتم">فقط هفتم</option>
+          <option value="هشتم">فقط هشتم</option>
+          <option value="نهم">فقط نهم</option>
+        </select>
+        <button id="addExamBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت آزمون</button>
+        <p id="examMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
+        <div id="examsList" style="margin-top: 16px;"></div>
+      </section>
+    </div>
+
+    <!-- ===== تب محتوا ===== -->
+    <div id="tab-content" class="admin-tab-content hidden">
+      <section>
+        <h2>💬 افزودن جمله انگیزشی</h2>
+        <textarea id="quoteText" class="input" placeholder="متن جمله..." rows="3"></textarea>
+        <button id="addQuoteBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت جمله</button>
+        <p id="quoteMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
+        <div id="quotesList" style="margin-top: 16px;"></div>
+      </section>
+      <section>
+        <h2>🎬 انتشار مستقیم در اکسپلور</h2>
+        <input id="directFile" type="file" accept="video/mp4,image/jpeg,image/png,image/webp" class="input" style="padding: 10px;">
+        <button id="directUploadBtn" class="btn btn-green btn-full" style="margin-top: 10px;">آپلود و انتشار</button>
+        <p id="directMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
+      </section>
+    </div>
+
+    <!-- ===== تب پیام‌ها ===== -->
+    <div id="tab-inbox" class="admin-tab-content hidden">
+      <section>
+        <div class="tabs" style="margin-bottom: 16px;">
+          <button class="tab active" data-tab="inbox-private">پیام‌ها</button>
+          <button class="tab" data-tab="inbox-explore">اکسپلور</button>
+          <button class="tab" data-tab="inbox-reports">گزارش‌ها</button>
+        </div>
+        <div id="inbox-private" class="tab-content"><div id="list-private"></div></div>
+        <div id="inbox-explore" class="tab-content hidden"><div id="list-explore"></div></div>
+        <div id="inbox-reports" class="tab-content hidden"><div id="list-reports"></div></div>
+      </section>
+    </div>
+
+  </main>
+
+   <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+    <script src="theme.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

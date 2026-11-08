@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مشاوره | مدرسه‌ی ما</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">مدرسه‌ی ما</div>
+    <div class="user-area">
+      <span class="user-name">—</span>
+      <div class="avatar">—</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section>
+      <h2>💬 مشاوره</h2>
+           <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid var(--green); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+        <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">🤝 یه فضای امن و خصوصی</h3>
+        <p style="font-size: 0.85rem; color: var(--text); line-height: 1.8; margin-bottom: 8px;">
+          اینجا هر چی می‌نویسی، <strong>کاملاً محرمانه</strong> می‌مونه. نه هم‌کلاسی‌هات می‌بینن، نه هیچ‌کس دیگه‌ای. فقط <strong>تو و مشاور مدرسه</strong>.
+        </p>
+        <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.8;">
+          می‌تونی هر سؤالی داری، هر مشکلی داری یا هر چیزی که ذهنت رو مشغول کرده، با خیال راحت بگی. حتی اگه فقط می‌خوای یه حرفی بزنی و سبک شی. مشاور برای کمک به تو اینجاست. ✌️
+        </p>
+      </div>
+    </section>
+
+    <!-- باکس چت -->
+    <section style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; height: 400px;">
+      
+      <div id="chatBox" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px;">
+        <p class="lock-note" style="text-align: center; margin-top: 20px;">در حال بارگذاری...</p>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 10px;">
+        <input id="msgInput" type="text" class="input" placeholder="پیامت رو بنویس..." style="flex: 1;">
+        <button id="sendBtn" class="btn btn-green">ارسال</button>
+      </div>
+
+    </section>
+
+  </main>
+
+   <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+    <script src="theme.js"></script>
+  <script src="counselor.js"></script>
+</body>
+</html>

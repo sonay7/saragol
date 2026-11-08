@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مدرسه‌ی ما</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">مدرسه‌ی ما</div>
+    <div class="user-area">
+      <span class="user-name">علی</span>
+      <div class="avatar">ع</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="notice-board">
+      <h2>📌 تابلو اعلانات</h2>
+      <div class="notice">
+        <span class="notice-badge">فوری</span>
+        به سایت جدید خوش آمدید!
+      </div>
+    </section>
+
+    <section class="quick-league">
+      <h2>🏆 لیگ این هفته</h2>
+      <div class="league-row">
+        <span>🥇 هشتم ۲</span>
+        <span>۱۲۰۰ دقیقه</span>
+      </div>
+      <div class="league-row">
+        <span>🥈 هفتم ۱</span>
+        <span>۹۸۰ دقیقه</span>
+      </div>
+      <div class="league-row">
+        <span>🥉 نهم ۱</span>
+        <span>۷۵۰ دقیقه</span>
+      </div>
+      <a href="leaderboard.html" class="see-all">دیدن لیست کامل →</a>
+    </section>
+
+    <section class="forums">
+      <h2>💬 انجمن‌ها</h2>
+      <div class="forum-list">
+        <!-- فقط انجمن کتاب‌خوانی -->
+        <a href="books.html" class="forum-card">
+          <span class="forum-icon">📚</span>
+          <span class="forum-name">انجمن کتاب‌خوانی</span>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+   <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+    <script src="theme.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

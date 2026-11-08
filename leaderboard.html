@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>رقابت | مدرسه‌ی ما</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">مدرسه‌ی ما</div>
+    <div class="user-area">
+      <span class="user-name">—</span>
+      <div class="avatar">—</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section>
+      <h2>🏆 رقابت این هفته</h2>
+      <div class="tabs">
+        <button class="tab active" data-tab="individual">فردی</button>
+        <button class="tab" data-tab="class">کلاسی</button>
+      </div>
+    </section>
+
+    <section id="individual" class="tab-content">
+      <div id="individualList">
+        <p class="lock-note">در حال بارگذاری...</p>
+      </div>
+    </section>
+
+    <section id="class" class="tab-content hidden">
+      <div id="classList">
+        <p class="lock-note">در حال بارگذاری...</p>
+      </div>
+    </section>
+
+  </main>
+
+   <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+    <script src="theme.js"></script>
+  <script src="leaderboard.js"></script>
+</body>
+</html>

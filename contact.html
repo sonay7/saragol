@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ارتباط با ادمین | مدرسه‌ی ما</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">مدرسه‌ی ما</div>
+    <div class="user-area">
+      <span class="user-name">—</span>
+      <div class="avatar">—</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section>
+      <h2>📬 ارتباط با ادمین</h2>
+      
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.8; color: var(--text-dim);">
+        <p style="color: var(--green); font-weight: 700; margin-bottom: 8px;">اینجا چه خبره؟</p>
+        <ul style="padding-right: 20px;">
+          <li style="margin-bottom: 8px;"><strong>پیام خصوصی:</strong> هر چی می‌خوای بنویس. این پیام کاملاً محرمانه‌ست و فقط ادمین می‌بینمش. هیچ‌جا منتشر نمی‌شه و هیچ‌کس دیگه‌ای نمی‌بینه.</li>
+          <li><strong>ارسال ویدیو/عکس:</strong> اگه ویدیو یا عکسی داری که می‌خوای توی صفحه‌ی اکسپلور منتشر شه، اینجا آپلود کن. من نگاش می‌کنم و اگه مناسب بود، منتشرش می‌کنم.</li>
+        </ul>
+      </div>
+
+          <label class="label">متن پیام (اختیاری)</label>
+      <textarea id="messageText" class="input" rows="3" placeholder="اگه فقط می‌خوای حرف بزنی یا گزارش بدی، اینجا بنویس..." style="resize: vertical;"></textarea>
+
+      <label class="label" style="margin-top: 12px;">فایل (اختیاری - برای اکسپلور یا گزارش، حداکثر ۵ مگابایت)</label>
+      <input id="fileInput" type="file" accept="video/mp4,image/jpeg,image/png,image/webp" class="input" style="padding: 10px;">
+
+      <button id="sendBtn" class="btn btn-green btn-full" style="margin-top: 16px;">ارسال</button>
+      <p id="sendMsg" style="margin-top: 12px; text-align: center; font-size: 0.85rem;"></p>
+    </section>
+
+  </main>
+
+   <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+    <script src="theme.js"></script>
+  <script src="contact.js"></script>
+</body>
+</html>

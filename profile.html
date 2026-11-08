@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پروفایل | مدرسه‌ی ما</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .progress-bar-bg { width: 100%; height: 12px; background: var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.5s ease; }
+    .progress-stats { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; }
+    .estim { font-size: 0.85rem; color: var(--blue); margin-bottom: 12px; background: rgba(52, 152, 219, 0.1); padding: 8px; border-radius: 8px; }
+    
+    /* استایل ژانرها */
+    .genre-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 20px; color: var(--text); cursor: pointer; font-family: inherit; transition: 0.2s; margin: 4px; }
+    .genre-btn.selected { background: var(--green); color: #0f1720; border-color: var(--green); }
+    
+    /* باکس لقب ژانر */
+    .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">مدرسه‌ی ما</div>
+    <div class="user-area">
+      <span class="user-name">علی</span>
+      <div class="avatar">ع</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="profile-card">
+      <div class="profile-avatar">ع</div>
+      <h2 class="profile-name">علی</h2>
+      <p class="profile-class">هفتم ۱</p>
+      
+      <!-- نمایش لقب ژانر -->
+      <div id="genreTitleDisplay" style="display:none; margin-top: 10px;">
+        <span class="genre-title-badge">
+          🎭 <span id="genreTitleText">—</span>
+        </span>
+      </div>
+
+      <div class="profile-level" id="levelBox" style="margin-top: 12px;">سطح ۱</div>
+      <div class="level-progress">
+        <div class="level-bar" id="levelBar" style="width: 0%"></div>
+      </div>
+      <p class="level-next" id="levelNext"></p>
+      <button id="changeThemeBtn" class="btn btn-blue btn-sm" style="margin-top: 12px;">🎨 تغییر سبک</button>
+    </section>
+
+    <!-- بخش ژانر مورد علاقه -->
+    <section>
+      <h2>🎭 ژانر کتاب‌خوانی من</h2>
+      <div class="class-box">
+        <div class="class-info">
+          <span class="class-name" id="myGenresList">در حال بارگذاری...</span>
+        </div>
+        <button id="selectGenreBtn" class="btn btn-blue btn-sm">تغییر ژانر</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>⏳ روزشمار آزمون‌ها</h2>
+      <div id="examCountdownList" style="display: flex; flex-direction: column; gap: 10px;">
+        <p class="lock-note">در حال بارگذاری...</p>
+      </div>
+      
+      <div style="margin-top: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
+        <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--text-dim);">افزودن آزمون شخصی:</p>
+        <input id="myExamSubject" type="text" class="input" placeholder="نام درس (مثلاً ریاضی)">
+        <input id="myExamDate" type="date" class="input" style="margin-top: 8px;">
+        <button id="addMyExamBtn" class="btn btn-blue btn-full" style="margin-top: 10px;">ثبت آزمون</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>📈 کتابی که دارم می‌خونم</h2>
+      <div id="profileProgressList">
+        <p class="lock-note">در حال بارگذاری...</p>
+      </div>
+    </section>
+
+    <section class="streak-box">
+      <div class="streak-fire">🔥</div>
+      <div class="streak-number">۰</div>
+      <div class="streak-label">روز پیاپی مطالعه</div>
+    </section>
+
+    <section>
+      <h2>📈 مطالعه‌ی این هفته</h2>
+      <div class="chart">
+        <div class="chart-bar"><div class="bar" style="height: 60%"></div><span>ش</span></div>
+        <div class="chart-bar"><div class="bar" style="height: 30%"></div><span>ی</span></div>
+        <div class="chart-bar"><div class="bar" style="height: 80%"></div><span>د</span></div>
+        <div class="chart-bar"><div class="bar" style="height: 45%"></div><span>س</span></div>
+        <div class="chart-bar"><div class="bar" style="height: 95%"></div><span>چ</span></div>
+        <div class="chart-bar"><div class="bar" style="height: 20%"></div><span>پ</span></div>
+        <div class="chart-bar"><div class="bar" style="height: 70%"></div><span>ج</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>🏫 کلاس من</h2>
+      <div class="class-box">
+        <div class="class-info">
+          <span class="class-name" id="myClassName">—</span>
+          <span class="class-rank" id="myClassRank">در حال محاسبه...</span>
+        </div>
+        <a href="leaderboard.html" class="see-all">دیدن لیگ →</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>📊 آمار من</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دقیقه مطالعه</div></div>
+        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">XP</div></div>
+        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">سؤال حل‌شده</div></div>
+        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دستاورد</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>🎖 دستاوردها</h2>
+      <div class="badges" id="badgesList">
+        <span class="badge locked" data-id="min100">۱۰۰ دقیقه</span>
+        <span class="badge locked" data-id="min500">۵۰۰ دقیقه</span>
+        <span class="badge locked" data-id="streak7">۷ روز پیاپی</span>
+        <span class="badge locked" data-id="streak30">۳۰ روز پیاپی</span>
+        <span class="badge locked" data-id="q100">۱۰۰ سؤال</span>
+        <span class="badge locked" data-id="q500">۵۰۰ سؤال</span>
+        <span class="badge locked" data-id="morning">مطالعه صبحگاهی</span>
+        <span class="badge locked" data-id="league1">برنده لیگ هفته</span>
+        <span class="badge locked" data-id="class1">رتبه اول کلاس</span>
+        <span class="badge locked" data-id="top10">۳ هفته تاپ ۱۰</span>
+        <span class="badge locked" data-id="book1">اولین کتاب</span>
+        <span class="badge locked" data-id="book5">۵ کتاب</span>
+        <span class="badge locked" data-id="bookreview">نقد کتاب</span>
+        <span class="badge locked" data-id="firstmsg">اولین پیام</span>
+        <span class="badge locked" data-id="cheer10">۱۰ تشویق</span>
+      </div>
+    </section>
+
+    <section>
+      <button id="logoutBtn" class="btn btn-dim btn-full" style="color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
+    </section>
+
+    <!-- مودال تغییر تم -->
+    <div id="themeModal" class="modal hidden">
+      <div class="modal-box">
+        <h2>سبک سطحت رو انتخاب کن</h2>
+        <div id="themeList" class="theme-list"></div>
+        <button id="closeThemeBtn" class="btn btn-dim btn-full" style="margin-top: 12px;">بستن</button>
+      </div>
+    </div>
+
+    <!-- مودال تغییر ژانر -->
+    <div id="genreModal" class="modal hidden">
+      <div class="modal-box">
+        <h2>ژانرهای مورد علاقه‌ت رو انتخاب کن</h2>
+        <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:12px;">هر چند تا که دوست داری انتخاب کن. لقبت با ترکیب همه‌شون ساخته میشه!</p>
+        
+        <div id="genreOptions" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;"></div>
+        
+        <p id="liveGenrePreview" style="color:var(--green); font-weight:bold; text-align:center; margin-bottom:16px; font-size:0.95rem;">هنوز ژانری انتخاب نکردی</p>
+
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; margin-bottom:16px;">
+          <input type="checkbox" id="showGenreToggle" checked style="width:18px; height:18px;">
+          نمایش لقب برای بقیه
+        </label>
+        <button id="saveGenreBtn" class="btn btn-green btn-full">ذخیره</button>
+        <button id="closeGenreBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button>
+      </div>
+    </div>
+
+  </main>
+
+   <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="theme.js"></script>  
+  <script src="themes.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>
