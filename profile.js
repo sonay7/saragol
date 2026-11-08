@@ -12,12 +12,12 @@ supabaseClient.auth.getUser().then(function(res) {
     userClassName = profile.class_name;
     var titleTheme = profile.level_theme || 'پیش فرض';
 
-    // آپدیت هدر و کارت پروفایل
-    document.querySelector('.profile-name').textContent = profile.username;
-    document.querySelector('.profile-class').textContent = profile.class_name;
-    document.querySelector('.profile-avatar').textContent = profile.username.charAt(0);
-    document.querySelector('.user-name').textContent = profile.username;
-    document.querySelector('.avatar').textContent = profile.username.charAt(0);
+    // آپدیت هدر و کارت پروفایل (با چک کردن وجود المان)
+    var nameEl = document.querySelector('.profile-name'); if(nameEl) nameEl.textContent = profile.username;
+    var classEl = document.querySelector('.profile-class'); if(classEl) classEl.textContent = profile.class_name;
+    var pAvatarEl = document.querySelector('.profile-avatar'); if(pAvatarEl) pAvatarEl.textContent = profile.username.charAt(0);
+    var uNameEl = document.querySelector('.user-name'); if(uNameEl) uNameEl.textContent = profile.username;
+    var avatarEl = document.querySelector('.avatar'); if(avatarEl) avatarEl.textContent = profile.username.charAt(0);
 
     var stats = document.querySelectorAll('.stat-value');
     if(stats[0]) stats[0].textContent = profile.total_minutes || 0;
@@ -51,6 +51,22 @@ supabaseClient.auth.getUser().then(function(res) {
     // ===== بارگذاری باغ/کافه =====
     var colorTheme = localStorage.getItem('site-theme') || 'dark';
     loadGarden(uid, colorTheme);
+
+    // ===== محاسبه‌ی رتبه‌ی کلاس =====
+    var rankEl = document.getElementById('myClassRank');
+    if(rankEl) {
+      supabaseClient.from('profiles').select('class_name, total_minutes').then(function(cr) {
+        var totals = {};
+        (cr.data || []).forEach(function(row) {
+          if (!row.class_name) return;
+          if (!totals[row.class_name]) totals[row.class_name] = 0;
+          totals[row.class_name] += row.total_minutes || 0;
+        });
+        var sorted = Object.keys(totals).sort(function(a, b) { return totals[b] - totals[a]; });
+        var rank = sorted.indexOf(profile.class_name) + 1;
+        rankEl.textContent = rank > 0 ? 'رتبه ' + rank + ' در لیگ' : 'بدون رتبه';
+      });
+    }
 
     // ===== آمار مطالعه =====
     supabaseClient.from('study_sessions').select('questions, minutes, created_at').eq('user_id', uid).then(function(s) {
