@@ -1,5 +1,4 @@
 var userClassName = '';
-var currentTheme = 'پیش فرض';
 var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
 var selectedGenres = [];
 
@@ -11,7 +10,7 @@ supabaseClient.auth.getUser().then(function(res) {
     if (!p.data) return;
     var profile = p.data;
     userClassName = profile.class_name;
-    currentTheme = profile.level_theme || 'پیش فرض';
+    var titleTheme = profile.level_theme || 'پیش فرض'; // تم لقب (گیمینگ، ورزشی و...)
 
     document.querySelector('.profile-name').textContent = profile.username;
     document.querySelector('.profile-class').textContent = profile.class_name;
@@ -27,7 +26,7 @@ supabaseClient.auth.getUser().then(function(res) {
     // ===== سطح =====
     var minutes = profile.total_minutes || 0;
     var level = getLevel(minutes);
-    var title = getTitle(level, currentTheme);
+    var title = getTitle(level, titleTheme);
     document.getElementById('levelBox').textContent = 'سطح ' + level + ' • ' + title;
 
     var nextH = getNextLevelHours(level);
@@ -48,7 +47,9 @@ supabaseClient.auth.getUser().then(function(res) {
     }
 
     // ===== بارگذاری باغ/کافه =====
-    loadGarden(uid, profile.level_theme);
+    // اینجا از تم رنگی استفاده می‌کنیم (همونی که با دکمه 🎨 عوض میشه)
+    var colorTheme = localStorage.getItem('site-theme') || 'dark';
+    loadGarden(uid, colorTheme);
 
     // ===== محاسبه‌ی رتبه‌ی کلاس =====
     supabaseClient.from('profiles').select('class_name, total_minutes').then(function(cr) {
@@ -112,26 +113,24 @@ supabaseClient.auth.getUser().then(function(res) {
 // ===== منطق کافه / باغ =====
 function loadGarden(uid, theme) {
   var widget = document.getElementById('gardenWidget');
+  if (!widget) return;
   
-  // اگه تم کافه یا ساکورا نبود، پیام به زودی
-  if (theme !== 'کافه' && theme !== 'ساکورا') {
-    widget.innerHTML = '<div style="font-size: 3rem; margin-bottom: 10px;">🚧</div><p style="color:var(--text-dim); font-size:0.9rem;">سیستم همراه روزانه برای تم «' + theme + '» به زودی اضافه می‌شه!</p>';
+  // بررسی تم رنگی
+  if (theme !== 'cafe' && theme !== 'sakura') {
+    widget.innerHTML = '<div style="font-size: 3rem; margin-bottom: 10px;">🚧</div><p style="color:var(--text-dim); font-size:0.9rem;">سیستم همراه روزانه برای این تم به زودی اضافه می‌شه!<br>(از دکمه 🎨 تم کافه یا ساکورا رو انتخاب کن)</p>';
     return;
   }
 
-  // گرفتن اطلاعات از دیتابیس (یا ساختنش اگه نبود)
   supabaseClient.from('user_gardens').select('*').eq('user_id', uid).single().then(function(res) {
     if (!res.data) {
-      // اگه کاربر جدید بود، براش می‌سازیم
       supabaseClient.from('user_gardens').insert({ user_id: uid }).then(function() {
-        loadGarden(uid, theme); // دوباره صدا می‌زنیم
+        loadGarden(uid, theme); 
       });
       return;
     }
 
     var garden = res.data;
     
-    // چک کردن اینکه روز عوض شده یا نه (اگه عوض شده، مصرف امروز صفر شه)
     var todayStr = new Date().toISOString().split('T')[0];
     if (garden.last_active_date !== todayStr) {
       supabaseClient.from('user_gardens').update({ last_active_date: todayStr, minutes_today: 0 }).eq('user_id', uid).then(function() {
@@ -146,14 +145,17 @@ function loadGarden(uid, theme) {
 
 function renderGardenUI(uid, theme, garden) {
   var widget = document.getElementById('gardenWidget');
+  if (!widget) return;
+  
+  var isCafe = (theme === 'cafe');
   var goal = garden.daily_goal || 30;
   var done = garden.minutes_today || 0;
   var coins = garden.coins || 0;
   var percent = Math.min(Math.round((done / goal) * 100), 100);
 
-  var graphic = theme === 'کافه' ? '☕' : '🌸';
-  var title = theme === 'کافه' ? 'کافه‌ی امروز' : 'باغ ساکورا';
-  var coinName = theme === 'کافه' ? 'دانه قهوه' : 'شکوفه';
+  var graphic = isCafe ? '☕' : '🌸';
+  var title = isCafe ? 'کافه‌ی امروز' : 'باغ ساکورا';
+  var coinName = isCafe ? 'دانه قهوه' : 'شکوفه';
 
   widget.innerHTML = 
     '<h3 style="font-size: 1rem; color: var(--text-dim); margin-bottom: 10px;">' + title + '</h3>' +
@@ -314,7 +316,7 @@ function renderGenreOptions() {
   });
 }
 
-// ===== تغییر تم =====
+// ===== تغییر تم (لقب) =====
 var changeThemeBtn = document.getElementById('changeThemeBtn');
 var themeModal = document.getElementById('themeModal');
 var closeThemeBtn = document.getElementById('closeThemeBtn');
