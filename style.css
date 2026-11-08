@@ -1,18 +1,51 @@
 /* ===== پایه ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif; }
 
-/* ===== تنظیمات تم‌ها ===== */
-:root {
+/* ===== تم‌ها (متغیرها) ===== */
+:root { /* تم شب (پیش‌فرض) */
   --bg: #0f1720; --bg-card: #1a2530; --green: #2ecc71; --blue: #3498db;
   --text: #e8f0f5; --text-dim: #8fa3b0; --border: #24333f;
+  --chat-bg: #17212b; --chat-other: #182533; --chat-text-other: #fff;
 }
-[data-theme="light"] {
+[data-theme="light"] { /* تم روز */
   --bg: #f4f6f8; --bg-card: #ffffff; --green: #9b59b6; --blue: #3498db;
   --text: #2c3e50; --text-dim: #7f8c8d; --border: #e0e6ed;
+  --chat-bg: #f4f6f8; --chat-other: #e0e6ed; --chat-text-other: #2c3e50;
 }
-[data-theme="sakura"] {
+[data-theme="sakura"] { /* تم ساکورا */
   --bg: #fff0f5; --bg-card: #ffffff; --green: #e84393; --blue: #fd79a8;
   --text: #4a3b42; --text-dim: #a48f97; --border: #f8d4e3;
+  --chat-bg: #fff0f5; --chat-other: #f8d4e3; --chat-text-other: #4a3b42;
+}
+[data-theme="cafe"] { /* تم کافه */
+  --bg: #fdfbf7; --bg-card: #f4ebd8; --green: #6f4e37; --blue: #d4a373;
+  --text: #3e2723; --text-dim: #8d6e63; --border: #e3d5ca;
+  --chat-bg: #fdfbf7; --chat-other: #f4ebd8; --chat-text-other: #3e2723;
+}
+[data-theme="galaxy"] { /* تم کهکشان */
+  --bg: #0b0c10; --bg-card: #1f2833; --green: #66fcf1; --blue: #45a29e;
+  --text: #c5c6c7; --text-dim: #8892b0; --border: #45a29e;
+  --chat-bg: #0b0c10; --chat-other: #1f2833; --chat-text-other: #c5c6c7;
+}
+[data-theme="ocean"] { /* تم اقیانوس */
+  --bg: #e0f7fa; --bg-card: #ffffff; --green: #00acc1; --blue: #00838f;
+  --text: #006064; --text-dim: #4dd0e1; --border: #b2ebf2;
+  --chat-bg: #e0f7fa; --chat-other: #b2ebf2; --chat-text-other: #006064;
+}
+[data-theme="lavender"] { /* تم اسطوخودوس */
+  --bg: #f3e5f5; --bg-card: #ffffff; --green: #8e24aa; --blue: #ab47bc;
+  --text: #4a148c; --text-dim: #ce93d8; --border: #ce93d8;
+  --chat-bg: #f3e5f5; --chat-other: #ce93d8; --chat-text-other: #4a148c;
+}
+[data-theme="peach"] { /* تم هلویی */
+  --bg: #fff3e0; --bg-card: #ffffff; --green: #f4511e; --blue: #ffb300;
+  --text: #bf360c; --text-dim: #ff8a65; --border: #ffe0b2;
+  --chat-bg: #fff3e0; --chat-other: #ffe0b2; --chat-text-other: #bf360c;
+}
+[data-theme="forest"] { /* تم جنگل */
+  --bg: #e8f5e9; --bg-card: #ffffff; --green: #2e7d32; --blue: #43a047;
+  --text: #1b5e20; --text-dim: #81c784; --border: #c8e6c9;
+  --chat-bg: #e8f5e9; --chat-other: #c8e6c9; --chat-text-other: #1b5e20;
 }
 
 body { background: var(--bg); color: var(--text); padding-bottom: 80px; line-height: 1.7; transition: background 0.3s, color 0.3s; }
@@ -23,9 +56,7 @@ body { background: var(--bg); color: var(--text); padding-bottom: 80px; line-hei
 .user-area { display: flex; align-items: center; gap: 8px; }
 .user-name { font-size: 0.85rem; color: var(--text-dim); }
 .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--green), var(--blue)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 0.9rem; }
-
-/* ===== دکمه تغییر تم ===== */
-.theme-btn { background: var(--border); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.1rem; margin-right: 10px; transition: transform 0.2s; }
+.theme-btn { background: var(--border); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.1rem; margin-right: 10px; transition: transform 0.2s; color: var(--text); }
 .theme-btn:hover { transform: scale(1.1); }
 
 /* ===== کانتینر ===== */
@@ -39,13 +70,11 @@ h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text); }
 .notice-badge.مهم { background: var(--blue); }
 @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ===== لیگ ===== */
+/* ===== لیگ و انجمن‌ها ===== */
 .league-row { display: flex; justify-content: space-between; padding: 10px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; font-size: 0.9rem; transition: background 0.3s, border-color 0.3s; }
 .league-row:first-of-type { border-color: var(--green); background: rgba(46,204,113,0.1); }
 .see-all { display: inline-block; margin-top: 8px; color: var(--blue); font-size: 0.85rem; text-decoration: none; }
 .see-all:hover { text-decoration: underline; }
-
-/* ===== انجمن‌ها ===== */
 .forum-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 .forum-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; text-decoration: none; color: var(--text); transition: transform 0.2s ease, border-color 0.2s ease, background 0.3s; }
 .forum-card:hover { transform: translateY(-3px) scale(1.02); border-color: var(--green); }
@@ -75,6 +104,8 @@ h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text); }
 .result { background: var(--bg-card); border: 1px solid var(--green); border-radius: 14px; padding: 20px; text-align: center; animation: slideIn 0.4s ease; }
 .result p { color: var(--text-dim); font-size: 0.9rem; margin-top: 8px; }
 .hidden { display: none !important; }
+
+/* پروفایل */
 .profile-card { text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 30px 20px; transition: background 0.3s; }
 .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--green), var(--blue)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #fff; margin: 0 auto 14px; }
 .profile-name { font-size: 1.3rem; margin-bottom: 4px; }
@@ -104,10 +135,19 @@ h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text); }
 .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
 .tab { flex: 1; padding: 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-dim); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .tab.active { background: var(--green); color: #fff; border-color: var(--green); }
-@media (max-width: 480px) { .container { padding: 14px; gap: 20px; } .forum-list { grid-template-columns: repeat(2, 1fr); } .notice { font-size: 0.82rem; padding: 10px 12px; } }
-@media (min-width: 768px) { .container { max-width: 760px; } }
 
-/* استایل‌های اختصاصی کتاب‌خوانی و چت */
+/* ===== استایل چت (داینامیک با تم) ===== */
+#tab-chat { display: flex; flex-direction: column; height: calc(100vh - 160px); background: var(--chat-bg); border-radius: 16px; overflow: hidden; transition: background 0.3s; }
+#chatBox { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; height: 100%; }
+.chat-msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; word-wrap: break-word; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: background 0.3s; }
+.chat-msg.me { align-self: flex-end; background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
+.chat-msg.other { align-self: flex-start; background: var(--chat-other); color: var(--chat-text-other); border-bottom-left-radius: 4px; }
+.chat-msg .sender { font-size: 0.75rem; color: var(--blue); margin-bottom: 4px; font-weight: bold; display: block; }
+.chat-input-area { padding: 12px; background: var(--chat-bg); border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; transition: background 0.3s; }
+.chat-input-area input { flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-family: inherit; outline: none; transition: background 0.3s; }
+.chat-input-area button { background: var(--green); color: #fff; border: none; border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; }
+
+/* ===== استایل کتاب‌خوانی ===== */
 .bookshelf-container { background: #3e2723; padding: 20px 15px 15px; border-radius: 8px; box-shadow: inset 0 10px 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; min-height: 180px; border-bottom: 15px solid #2d1a17; position: relative; }
 .bookshelf-container::before { content: ''; position: absolute; top: 10px; left: 10px; right: 10px; height: 5px; background: rgba(0,0,0,0.3); border-radius: 5px; }
 .real-book { width: 70px; height: 110px; position: relative; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 4px; box-shadow: -2px 2px 5px rgba(0,0,0,0.5); animation: popIntoPlace 0.5s ease-out; }
@@ -117,15 +157,6 @@ h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text); }
 .book-title-tooltip { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.85); color: white; font-size: 0.65rem; padding: 4px; text-align: center; border-radius: 0 0 4px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .delete-book-btn { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; cursor: pointer; display: none; z-index: 3; line-height: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 .real-book:hover .delete-book-btn { display: block; }
-#tab-chat { height: calc(100vh - 160px); background: #17212b; border-radius: 16px; overflow: hidden; }
-#chatBox { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; height: 100%; }
-.chat-msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; word-wrap: break-word; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-.chat-msg.me { align-self: flex-end; background: #2b5278; color: white; border-bottom-right-radius: 4px; }
-.chat-msg.other { align-self: flex-start; background: #182533; color: white; border-bottom-left-radius: 4px; }
-.chat-msg .sender { font-size: 0.75rem; color: #64b5f6; margin-bottom: 4px; font-weight: bold; display: block; }
-.chat-input-area { padding: 12px; background: #17212b; border-top: 1px solid #0e1621; display: flex; gap: 8px; align-items: center; }
-.chat-input-area input { flex: 1; padding: 12px 16px; border-radius: 24px; border: none; background: #242f3d; color: white; font-family: inherit; outline: none; }
-.chat-input-area button { background: #64b5f6; color: #17212b; border: none; border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; }
 .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
 .progress-bar-bg { width: 100%; height: 12px; background: var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden; }
 .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.5s ease; }
@@ -133,20 +164,14 @@ h2 { font-size: 1.05rem; margin-bottom: 12px; color: var(--text); }
 .estim { font-size: 0.85rem; color: var(--blue); margin-bottom: 12px; background: rgba(52, 152, 219, 0.1); padding: 8px; border-radius: 8px; }
 .update-form { display: flex; gap: 8px; margin-top: 10px; }
 .update-form input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; }
-/* ===== استریک ===== */
-.streak-box { text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; transition: background 0.3s; }
-.streak-fire { font-size: 2rem; }
-.streak-number { font-size: 2.5rem; font-weight: 700; color: var(--green); line-height: 1.2; }
-.streak-label { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; }
 
-/* ===== نمودار هفتگی ===== */
-.chart { display: flex; justify-content: space-between; align-items: flex-end; height: 140px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 12px 8px; gap: 6px; transition: background 0.3s; }
-.chart-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 6px; }
-.chart-bar .bar { width: 100%; max-width: 28px; background: linear-gradient(180deg, var(--green), var(--blue)); border-radius: 6px 6px 0 0; transition: height 0.5s ease; }
-.chart-bar span { font-size: 0.7rem; color: var(--text-dim); }
+/* ===== استایل ویجت کافه/باغ ===== */
+.garden-widget { text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; transition: background 0.3s; }
+.garden-graphic { font-size: 4rem; margin: 10px 0; transition: transform 0.3s ease; }
+.garden-graphic:hover { transform: scale(1.1); }
+.goal-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin: 0 4px; transition: 0.2s; }
+.goal-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+.garden-coins { font-size: 0.9rem; color: #f1c40f; font-weight: bold; margin-top: 10px; }
 
-/* ===== کلاس من ===== */
-.class-box { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; flex-wrap: wrap; gap: 8px; transition: background 0.3s; }
-.class-info { display: flex; flex-direction: column; gap: 2px; }
-.class-name { font-weight: 700; font-size: 1rem; }
-.class-rank { font-size: 0.8rem; color: var(--green); }
+@media (max-width: 480px) { .container { padding: 14px; gap: 20px; } .forum-list { grid-template-columns: repeat(2, 1fr); } .notice { font-size: 0.82rem; padding: 10px 12px; } }
+@media (min-width: 768px) { .container { max-width: 760px; } }

@@ -3,13 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مدرسه‌ی ما</title>
+  <title>ساراگل | مدرسه‌ی ما</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 10px; }
+    .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
+    .quick-start-btn:active { transform: scale(0.98); }
+    
+    /* استایل پیام خوش‌آمدگویی */
+    .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .welcome-content h2 { color: var(--green); margin-bottom: 16px; font-size: 1.3rem; }
+    .welcome-content p { font-size: 0.9rem; color: var(--text); line-height: 1.8; margin-bottom: 12px; text-align: right; }
+    .welcome-content ul { text-align: right; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; padding-right: 20px; line-height: 1.8; }
+    .welcome-content li { margin-bottom: 8px; }
+  </style>
 </head>
 <body>
 
   <header class="header">
-    <div class="logo">مدرسه‌ی ما</div>
+    <div class="logo">ساراگل</div>
     <div class="user-area">
       <span class="user-name">علی</span>
       <div class="avatar">ع</div>
@@ -18,35 +31,29 @@
 
   <main class="container">
 
+    <a href="study.html" class="quick-start-btn">
+      <span>🚀</span> شروع سریع مطالعه
+    </a>
+
     <section class="notice-board">
       <h2>📌 تابلو اعلانات</h2>
       <div class="notice">
         <span class="notice-badge">فوری</span>
-        به سایت جدید خوش آمدید!
+        به سایت جدید ساراگل خوش آمدید!
       </div>
     </section>
 
     <section class="quick-league">
       <h2>🏆 لیگ این هفته</h2>
-      <div class="league-row">
-        <span>🥇 هشتم ۲</span>
-        <span>۱۲۰۰ دقیقه</span>
-      </div>
-      <div class="league-row">
-        <span>🥈 هفتم ۱</span>
-        <span>۹۸۰ دقیقه</span>
-      </div>
-      <div class="league-row">
-        <span>🥉 نهم ۱</span>
-        <span>۷۵۰ دقیقه</span>
-      </div>
+      <div class="league-row"><span>🥇 هشتم ۲</span><span>۱۲۰۰ دقیقه</span></div>
+      <div class="league-row"><span>🥈 هفتم ۱</span><span>۹۸۰ دقیقه</span></div>
+      <div class="league-row"><span>🥉 نهم ۱</span><span>۷۵۰ دقیقه</span></div>
       <a href="leaderboard.html" class="see-all">دیدن لیست کامل →</a>
     </section>
 
     <section class="forums">
       <h2>💬 انجمن‌ها</h2>
       <div class="forum-list">
-        <!-- فقط انجمن کتاب‌خوانی -->
         <a href="books.html" class="forum-card">
           <span class="forum-icon">📚</span>
           <span class="forum-name">انجمن کتاب‌خوانی</span>
@@ -56,8 +63,8 @@
 
   </main>
 
-   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 خانه</a>
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
     <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
     <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
@@ -65,10 +72,39 @@
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
+  <!-- مودال خوش‌آمدگویی -->
+  <div id="welcomeModal" class="welcome-modal hidden">
+    <div class="welcome-content">
+      <h2>سلام! به ساراگل خوش اومدی 👋</h2>
+      <p>اینجا یه مدرسه‌ی دیجیتاله که می‌تونی هم درس بخونی، هم با بچه‌ها رقابت کنی، هم رفیق پیدا کنی!</p>
+      <ul>
+        <li>⏱ <strong>مطالعه:</strong> تایمر بزن و کلاس‌ت رو ببر بالای جدول!</li>
+        <li>🌸 <strong>همراه روزانه:</strong> توی پروفایل یه کافه یا باغ داری که با درس خوندن بزرگ می‌شه!</li>
+        <li>📚 <strong>کتاب‌خوانی:</strong> کتاب‌های که خوندی رو به قفسه‌ت اضافه کن.</li>
+        <li>💬 <strong>مشاوره:</strong> هر سوالی داشتی، می‌تونی ناشناس با مشاور حرف بزنی.</li>
+      </ul>
+      <button id="closeWelcomeBtn" class="btn btn-green btn-full">متوجه شدم، بریم!</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
-    <script src="theme.js"></script>
+  <script src="theme.js"></script>
   <script src="script.js"></script>
+  
+  <script>
+    // نمایش پیام خوش‌آمدگویی فقط بار اول
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!localStorage.getItem('hasSeenWelcome')) {
+        document.getElementById('welcomeModal').classList.remove('hidden');
+      }
+      
+      document.getElementById('closeWelcomeBtn').addEventListener('click', function() {
+        document.getElementById('welcomeModal').classList.add('hidden');
+        localStorage.setItem('hasSeenWelcome', 'true');
+      });
+    });
+  </script>
 </body>
 </html>

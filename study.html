@@ -3,13 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مطالعه | مدرسه‌ی ما</title>
+  <title>مطالعه | ساراگل</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .panic-note-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; position: relative; }
+    .panic-subject { font-size: 0.75rem; color: var(--blue); font-weight: bold; margin-bottom: 4px; display: inline-block; background: rgba(52,152,219,0.1); padding: 2px 8px; border-radius: 10px; }
+    .panic-text { font-size: 0.9rem; color: var(--text); line-height: 1.6; }
+    .del-panic-btn { position: absolute; top: 10px; left: 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer; font-family: inherit; }
+  </style>
 </head>
 <body>
 
   <header class="header">
-    <div class="logo">مدرسه‌ی ما</div>
+    <div class="logo">ساراگل</div>
     <div class="user-area">
       <span class="user-name">—</span>
       <div class="avatar">—</div>
@@ -24,6 +30,7 @@
       <div class="tabs" style="margin-bottom: 16px;">
         <button class="tab active" id="tabPomodoro">🍅 پومودورو</button>
         <button class="tab" id="tabFree">⏱ آزاد</button>
+        <button class="tab" id="tabPanic">🚨 شب امتحان</button>
       </div>
 
       <!-- بخش پومودورو -->
@@ -65,9 +72,25 @@
         </select>
       </div>
 
+      <!-- بخش شب امتحان -->
+      <div id="panicSection" class="hidden">
+        <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px;">
+          فرمول‌ها یا نکات مهمی که فکر می‌کنی بقیه قبل امتحان باید ببینن رو اینجا بنویس.
+        </p>
+        <input id="panicSubject" type="text" class="input" placeholder="نام درس (مثلاً ریاضی)" style="margin-bottom: 8px;">
+        <textarea id="panicNote" class="input" placeholder="نکته یا فرمول مهم..." rows="3" style="margin-bottom: 8px; resize: vertical;"></textarea>
+        <button id="addPanicBtn" class="btn btn-green btn-full" style="margin-bottom: 20px;">ثبت نکته</button>
+        
+        <h3 style="font-size: 0.95rem; margin-bottom: 10px;">نکات بچه‌ها:</h3>
+        <div id="panicList">
+          <p class="lock-note">در حال بارگذاری...</p>
+        </div>
+      </div>
+
     </section>
 
-    <section class="timer-box">
+    <!-- تایمر (فقط برای پومودورو و آزاد نمایش داده میشه) -->
+    <section class="timer-box" id="timerBox">
       <div id="timer" class="timer">۲۵:۰۰</div>
       <div class="timer-buttons">
         <button id="startBtn" class="btn btn-green">شروع</button>
@@ -76,13 +99,10 @@
       </div>
     </section>
 
-    <section>
+    <section id="finishSection">
       <label class="label">چند سؤال حل کردی؟ (اختیاری)</label>
       <input id="questions" type="number" min="0" class="input" placeholder="مثلاً ۱۰">
-    </section>
-
-    <section>
-      <button id="finishBtn" class="btn btn-green btn-full">پایان جلسه و ثبت</button>
+      <button id="finishBtn" class="btn btn-green btn-full" style="margin-top: 10px;">پایان جلسه و ثبت</button>
     </section>
 
     <section id="result" class="result hidden">
@@ -92,19 +112,18 @@
 
   </main>
 
-   <nav class="bottom-nav">
+  <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
-    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="study.html" class="nav-item active">⏱ مطالعه</a>
     <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
     <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
-    <a href="admin.html" class="nav-item">🛠 ادمین</a>
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
-    <script src="theme.js"></script>
+  <script src="theme.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
