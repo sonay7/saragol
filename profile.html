@@ -1,141 +1,352 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>پروفایل | ساراگل</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-    .progress-bar-bg { width: 100%; height: 12px; background: var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.5s ease; }
-    .progress-stats { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; }
-    .estim { font-size: 0.85rem; color: var(--blue); margin-bottom: 12px; background: rgba(52, 152, 219, 0.1); padding: 8px; border-radius: 8px; }
+var userClassName = '';
+var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
+var selectedGenres = [];
+
+supabaseClient.auth.getUser().then(function(res) {
+  if (!res.data.user) { window.location.href = 'login.html'; return; }
+  var uid = res.data.user.id;
+
+  supabaseClient.from('profiles').select('*').eq('id', uid).single().then(function(p) {
+    if (!p.data) return;
+    var profile = p.data;
+    userClassName = profile.class_name;
+    var titleTheme = profile.level_theme || 'پیش فرض'; // تم لقب (گیمینگ، ورزشی و...)
+
+    document.querySelector('.profile-name').textContent = profile.username;
+    document.querySelector('.profile-class').textContent = profile.class_name;
+    document.querySelector('.profile-avatar').textContent = profile.username.charAt(0);
+    document.querySelector('.user-name').textContent = profile.username;
+    document.querySelector('.avatar').textContent = profile.username.charAt(0);
+    document.getElementById('myClassName').textContent = profile.class_name;
+
+    var stats = document.querySelectorAll('.stat-value');
+    stats[0].textContent = profile.total_minutes || 0;
+    stats[1].textContent = profile.xp || 0;
+
+    // ===== سطح =====
+    var minutes = profile.total_minutes || 0;
+    var level = getLevel(minutes);
+    var title = getTitle(level, titleTheme);
+    document.getElementById('levelBox').textContent = 'سطح ' + level + ' • ' + title;
+
+    var nextH = getNextLevelHours(level);
+    var bar = document.getElementById('levelBar');
+    var nextEl = document.getElementById('levelNext');
+
+    if (nextH === null) {
+      bar.style.width = '100%';
+      nextEl.textContent = 'به بالاترین سطح رسیدی! 🏆';
+    } else {
+      var currentH = LEVEL_HOURS[level - 1];
+      var progress = ((minutes / 60) - currentH) / (nextH - currentH) * 100;
+      if (progress < 0) progress = 0;
+      if (progress > 100) progress = 100;
+      bar.style.width = progress + '%';
+      var remainMin = Math.ceil((nextH * 60) - minutes);
+      nextEl.textContent = 'تا سطح بعدی: ' + remainMin + ' دقیقه';
+    }
+
+    // ===== بارگذاری باغ/کافه =====
+    // اینجا از تم رنگی استفاده می‌کنیم (همونی که با دکمه 🎨 عوض میشه)
+    var colorTheme = localStorage.getItem('site-theme') || 'dark';
+    loadGarden(uid, colorTheme);
+
+    // ===== محاسبه‌ی رتبه‌ی کلاس =====
+    supabaseClient.from('profiles').select('class_name, total_minutes').then(function(cr) {
+      var totals = {};
+      (cr.data || []).forEach(function(row) {
+        if (!row.class_name) return;
+        if (!totals[row.class_name]) totals[row.class_name] = 0;
+        totals[row.class_name] += row.total_minutes || 0;
+      });
+      var sorted = Object.keys(totals).sort(function(a, b) { return totals[b] - totals[a]; });
+      var rank = sorted.indexOf(profile.class_name) + 1;
+      var rankEl = document.getElementById('myClassRank');
+      if (rankEl) rankEl.textContent = rank > 0 ? 'رتبه ' + rank + ' در لیگ' : 'بدون رتبه';
+    });
+
+    // ===== آمار مطالعه =====
+    supabaseClient.from('study_sessions').select('questions, minutes, created_at').eq('user_id', uid).then(function(s) {
+      var rows = s.data || [];
+      var totalQ = 0;
+      rows.forEach(function(r) { totalQ += r.questions || 0; });
+      stats[3].textContent = totalQ;
+
+      var days = {};
+      rows.forEach(function(r) {
+        var d = new Date(r.created_at);
+        days[d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate()] = true;
+      });
+
+      var streak = 0;
+      var today = new Date();
+      for (var i = 0; i < 365; i++) {
+        var d = new Date(today);
+        d.setDate(today.getDate() - i);
+        var key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+        if (days[key]) { streak++; }
+        else if (i === 0) { continue; }
+        else { break; }
+      }
+      stats[2].textContent = streak;
+      document.querySelector('.streak-number').textContent = streak;
+
+      var weekMinutes = [0, 0, 0, 0, 0, 0, 0];
+      rows.forEach(function(r) {
+        var d = new Date(r.created_at);
+        var diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+        if (diff >= 0 && diff < 7) weekMinutes[6 - diff] += r.minutes || 0;
+      });
+      var maxMin = Math.max.apply(null, weekMinutes);
+      if (maxMin === 0) maxMin = 1;
+      document.querySelectorAll('.chart-bar .bar').forEach(function(b, i) {
+        var h = Math.round((weekMinutes[i] / maxMin) * 100);
+        b.style.height = (h < 5 ? 5 : h) + '%';
+      });
+    });
+
+    loadExams();
+    loadGenres(uid);
+  });
+});
+
+// ===== منطق کافه / باغ =====
+function loadGarden(uid, theme) {
+  var widget = document.getElementById('gardenWidget');
+  if (!widget) return;
+  
+  // بررسی تم رنگی
+  if (theme !== 'cafe' && theme !== 'sakura') {
+    widget.innerHTML = '<div style="font-size: 3rem; margin-bottom: 10px;">🚧</div><p style="color:var(--text-dim); font-size:0.9rem;">سیستم همراه روزانه برای این تم به زودی اضافه می‌شه!<br>(از دکمه 🎨 تم کافه یا ساکورا رو انتخاب کن)</p>';
+    return;
+  }
+
+  supabaseClient.from('user_gardens').select('*').eq('user_id', uid).single().then(function(res) {
+    if (!res.data) {
+      supabaseClient.from('user_gardens').insert({ user_id: uid }).then(function() {
+        loadGarden(uid, theme); 
+      });
+      return;
+    }
+
+    var garden = res.data;
     
-    .genre-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 20px; color: var(--text); cursor: pointer; font-family: inherit; transition: 0.2s; margin: 4px; }
-    .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
-    .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
+    var todayStr = new Date().toISOString().split('T')[0];
+    if (garden.last_active_date !== todayStr) {
+      supabaseClient.from('user_gardens').update({ last_active_date: todayStr, minutes_today: 0 }).eq('user_id', uid).then(function() {
+        garden.minutes_today = 0;
+        renderGardenUI(uid, theme, garden);
+      });
+    } else {
+      renderGardenUI(uid, theme, garden);
+    }
+  });
+}
 
-    .garden-widget { text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; transition: background 0.3s; }
-    .garden-graphic { font-size: 4rem; margin: 10px 0; transition: transform 0.3s ease; }
-    .garden-graphic:hover { transform: scale(1.1); }
-    .goal-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin: 0 4px; transition: 0.2s; }
-    .goal-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
-    .garden-coins { font-size: 0.9rem; color: #f1c40f; font-weight: bold; margin-top: 10px; }
+function renderGardenUI(uid, theme, garden) {
+  var widget = document.getElementById('gardenWidget');
+  if (!widget) return;
+  
+  var isCafe = (theme === 'cafe');
+  var goal = garden.daily_goal || 30;
+  var done = garden.minutes_today || 0;
+  var coins = garden.coins || 0;
+  var percent = Math.min(Math.round((done / goal) * 100), 100);
 
-    .guide-box { background: var(--bg-card); border: 1px solid var(--blue); border-radius: 12px; padding: 16px; font-size: 0.85rem; line-height: 1.8; }
-    .guide-box a { color: var(--blue); font-weight: bold; text-decoration: none; }
-  </style>
-</head>
-<body>
+  var graphic = isCafe ? '☕' : '🌸';
+  var title = isCafe ? 'کافه‌ی امروز' : 'باغ ساکورا';
+  var coinName = isCafe ? 'دانه قهوه' : 'شکوفه';
 
-  <header class="header">
-    <div class="logo">ساراگل</div>
-    <div class="user-area">
-      <span class="user-name">—</span>
-      <div class="avatar">—</div>
-    </div>
-  </header>
+  widget.innerHTML = 
+    '<h3 style="font-size: 1rem; color: var(--text-dim); margin-bottom: 10px;">' + title + '</h3>' +
+    '<div class="garden-graphic">' + graphic + '</div>' +
+    '<p style="font-size: 0.85rem; margin-bottom: 10px;">هدف امروز: <strong>' + done + ' از ' + goal + ' دقیقه</strong></p>' +
+    '<div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ' + percent + '%"></div></div>' +
+    '<p style="font-size: 0.8rem; color: var(--text-dim); margin: 10px 0;">هدفت رو انتخاب کن:</p>' +
+    '<div style="margin-bottom: 15px;">' +
+      '<button class="goal-btn ' + (goal === 15 ? 'active' : '') + '" onclick="setGoal(' + uid + ', \'' + theme + '\', 15)">۱۵ دقیقه</button>' +
+      '<button class="goal-btn ' + (goal === 30 ? 'active' : '') + '" onclick="setGoal(' + uid + ', \'' + theme + '\', 30)">۳۰ دقیقه</button>' +
+      '<button class="goal-btn ' + (goal === 60 ? 'active' : '') + '" onclick="setGoal(' + uid + ', \'' + theme + '\', 60)">۶۰ دقیقه</button>' +
+    '</div>' +
+    '<div class="garden-coins">🪙 ' + coins + ' ' + coinName + '</div>';
 
-  <main class="container">
+  if (percent >= 100) {
+    widget.innerHTML += '<p style="color: var(--green); font-weight: bold; margin-top: 10px;">✅ آفرین! هدف امروزت رو کامل کردی.</p>';
+  }
+}
 
-    <section class="profile-card">
-      <div class="profile-avatar">—</div>
-      <h2 class="profile-name">—</h2>
-      <p class="profile-class">—</p>
-      <div id="genreTitleDisplay" style="display:none; margin-top: 10px;">
-        <span class="genre-title-badge">🎭 <span id="genreTitleText">—</span></span>
-      </div>
-      <div class="profile-level" id="levelBox" style="margin-top: 12px;">سطح ۱</div>
-      <div class="level-progress"><div class="level-bar" id="levelBar" style="width: 0%"></div></div>
-      <p class="level-next" id="levelNext"></p>
-      <button id="changeThemeBtn" class="btn btn-blue btn-sm" style="margin-top: 12px;">🎨 تغییر سبک</button>
-    </section>
+window.setGoal = function(uid, theme, mins) {
+  supabaseClient.from('user_gardens').update({ daily_goal: mins }).eq('user_id', uid).then(function() {
+    loadGarden(uid, theme);
+  });
+};
 
-    <section>
-      <h2>همراه روزانه من</h2>
-      <div class="garden-widget" id="gardenWidget">
-        <p class="lock-note">در حال بارگذاری...</p>
-      </div>
-    </section>
+// ===== توابع آزمون =====
+function toShamsi(dateStr) {
+  if (!dateStr) return '';
+  var d = new Date(dateStr);
+  return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
+}
 
-    <section>
-      <h2>🎭 ژانر کتاب‌خوانی من</h2>
-      <div class="class-box">
-        <div class="class-info"><span class="class-name" id="myGenresList">در حال بارگذاری...</span></div>
-        <button id="selectGenreBtn" class="btn btn-blue btn-sm">تغییر ژانر</button>
-      </div>
-    </section>
+function loadExams() {
+  var listEl = document.getElementById('examCountdownList');
+  if (!listEl) return;
 
-    <section>
-      <h2>⏳ روزشمار آزمون‌ها</h2>
-      <div id="examCountdownList" style="display: flex; flex-direction: column; gap: 10px;">
-        <p class="lock-note">در حال بارگذاری...</p>
-      </div>
-    </section>
+  supabaseClient.auth.getUser().then(function(res) {
+    if (!res.data.user) return;
+    var uid = res.data.user.id;
 
-    <section class="streak-box">
-      <div class="streak-fire">🔥</div>
-      <div class="streak-number">۰</div>
-      <div class="streak-label">روز پیاپی مطالعه</div>
-    </section>
+    supabaseClient.from('exams').select('*').or('is_public.eq.true,user_id.eq.' + uid).order('exam_date', { ascending: true }).then(function(examRes) {
+      var rows = examRes.data || [];
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    <section>
-      <h2>📊 آمار من</h2>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دقیقه مطالعه</div></div>
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">XP</div></div>
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">سؤال حل‌شده</div></div>
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دستاورد</div></div>
-      </div>
-    </section>
+      var upcoming = rows.filter(function(e) {
+        if (new Date(e.exam_date) < today) return false;
+        if (e.is_public && e.class_name !== 'همه' && userClassName.indexOf(e.class_name) === -1) return false;
+        return true;
+      });
 
-    <!-- بخش راهنما و پشتیبانی -->
-    <section>
-      <h2>راهنما و پشتیبانی 🛠</h2>
-      <div class="guide-box">
-        <p>هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، می‌تونی به آیدی زیر پیام بدی:</p>
-        <p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 <a href="https://t.me/Aysonaizadi" target="_blank">@aizadi94</a></p>
-        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 8px; text-align: center;">(لطفاً برای مسائل درسی و مشکلات سایت پیام بدید)</p>
-      </div>
-    </section>
+      if (upcoming.length === 0) {
+        listEl.innerHTML = '<p class="lock-note">هیچ آزمونی پیش رو نداری 😎</p>';
+        return;
+      }
 
-    <section>
-      <button id="logoutBtn" class="btn btn-dim btn-full" style="color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
-    </section>
+      listEl.innerHTML = '';
+      upcoming.forEach(function(exam) {
+        var examDate = new Date(exam.exam_date);
+        examDate.setHours(0, 0, 0, 0);
+        var diffDays = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
 
-    <!-- مدال‌ها -->
-    <div id="themeModal" class="modal hidden">
-      <div class="modal-box">
-        <h2>سبک سایت رو انتخاب کن</h2>
-        <div id="themeList" class="theme-list"></div>
-        <button id="closeThemeBtn" class="btn btn-dim btn-full" style="margin-top: 12px;">بستن</button>
-      </div>
-    </div>
+        var div = document.createElement('div');
+        div.className = 'admin-row';
+        div.style.borderColor = diffDays <= 3 ? '#e74c3c' : 'var(--border)';
 
-    <div id="genreModal" class="modal hidden">
-      <div class="modal-box">
-        <h2>ژانرهای مورد علاقه‌ت</h2>
-        <div id="genreOptions" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;"></div>
-        <button id="saveGenreBtn" class="btn btn-green btn-full">ذخیره</button>
-        <button id="closeGenreBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button>
-      </div>
-    </div>
+        var label = exam.is_public ? '🏫 آزمون مدرسه' : '📝 آزمون شخصی';
+        var countdown = diffDays === 0 ? 'امروز!' : (diffDays === 1 ? 'فردا' : diffDays + ' روز مونده');
 
-  </main>
+        div.innerHTML = '<div><strong>' + exam.subject + '</strong><span class="admin-sub">' + label + ' | ' + toShamsi(exam.exam_date) + '</span></div>' +
+          '<div class="admin-actions"><span style="color:' + (diffDays <= 3 ? '#e74c3c' : 'var(--green)') + ';font-weight:700;font-size:0.85rem;">⏳ ' + countdown + '</span>' +
+          (!exam.is_public ? '<button class="btn btn-dim btn-sm" onclick="delExam(' + exam.id + ')">حذف</button>' : '') + '</div>';
+        listEl.appendChild(div);
+      });
+    });
+  });
+}
+window.delExam = function(id) { supabaseClient.from('exams').delete().eq('id', id).then(loadExams); }
 
-  <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 خانه</a>
-    <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
-    <a href="profile.html" class="nav-item active">👤 پروفایل</a>
-  </nav>
+// ===== سیستم ژانرها =====
+function loadGenres(uid) {
+  supabaseClient.from('user_genres').select('*').eq('user_id', uid).order('id', { ascending: true }).then(function(res) {
+    selectedGenres = (res.data || []).map(function(g) { return g.genre; });
+    updateGenreUI();
+  });
+}
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-  <script src="auth.js"></script>
-  <script src="theme.js"></script>
-  <script src="themes.js"></script>
-  <script src="profile.js"></script>
-</body>
-</html>
+function updateGenreUI() {
+  var title = getTitleFromGenres(selectedGenres);
+  var display = document.getElementById('genreTitleDisplay');
+  var text = document.getElementById('genreTitleText');
+  var list = document.getElementById('myGenresList');
+
+  if (selectedGenres.length > 0) {
+    display.style.display = 'inline-block';
+    text.textContent = title;
+    list.textContent = selectedGenres.join(' + ');
+  } else {
+    display.style.display = 'none';
+    list.textContent = 'هنوز ژانری انتخاب نکردی!';
+  }
+}
+
+function getTitleFromGenres(genres) {
+  if (!genres || genres.length === 0) return '';
+  if (genres.includes('خیال‌پردازی') && genres.includes('عاشقانه')) return 'رویاپرداز 🌙';
+  if (genres.includes('جنایی') && genres.includes('معمایی')) return 'کارآگاه 🕵️';
+  var mainGenre = genres[0];
+  if (mainGenre === 'خیال‌پردازی') return 'خواب‌بین 💭';
+  if (mainGenre === 'عاشقانه') return 'دل‌باخته ❤️';
+  if (mainGenre === 'جنایی' || mainGenre === 'معمایی') return 'کارآگاه 🕵️';
+  return 'کتاب‌خوان 📖';
+}
+
+// مودال ژانر
+var genreModal = document.getElementById('genreModal');
+var selectGenreBtn = document.getElementById('selectGenreBtn');
+var closeGenreBtn = document.getElementById('closeGenreBtn');
+var saveGenreBtn = document.getElementById('saveGenreBtn');
+var genreOptions = document.getElementById('genreOptions');
+
+if (selectGenreBtn) {
+  selectGenreBtn.addEventListener('click', function() {
+    genreModal.classList.remove('hidden');
+    renderGenreOptions();
+  });
+  closeGenreBtn.addEventListener('click', function() { genreModal.classList.add('hidden'); });
+
+  saveGenreBtn.addEventListener('click', function() {
+    supabaseClient.auth.getUser().then(function(res) {
+      if (!res.data.user) return;
+      var uid = res.data.user.id;
+      supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
+        if (selectedGenres.length === 0) { genreModal.classList.add('hidden'); updateGenreUI(); return; }
+        var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
+        supabaseClient.from('user_genres').insert(inserts).then(function() {
+          genreModal.classList.add('hidden');
+          updateGenreUI();
+        });
+      });
+    });
+  });
+}
+
+function renderGenreOptions() {
+  genreOptions.innerHTML = '';
+  allGenres.forEach(function(g) {
+    var btn = document.createElement('button');
+    btn.className = 'genre-btn' + (selectedGenres.includes(g) ? ' selected' : '');
+    btn.textContent = g;
+    btn.type = 'button';
+    btn.onclick = function() {
+      if (selectedGenres.includes(g)) selectedGenres = selectedGenres.filter(function(item) { return item !== g; });
+      else selectedGenres.push(g);
+      renderGenreOptions();
+    };
+    genreOptions.appendChild(btn);
+  });
+}
+
+// ===== تغییر تم (لقب) =====
+var changeThemeBtn = document.getElementById('changeThemeBtn');
+var themeModal = document.getElementById('themeModal');
+var closeThemeBtn = document.getElementById('closeThemeBtn');
+var themeList = document.getElementById('themeList');
+
+if (changeThemeBtn) {
+  changeThemeBtn.addEventListener('click', function() { themeModal.classList.remove('hidden'); });
+  closeThemeBtn.addEventListener('click', function() { themeModal.classList.add('hidden'); });
+  Object.keys(THEMES).forEach(function(name) {
+    var btn = document.createElement('button');
+    btn.className = 'theme-option';
+    btn.textContent = name + ' (' + THEMES[name][0] + ' → ' + THEMES[name][9] + ')';
+    btn.onclick = function() {
+      supabaseClient.auth.getUser().then(function(res) {
+        if (!res.data.user) return;
+        supabaseClient.from('profiles').update({ level_theme: name }).eq('id', res.data.user.id).then(function() {
+          themeModal.classList.add('hidden');
+          location.reload();
+        });
+      });
+    };
+    themeList.appendChild(btn);
+  });
+}
+
+// ===== دکمه خروج =====
+if (document.getElementById('logoutBtn')) {
+  document.getElementById('logoutBtn').addEventListener('click', function() {
+    if (confirm('از حساب کاربری خارج می‌شی؟')) {
+      supabaseClient.auth.signOut().then(function() { window.location.href = 'login.html'; });
+    }
+  });
+}
