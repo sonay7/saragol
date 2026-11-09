@@ -10,13 +10,12 @@
     .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
     .quick-start-btn:active { transform: scale(0.98); }
 
-    /* استایل لیگ بزرگ */
+    /* استایل لیگ */
     .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; }
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* استایل انجمن‌ها */
     .forum-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     @media (max-width: 380px) { .forum-list { grid-template-columns: repeat(2, 1fr); } }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
@@ -57,27 +56,16 @@
       </div>
     </section>
 
-    <!-- لیگ (بزرگ‌تر شده) -->
     <section class="big-league-card">
       <h2>
         <span>🏆 لیگ این هفته</span>
         <a href="leaderboard.html" class="see-all">مشاهده لیگ کامل ←</a>
       </h2>
-      <div class="league-row" style="background: linear-gradient(90deg, rgba(46,204,113,0.1), transparent);">
-        <span>🥇 هشتم ۲</span>
-        <span style="font-weight:bold; color:var(--green);">۱۲۰۰ دقیقه</span>
-      </div>
-      <div class="league-row">
-        <span>🥈 هفتم ۱</span>
-        <span>۹۸۰ دقیقه</span>
-      </div>
-      <div class="league-row">
-        <span>🥉 نهم ۱</span>
-        <span>۷۵۰ دقیقه</span>
+      <div id="homeLeaderboard">
+        <p class="lock-note" style="font-size: 0.8rem;">در حال بارگذاری...</p>
       </div>
     </section>
 
-    <!-- انجمن‌ها -->
     <section class="forums">
       <h2>💬 انجمن‌ها</h2>
       <div class="forum-list">
@@ -98,7 +86,6 @@
 
   </main>
 
-  <!-- منوی پایین بدون رقابت -->
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item active">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
@@ -107,7 +94,6 @@
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
-  <!-- مودال خوش‌آمدگویی -->
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
       <h2>سلام! به ساراگل خوش اومدی 👋</h2>
@@ -129,6 +115,7 @@
   <script src="script.js"></script>
   
   <script>
+    // نمایش مودال خوش‌آمدگویی
     document.addEventListener('DOMContentLoaded', function() {
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
@@ -136,6 +123,35 @@
       document.getElementById('closeWelcomeBtn').addEventListener('click', function() {
         document.getElementById('welcomeModal').classList.add('hidden');
         localStorage.setItem('hasSeenWelcome', 'true');
+      });
+
+      // بارگذاری لیگ واقعی برای صفحه خانه
+      supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
+        var container = document.getElementById('homeLeaderboard');
+        if (res.error || !res.data || res.data.length === 0) {
+          container.innerHTML = '<p class="lock-note" style="font-size: 0.8rem;">هنوز کسی این هفته مطالعه نکرده</p>';
+          return;
+        }
+
+        // جمع کردن دقیقه‌ها بر اساس کلاس
+        var classes = {};
+        res.data.forEach(function(u) {
+          if (!u.class_name) return;
+          if (!classes[u.class_name]) classes[u.class_name] = 0;
+          classes[u.class_name] += parseInt(u.weekly_minutes);
+        });
+
+        var sorted = Object.keys(classes).sort(function(a, b) { return classes[b] - classes[a]; });
+        
+        container.innerHTML = '';
+        sorted.slice(0, 3).forEach(function(className, index) {
+          var medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : '🥉');
+          var div = document.createElement('div');
+          div.className = 'league-row';
+          if (index === 0) div.style.background = 'linear-gradient(90deg, rgba(46,204,113,0.1), transparent)';
+          div.innerHTML = '<span>' + medal + ' ' + className + '</span><span style="font-weight:bold; color:var(--green);">' + classes[className] + ' دقیقه</span>';
+          container.appendChild(div);
+        });
       });
     });
   </script>
