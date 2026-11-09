@@ -7,12 +7,22 @@ supabaseClient.auth.getUser().then(function(res) {
   var uid = res.data.user.id;
 
   supabaseClient.from('profiles').select('*').eq('id', uid).single().then(function(p) {
-    if (!p.data) return;
+    // ==== سیستم ارورگیر ====
+    if (p.error) {
+      document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:50px;">خطای دیتابیس: ' + p.error.message + '</h1>';
+      return;
+    }
+    if (!p.data) {
+      document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:50px;">پروفایل شما پیدا نشد! (آیدی شما با دیتابیس همخوانی ندارد)</h1>';
+      return;
+    }
+    // =======================
+
     var profile = p.data;
     userClassName = profile.class_name;
     var titleTheme = profile.level_theme || 'پیش فرض';
 
-    // آپدیت هدر و کارت پروفایل (با چک کردن وجود المان)
+    // آپدیت هدر و کارت پروفایل
     var nameEl = document.querySelector('.profile-name'); if(nameEl) nameEl.textContent = profile.username;
     var classEl = document.querySelector('.profile-class'); if(classEl) classEl.textContent = profile.class_name;
     var pAvatarEl = document.querySelector('.profile-avatar'); if(pAvatarEl) pAvatarEl.textContent = profile.username.charAt(0);
@@ -24,28 +34,32 @@ supabaseClient.auth.getUser().then(function(res) {
     if(stats[1]) stats[1].textContent = profile.xp || 0;
 
     // ===== سطح =====
-    var minutes = profile.total_minutes || 0;
-    var level = getLevel(minutes);
-    var title = getTitle(level, titleTheme);
-    
-    var levelBox = document.getElementById('levelBox');
-    if(levelBox) levelBox.textContent = 'سطح ' + level + ' • ' + title;
+    try {
+      var minutes = profile.total_minutes || 0;
+      var level = getLevel(minutes);
+      var title = getTitle(level, titleTheme);
+      
+      var levelBox = document.getElementById('levelBox');
+      if(levelBox) levelBox.textContent = 'سطح ' + level + ' • ' + title;
 
-    var nextH = getNextLevelHours(level);
-    var bar = document.getElementById('levelBar');
-    var nextEl = document.getElementById('levelNext');
+      var nextH = getNextLevelHours(level);
+      var bar = document.getElementById('levelBar');
+      var nextEl = document.getElementById('levelNext');
 
-    if (nextH === null) {
-      if(bar) bar.style.width = '100%';
-      if(nextEl) nextEl.textContent = 'به بالاترین سطح رسیدی! 🏆';
-    } else {
-      var currentH = LEVEL_HOURS[level - 1];
-      var progress = ((minutes / 60) - currentH) / (nextH - currentH) * 100;
-      if (progress < 0) progress = 0;
-      if (progress > 100) progress = 100;
-      if(bar) bar.style.width = progress + '%';
-      var remainMin = Math.ceil((nextH * 60) - minutes);
-      if(nextEl) nextEl.textContent = 'تا سطح بعدی: ' + remainMin + ' دقیقه';
+      if (nextH === null) {
+        if(bar) bar.style.width = '100%';
+        if(nextEl) nextEl.textContent = 'به بالاترین سطح رسیدی! 🏆';
+      } else {
+        var currentH = LEVEL_HOURS[level - 1];
+        var progress = ((minutes / 60) - currentH) / (nextH - currentH) * 100;
+        if (progress < 0) progress = 0;
+        if (progress > 100) progress = 100;
+        if(bar) bar.style.width = progress + '%';
+        var remainMin = Math.ceil((nextH * 60) - minutes);
+        if(nextEl) nextEl.textContent = 'تا سطح بعدی: ' + remainMin + ' دقیقه';
+      }
+    } catch (e) {
+      console.error("خطای سطح:", e);
     }
 
     // ===== بارگذاری باغ/کافه =====
@@ -127,14 +141,14 @@ function loadGarden(uid, theme) {
 
   supabaseClient.from('user_gardens').select('*').eq('user_id', uid).single().then(function(res) {
     if (res.error && res.error.code !== 'PGRST116') {
-       widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطای دیتابیس: ' + res.error.message + '</p>';
+       widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطای دیتابیس باغ: ' + res.error.message + '</p>';
        return;
     }
     
     if (!res.data) {
       supabaseClient.from('user_gardens').insert({ user_id: uid }).then(function(insRes) {
         if (insRes.error) {
-          widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطا در ساخت: ' + insRes.error.message + '</p>';
+          widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطا در ساخت باغ: ' + insRes.error.message + '</p>';
           return;
         }
         loadGarden(uid, theme); 
