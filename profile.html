@@ -6,7 +6,7 @@
   <title>پروفایل | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* استایل کشوها */
+    /* ===== استایل کشوها ===== */
     details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
     details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
@@ -16,7 +16,7 @@
     .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* بخش‌های دیگر */
+    /* ===== بقیه استایل‌ها ===== */
     .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
     .level-progress { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-top: 12px; overflow: hidden; }
     .level-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.6s ease; }
@@ -26,27 +26,61 @@
     .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
     .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
 
-    /* ویجت‌های تم */
-    .widget-container { text-align: center; padding: 10px; }
+    /* ===== مخفی کردن همه ویجت‌ها به صورت پیش‌فرض ===== */
+    .w-cup, .w-tree, .w-planet { display: none; }
     
-    /* ۱. فنجون قهوه (کافه) */
+    /* ===== نمایش ویجت بر اساس تم ===== */
+    [data-theme="cafe"] .w-cup { display: block; }
+    [data-theme="cafe"] .w-bar { display: none; }
+    
+    [data-theme="sakura"] .w-tree { display: block; }
+    [data-theme="sakura"] .w-bar { display: none; }
+    
+    [data-theme="galaxy"] .w-planet { display: block; }
+    [data-theme="galaxy"] .w-bar { display: none; }
+
+    /* ۱. فنجون قهوه */
     .cup-container { position: relative; width: 100px; height: 130px; margin: 20px auto; margin-top: 40px; }
     .cup-body { width: 100%; height: 100%; border: 5px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
     .cup-handle { position: absolute; right: -22px; top: 30px; width: 25px; height: 50px; border: 5px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
     .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s ease; border-radius: 0 0 45px 45px; }
+
+    /* ۲. درخت ساکورا (نسخه جدید با شکوفه) */
+    .tree-container { position: relative; width: 140px; height: 160px; margin: 20px auto; margin-top: 30px; }
+    .tree-svg { width: 100%; height: 100%; }
     
-    /* ۲. درخت ساکورا (ساکورا) */
-    .tree-container { position: relative; width: 120px; height: 150px; margin: 20px auto; margin-top: 30px; }
-    .tree-trunk { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 60px; background: #5D4037; border-radius: 5px; }
-    .tree-canopy { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 120px; height: 100px; background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%); border-radius: 50%; clip-path: inset(100% 0 0 0); transition: clip-path 1s ease; }
-    
-    /* ۳. سیاره کهکشانی (کهکشان) */
+    .blossom {
+      position: absolute;
+      width: 18px; height: 18px;
+      background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%);
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.5s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 3;
+    }
+    /* مختصات شکوفه‌ها روی شاخه‌ها */
+    .b1 { top: 15%; left: 25%; }
+    .b2 { top: 10%; left: 55%; }
+    .b3 { top: 25%; left: 15%; }
+    .b4 { top: 30%; left: 75%; }
+    .b5 { top: 40%; left: 35%; }
+    .b6 { top: 35%; left: 60%; }
+    .b7 { top: 55%; left: 20%; }
+    .b8 { top: 50%; left: 80%; }
+    .b9 { top: 60%; left: 45%; }
+    .b10 { top: 25%; left: 45%; }
+    .b11 { top: 45%; left: 55%; }
+    .b12 { top: 70%; left: 65%; }
+
+    /* ۳. سیاره کهکشانی */
     .planet-container { position: relative; width: 120px; height: 120px; margin: 20px auto; margin-top: 30px; }
     .planet-body { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #8e44ad, #2c3e50); position: relative; overflow: hidden; box-shadow: inset -15px -15px 30px rgba(0,0,0,0.6); }
     .planet-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #00d2ff, #3a7bd5); transition: height 1s ease; mix-blend-mode: screen; opacity: 0.8; }
     .planet-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); width: 160px; height: 40px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 2; pointer-events: none; }
 
-    /* ۴. نوار پیشرفت ساده (تم‌های رنگی) */
+    /* ۴. نوار پیشرفت ساده */
     .simple-bar-container { margin: 40px auto; width: 80%; }
     .simple-bar-bg { width: 100%; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
     .simple-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 1s ease; border-radius: 10px; }
@@ -91,8 +125,53 @@
           <p class="level-next" id="levelNext"></p>
         </div>
 
-        <div class="widget-container" id="themeWidget">
-          <!-- ویجت با جاوااسکریپت لود میشه -->
+        <!-- ویجت‌ها (فقط یکی بر اساس تم نمایش داده می‌شود) -->
+        <div class="widget-container" style="text-align: center; padding: 10px;">
+          
+          <!-- فنجون -->
+          <div class="w-cup">
+            <div class="cup-container">
+              <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
+              <div class="cup-handle"></div>
+            </div>
+          </div>
+
+          <!-- درخت ساکورا -->
+          <div class="w-tree">
+            <div class="tree-container">
+              <svg class="tree-svg" viewBox="0 0 100 120">
+                <path d="M50,120 Q48,80 50,50 M50,85 Q30,70 20,45 M50,75 Q70,60 80,40 M50,60 Q35,45 30,25 M50,55 Q65,40 70,20 M50,50 Q50,30 50,15" stroke="#5D4037" stroke-width="5" stroke-linecap="round" fill="none" />
+              </svg>
+              <div class="blossom b1" data-val="5"></div>
+              <div class="blossom b2" data-val="10"></div>
+              <div class="blossom b3" data-val="20"></div>
+              <div class="blossom b4" data-val="30"></div>
+              <div class="blossom b5" data-val="40"></div>
+              <div class="blossom b6" data-val="50"></div>
+              <div class="blossom b7" data-val="60"></div>
+              <div class="blossom b8" data-val="70"></div>
+              <div class="blossom b9" data-val="80"></div>
+              <div class="blossom b10" data-val="90"></div>
+              <div class="blossom b11" data-val="95"></div>
+              <div class="blossom b12" data-val="100"></div>
+            </div>
+          </div>
+
+          <!-- سیاره -->
+          <div class="w-planet">
+            <div class="planet-container">
+              <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
+              <div class="planet-ring"></div>
+            </div>
+          </div>
+
+          <!-- نوار ساده (پیش‌فرض) -->
+          <div class="w-bar">
+            <div class="simple-bar-container">
+              <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
+            </div>
+          </div>
+
         </div>
         
         <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold; text-align: center;">در حال بارگذاری...</p>
@@ -200,10 +279,6 @@
   <script src="themes.js?v=2"></script>
   
   <script>
-    // ===== این بخش رو بیرون از دیتابیس آوردیم تا سریع اجرا بشه =====
-    var currentThemeColor = document.documentElement.getAttribute('data-theme') || 'dark';
-    renderThemeWidget(currentThemeColor);
-
     var userClassName = '';
     var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
     var selectedGenres = [];
@@ -347,36 +422,6 @@
       });
     }
 
-    function renderThemeWidget(theme) {
-      var container = document.getElementById('themeWidget');
-      if (!container) return;
-
-      if (theme === 'cafe') {
-        container.innerHTML = `
-          <div class="cup-container">
-            <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
-            <div class="cup-handle"></div>
-          </div>`;
-      } else if (theme === 'sakura') {
-        container.innerHTML = `
-          <div class="tree-container">
-            <div class="tree-trunk"></div>
-            <div class="tree-canopy" id="sakuraCanopy"></div>
-          </div>`;
-      } else if (theme === 'galaxy') {
-        container.innerHTML = `
-          <div class="planet-container">
-            <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
-            <div class="planet-ring"></div>
-          </div>`;
-      } else {
-        container.innerHTML = `
-          <div class="simple-bar-container">
-            <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
-          </div>`;
-      }
-    }
-
     function loadCupLogic(uid) {
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
@@ -442,19 +487,29 @@
       var smartTextEl = document.getElementById('smartText');
       var percent = Math.min(Math.round((todayMinutes / currentTarget) * 100), 100);
 
-      if (currentThemeColor === 'cafe') {
-        var liquidEl = document.getElementById('cupLiquid');
-        if (liquidEl) liquidEl.style.height = percent + '%';
-      } else if (currentThemeColor === 'sakura') {
-        var canopyEl = document.getElementById('sakuraCanopy');
-        if (canopyEl) canopyEl.style.clipPath = 'inset(' + (100 - percent) + '% 0 0 0)';
-      } else if (currentThemeColor === 'galaxy') {
-        var galaxyEl = document.getElementById('galaxyLiquid');
-        if (galaxyEl) galaxyEl.style.height = percent + '%';
-      } else {
-        var barEl = document.getElementById('simpleBarFill');
-        if (barEl) barEl.style.width = percent + '%';
-      }
+      // آپدیت فنجون
+      var cupLiquid = document.getElementById('cupLiquid');
+      if(cupLiquid) cupLiquid.style.height = percent + '%';
+
+      // آپدیت سیاره
+      var galaxyLiquid = document.getElementById('galaxyLiquid');
+      if(galaxyLiquid) galaxyLiquid.style.height = percent + '%';
+
+      // آپدیت نوار ساده
+      var simpleBar = document.getElementById('simpleBarFill');
+      if(simpleBar) simpleBar.style.width = percent + '%';
+
+      // آپدیت شکوفه‌های درخت
+      document.querySelectorAll('.blossom').forEach(function(b) {
+        var val = parseInt(b.getAttribute('data-val'));
+        if (percent >= val) {
+          b.style.opacity = '1';
+          b.style.transform = 'scale(1)';
+        } else {
+          b.style.opacity = '0';
+          b.style.transform = 'scale(0)';
+        }
+      });
       
       if (percent >= 100) {
         statusEl.textContent = '🎉 آفرین! هدف امروزت پر شد.';
