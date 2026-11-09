@@ -230,10 +230,12 @@
 
   </main>
 
+  <!-- منوی پایین بدون رقابت -->
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
     <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
     <a href="profile.html" class="nav-item active">👤 پروفایل</a>
   </nav>
 
@@ -251,8 +253,8 @@
     // متغیرهای مربوط به فنجون
     var yesterdayMinutes = 0;
     var todayMinutes = 0;
-    var currentTarget = 0; // هدفی که کاربر انتخاب کرده
-    var selectedOption = 0; // 1, 2, or 3
+    var currentTarget = 0;
+    var selectedOption = 0;
 
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -301,7 +303,7 @@
           }
         } catch (e) { console.error("خطای سطح:", e); }
 
-        // ===== منطق فنجون =====
+        // منطق فنجون
         loadCupLogic(uid);
 
         // آمار مطالعه
@@ -338,7 +340,6 @@
       });
     });
 
-    // ===== تابع اصلی محاسبه فنجون =====
     function loadCupLogic(uid) {
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
@@ -359,12 +360,10 @@
           if (dStr === todayStr) todayMinutes += r.minutes;
         });
 
-        // محاسبه 3 گزینه
         var opt1 = yesterdayMinutes === 0 ? 30 : yesterdayMinutes + 30;
         var opt2 = yesterdayMinutes === 0 ? 60 : yesterdayMinutes + 60;
         var opt3 = yesterdayMinutes === 0 ? 15 : yesterdayMinutes;
 
-        // ساخت دکمه‌ها
         var btnContainer = document.getElementById('goalButtons');
         btnContainer.innerHTML = '';
         
@@ -374,10 +373,8 @@
           { id: 3, label: opt3 + ' دقیقه', val: opt3 }
         ];
 
-        // بازیابی انتخاب قبلی از حافظه (اگه امروز قبلا انتخاب کرده)
         var savedChoice = localStorage.getItem('cup_choice_' + todayStr);
         
-        // اگه قبلا انتخاب کرده بود، همون رو ملاک می‌ذاریم، وگرنه گزینه 1
         if (savedChoice) {
           selectedOption = parseInt(savedChoice);
           currentTarget = buttonsData.find(b => b.id === selectedOption).val;
@@ -391,12 +388,9 @@
           btn.className = 'goal-btn' + (btnData.id === selectedOption ? ' active' : '');
           btn.textContent = btnData.label;
           btn.onclick = function() {
-            // ذخیره انتخاب جدید
             selectedOption = btnData.id;
             currentTarget = btnData.val;
             localStorage.setItem('cup_choice_' + todayStr, selectedOption);
-            
-            // آپدیت UI
             document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             updateCupVisuals();
@@ -432,7 +426,6 @@
       }
     }
 
-    // ===== توابع آزمون و ژانر (بدون تغییر) =====
     function toShamsi(dateStr) {
       if (!dateStr) return '';
       var d = new Date(dateStr);
