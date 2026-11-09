@@ -6,7 +6,6 @@ supabaseClient.auth.getUser().then(function(res) {
 
   supabaseClient.from('profiles').select('*').eq('id', res.data.user.id).single().then(function(p) {
     if (!p.data) return;
-    
     var profile = p.data;
 
     // چک کردن وضعیت تایید
@@ -20,30 +19,26 @@ supabaseClient.auth.getUser().then(function(res) {
       return;
     }
 
-    // ===== آپدیت اسم و آواتار در هدر =====
+    // آپدیت اسم و آواتار
     var nameEls = document.querySelectorAll('.user-name');
     nameEls.forEach(function(el) { el.textContent = profile.username; });
 
     var avatarEls = document.querySelectorAll('.avatar');
     avatarEls.forEach(function(el) { el.textContent = profile.username.charAt(0); });
 
-    // ===== مخفی کردن دکمه‌ها بر اساس نقش کاربر =====
-    
-    // ۱. اگه دانش‌آموز بود، دکمه ادمین و پنل مشاور مخفی شه
+    // مخفی کردن دکمه‌ها بر اساس نقش
     if (profile.role === 'student') {
       document.querySelectorAll('a[href="admin.html"]').forEach(function(el) { el.style.display = 'none'; });
       document.querySelectorAll('a[href="counselor-panel.html"]').forEach(function(el) { el.style.display = 'none'; });
     }
 
-    // ۲. اگه مشاور بود، دکمه ادمین مخفی شه
     if (profile.role === 'counselor') {
       document.querySelectorAll('a[href="admin.html"]').forEach(function(el) { el.style.display = 'none'; });
     }
 
-    // ۳. اگه عضو انجمن کتاب‌خوانی نبود، دکمه کتاب‌خوانی از منو مخفی شه
+    // مخفی کردن کتاب‌خوانی برای غیر عضوها
     if (!profile.is_book_club_member) {
       document.querySelectorAll('a[href="books.html"]').forEach(function(el) { el.style.display = 'none'; });
     }
-
   });
 });
