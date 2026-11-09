@@ -6,6 +6,56 @@
   <title>پروفایل | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* ===== استایل کشوها (Accordion) ===== */
+    details.accordion {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    details.accordion[open] {
+      border-color: var(--green);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    summary.accordion-header {
+      padding: 16px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      list-style: none; /* حذف مثلث پیش‌فرض */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+    summary.accordion-header:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    /* ساخت مثلث سفارشی */
+    summary.accordion-header::after {
+      content: '▼';
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      transition: transform 0.3s;
+    }
+    details[open] summary.accordion-header::after {
+      transform: rotate(180deg);
+      color: var(--green);
+    }
+    .accordion-content {
+      padding: 0 16px 16px 16px;
+      border-top: 1px solid var(--border);
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== استایل بقیه بخش‌ها ===== */
     .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
     .progress-bar-bg { width: 100%; height: 12px; background: var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden; }
     .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.5s ease; }
@@ -15,109 +65,28 @@
     .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
     .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
 
-    /* ===== ویجت کافه (دید از پهلو) ===== */
-    .garden-widget {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      text-align: center;
-      position: relative;
-    }
-
-    .cup-container {
-      position: relative;
-      width: 110px;
-      height: 140px;
-      margin: 20px auto;
-      margin-top: 40px;
-    }
-
-    .cup-body {
-      width: 100%;
-      height: 100%;
-      border: 6px solid var(--text);
-      border-top: none;
-      border-radius: 10px 10px 50px 50px;
-      position: absolute;
-      bottom: 0;
-      overflow: hidden;
-      background: rgba(0,0,0,0.1);
-      z-index: 2;
-      box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2);
-    }
-
-    .cup-handle {
-      position: absolute;
-      right: -25px;
-      top: 30px;
-      width: 30px;
-      height: 55px;
-      border: 6px solid var(--text);
-      border-left: none;
-      border-radius: 0 30px 30px 0;
-      z-index: 1;
-    }
-
-    .cup-liquid {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 0%;
-      background: linear-gradient(180deg, #8B5A2B, #4A2E1B);
-      transition: height 1s ease;
-      border-radius: 0 0 45px 45px;
-    }
-
-    .steam {
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      width: 10px;
-      height: 30px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 50%;
-      filter: blur(4px);
-      animation: rise 2s infinite ease-in;
-      opacity: 0;
-    }
+    /* ویجت فنجون */
+    .cup-container { position: relative; width: 110px; height: 140px; margin: 20px auto; margin-top: 40px; }
+    .cup-body { width: 100%; height: 100%; border: 6px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
+    .cup-handle { position: absolute; right: -25px; top: 30px; width: 30px; height: 55px; border: 6px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
+    .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s ease; border-radius: 0 0 45px 45px; }
+    .steam { position: absolute; top: -30px; left: 50%; width: 10px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%; filter: blur(4px); animation: rise 2s infinite ease-in; opacity: 0; }
     .steam:nth-child(2) { left: 30%; animation-delay: 0.5s; }
     .steam:nth-child(3) { left: 70%; animation-delay: 1s; }
+    @keyframes rise { 0% { transform: translateY(0) scale(1); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(-30px) scale(1.5); opacity: 0; } }
 
-    @keyframes rise {
-      0% { transform: translateY(0) scale(1); opacity: 0; }
-      50% { opacity: 0.8; }
-      100% { transform: translateY(-30px) scale(1.5); opacity: 0; }
-    }
+    .goal-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin: 4px; transition: 0.2s; width: calc(33% - 10px); }
+    .goal-btn.active { background: var(--green); color: #fff; border-color: var(--green); box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
+    .smart-text { font-size: 0.85rem; color: var(--blue); margin-top: 15px; background: rgba(52,152,219,0.1); padding: 10px; border-radius: 8px; line-height: 1.6; display: none; }
 
-    /* دکمه‌های هدف */
-    .goal-btn {
-      background: var(--bg); border: 1px solid var(--border); color: var(--text);
-      padding: 8px 12px; border-radius: 20px; cursor: pointer; font-family: inherit;
-      font-size: 0.85rem; margin: 4px; transition: 0.2s; width: calc(33% - 10px);
-    }
-    .goal-btn.active { 
-      background: var(--green); 
-      color: #fff; 
-      border-color: var(--green); 
-      box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
-    }
+    /* مسیر پیشرفت */
+    .level-path-item { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
+    .level-path-item.current { background: rgba(46,204,113,0.1); border-radius: 8px; border-bottom: none; font-weight: bold; color: var(--green); }
 
-    .smart-text {
-      font-size: 0.85rem;
-      color: var(--blue);
-      margin-top: 15px;
-      background: rgba(52,152,219,0.1);
-      padding: 10px;
-      border-radius: 8px;
-      line-height: 1.6;
-      display: none;
-    }
-
-    .guide-box { background: var(--bg-card); border: 1px solid var(--blue); border-radius: 12px; padding: 16px; font-size: 0.85rem; line-height: 1.8; }
-    .guide-box a { color: var(--blue); font-weight: bold; text-decoration: none; }
+    /* دستاوردها */
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge { background: var(--bg); border: 1px solid var(--green); color: var(--green); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .badge.locked { border-color: var(--border); color: var(--text-dim); opacity: 0.5; }
   </style>
 </head>
 <body>
@@ -132,83 +101,116 @@
 
   <main class="container">
 
-    <section class="profile-card">
-      <div class="profile-avatar">—</div>
-      <h2 class="profile-name">—</h2>
-      <p class="profile-class">—</p>
-      <div id="genreTitleDisplay" style="display:none; margin-top: 10px;">
-        <span class="genre-title-badge">🎭 <span id="genreTitleText">—</span></span>
-      </div>
-      <div class="profile-level" id="levelBox" style="margin-top: 12px;">سطح ۱</div>
-      <div class="level-progress"><div class="level-bar" id="levelBar" style="width: 0%"></div></div>
-      <p class="level-next" id="levelNext"></p>
-      <button id="changeThemeBtn" class="btn btn-blue btn-sm" style="margin-top: 12px;">🎨 تغییر سبک</button>
-    </section>
-
-    <!-- ویجت کافه (دید از پهلو) -->
-    <section>
-      <h2>فنجون امروز من</h2>
-      <div class="garden-widget" id="gardenWidget">
-        <div class="cup-container">
-          <div class="steam"></div>
-          <div class="steam"></div>
-          <div class="steam"></div>
-          <div class="cup-body">
-            <div class="cup-liquid" id="cupLiquid"></div>
+    <!-- کشوی ۱: وضعیت من (باز به صورت پیش‌فرض) -->
+    <details class="accordion" open>
+      <summary class="accordion-header">📊 وضعیت من</summary>
+      <div class="accordion-content">
+        
+        <!-- کارت پروفایل -->
+        <div class="profile-card" style="margin-bottom: 16px;">
+          <div class="profile-avatar">—</div>
+          <h2 class="profile-name">—</h2>
+          <p class="profile-class">—</p>
+          <div id="genreTitleDisplay" style="display:none; margin-top: 10px;">
+            <span class="genre-title-badge">🎭 <span id="genreTitleText">—</span></span>
           </div>
-          <div class="cup-handle"></div>
+          <div class="profile-level" id="levelBox" style="margin-top: 12px;">سطح ۱</div>
+          <div class="level-progress"><div class="level-bar" id="levelBar" style="width: 0%"></div></div>
+          <p class="level-next" id="levelNext"></p>
         </div>
-        
-        <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold;">در حال بارگذاری...</p>
-        
-        <div id="goalButtons" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; justify-content: center;"></div>
-        
-        <div id="smartText" class="smart-text"></div>
+
+        <!-- ویجت فنجون -->
+        <div class="garden-widget" style="text-align:center;">
+          <div class="cup-container">
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="cup-body">
+              <div class="cup-liquid" id="cupLiquid"></div>
+            </div>
+            <div class="cup-handle"></div>
+          </div>
+          
+          <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold;">در حال بارگذاری...</p>
+          <div id="goalButtons" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; justify-content: center;"></div>
+          <div id="smartText" class="smart-text"></div>
+        </div>
+
+        <!-- آمار و استریک -->
+        <div class="streak-box" style="text-align: center; background: var(--bg-card); border-radius: 14px; padding: 15px; margin-bottom: 16px;">
+          <div class="streak-fire" style="font-size: 1.5rem;">🔥</div>
+          <div class="streak-number" style="font-size: 2rem; font-weight: bold; color: var(--green);">۰</div>
+          <div class="streak-label" style="font-size: 0.8rem; color: var(--text-dim);">روز پیاپی مطالعه</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دقیقه مطالعه</div></div>
+          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">XP</div></div>
+          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">سؤال حل‌شده</div></div>
+          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دستاورد</div></div>
+        </div>
       </div>
-    </section>
+    </details>
 
-    <section>
-      <h2>🎭 ژانر کتاب‌خوانی من</h2>
-      <div class="class-box">
-        <div class="class-info"><span class="class-name" id="myGenresList">در حال بارگذاری...</span></div>
-        <button id="selectGenreBtn" class="btn btn-blue btn-sm">تغییر ژانر</button>
+    <!-- کشوی ۲: مسیر پیشرفت -->
+    <details class="accordion">
+      <summary class="accordion-header">🗺️ مسیر پیشرفت (سطح ۱ تا ۱۰)</summary>
+      <div class="accordion-content">
+        <div id="levelPathList" style="display:flex; flex-direction:column; gap:8px; margin-top: 10px;">
+          <!-- با جاوااسکریپت پر میشه -->
+        </div>
       </div>
-    </section>
+    </details>
 
-    <section>
-      <h2>⏳ روزشمار آزمون‌ها</h2>
-      <div id="examCountdownList" style="display: flex; flex-direction: column; gap: 10px;">
-        <p class="lock-note">در حال بارگذاری...</p>
+    <!-- کشوی ۳: دستاوردها -->
+    <details class="accordion">
+      <summary class="accordion-header">🎖 دستاوردها</summary>
+      <div class="accordion-content">
+        <div class="badges" id="badgesList" style="margin-top: 10px;">
+          <!-- با جاوااسکریپت پر میشه -->
+        </div>
       </div>
-    </section>
+    </details>
 
-    <section class="streak-box">
-      <div class="streak-fire">🔥</div>
-      <div class="streak-number">۰</div>
-      <div class="streak-label">روز پیاپی مطالعه</div>
-    </section>
-
-    <section>
-      <h2>📊 آمار من</h2>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دقیقه مطالعه</div></div>
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">XP</div></div>
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">سؤال حل‌شده</div></div>
-        <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دستاورد</div></div>
+    <!-- کشوی ۴: ژانر کتاب‌خوانی -->
+    <details class="accordion">
+      <summary class="accordion-header">🎭 ژانر کتاب‌خوانی من</summary>
+      <div class="accordion-content">
+        <div class="class-box" style="margin-top: 10px;">
+          <div class="class-info"><span class="class-name" id="myGenresList">در حال بارگذاری...</span></div>
+          <button id="selectGenreBtn" class="btn btn-blue btn-sm" style="margin-top:10px; width:100%;">تغییر ژانر</button>
+        </div>
       </div>
-    </section>
+    </details>
 
-    <section>
-      <h2>راهنما و پشتیبانی 🛠</h2>
-      <div class="guide-box">
-        <p>هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، می‌تونی به آیدی زیر پیام بدی:</p>
-        <p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 <a href="https://t.me/Aysonaizadi" target="_blank">@Aysonaizadi</a></p>
+    <!-- کشوی ۵: روزشمار آزمون‌ها -->
+    <details class="accordion">
+      <summary class="accordion-header">⏳ روزشمار آزمون‌ها</summary>
+      <div class="accordion-content">
+        <div id="examCountdownList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+          <p class="lock-note">در حال بارگذاری...</p>
+        </div>
+        <div style="margin-top: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
+          <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--text-dim);">افزودن آزمون شخصی:</p>
+          <input id="myExamSubject" type="text" class="input" placeholder="نام درس (مثلاً ریاضی)">
+          <input id="myExamDate" type="date" class="input" style="margin-top: 8px;">
+          <button id="addMyExamBtn" class="btn btn-blue btn-full" style="margin-top: 10px;">ثبت آزمون</button>
+        </div>
       </div>
-    </section>
+    </details>
 
-    <section>
-      <button id="logoutBtn" class="btn btn-dim btn-full" style="color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
-    </section>
+    <!-- کشوی ۶: تنظیمات و راهنما -->
+    <details class="accordion">
+      <summary class="accordion-header">⚙️ تنظیمات و راهنما</summary>
+      <div class="accordion-content">
+        <div class="guide-box" style="margin-top: 10px;">
+          <p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، به آیدی زیر پیام بدی:</p>
+          <p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 <a href="https://t.me/Aysonaizadi" target="_blank" style="color:var(--blue);">@Aysonaizadi</a></p>
+        </div>
+        <button id="changeThemeBtn" class="btn btn-blue btn-full" style="margin-top: 15px;">🎨 تغییر سبک سایت</button>
+        <button id="logoutBtn" class="btn btn-dim btn-full" style="margin-top: 10px; color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
+      </div>
+    </details>
 
     <!-- مودال‌ها -->
     <div id="themeModal" class="modal hidden">
@@ -230,7 +232,7 @@
 
   </main>
 
-  <!-- منوی پایین بدون رقابت -->
+  <!-- منوی پایین -->
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
@@ -250,11 +252,12 @@
     var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
     var selectedGenres = [];
     
-    // متغیرهای مربوط به فنجون
     var yesterdayMinutes = 0;
     var todayMinutes = 0;
     var currentTarget = 0;
     var selectedOption = 0;
+    var currentStreak = 0;
+    var totalQuestions = 0;
 
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -301,38 +304,42 @@
             var remainMin = Math.ceil((nextH * 60) - minutes);
             if(nextEl) nextEl.textContent = 'تا سطح بعدی: ' + remainMin + ' دقیقه';
           }
+          renderLevelPath(level);
         } catch (e) { console.error("خطای سطح:", e); }
 
         // منطق فنجون
         loadCupLogic(uid);
 
-        // آمار مطالعه
+        // آمار مطالعه، استریک و دستاوردها
         supabaseClient.from('study_sessions').select('questions, minutes, created_at').eq('user_id', uid).then(function(s) {
           var rows = s.data || [];
-          var totalQ = 0;
-          rows.forEach(function(r) { totalQ += r.questions || 0; });
-          if(stats[3]) stats[3].textContent = totalQ;
+          totalQuestions = 0;
+          rows.forEach(function(r) { totalQuestions += r.questions || 0; });
+          if(stats[3]) stats[3].textContent = totalQuestions;
 
           var days = {};
           rows.forEach(function(r) {
             var d = new Date(r.created_at);
-            days[d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate()] = true;
+            days[d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate()] = true;
           });
 
-          var streak = 0;
+          currentStreak = 0;
           var today = new Date();
+          today.setHours(0,0,0,0);
           for (var i = 0; i < 365; i++) {
             var d = new Date(today);
             d.setDate(today.getDate() - i);
-            var key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
-            if (days[key]) { streak++; }
-            else if (i === 0) { continue; }
+            var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+            if (days[key]) { currentStreak++; }
+            else if (i === 0) { continue; } // اگر امروز نخونده بود، دیروز رو چک کن
             else { break; }
           }
           
-          if(stats[2]) stats[2].textContent = streak;
+          if(stats[2]) stats[2].textContent = currentStreak;
           var streakNumberEl = document.querySelector('.streak-number');
-          if(streakNumberEl) streakNumberEl.textContent = streak;
+          if(streakNumberEl) streakNumberEl.textContent = currentStreak;
+
+          renderBadges(profile.total_minutes || 0);
         });
 
         loadExams();
@@ -340,6 +347,45 @@
       });
     });
 
+    // ===== نمایش مسیر پیشرفت =====
+    function renderLevelPath(currentLevel) {
+      var list = document.getElementById('levelPathList');
+      if (!list) return;
+      var levels = [
+        { n: 1, h: 0 }, { n: 2, h: 5 }, { n: 3, h: 15 }, { n: 4, h: 35 }, { n: 5, h: 65 },
+        { n: 6, h: 105 }, { n: 7, h: 155 }, { n: 8, h: 215 }, { n: 9, h: 285 }, { n: 10, h: 360 }
+      ];
+      list.innerHTML = '';
+      levels.forEach(function(lvl) {
+        var div = document.createElement('div');
+        div.className = 'level-path-item' + (lvl.n === currentLevel ? ' current' : '');
+        div.innerHTML = '<span>سطح ' + lvl.n + '</span><span>' + lvl.h + ' ساعت</span>';
+        list.appendChild(div);
+      });
+    }
+
+    // ===== نمایش دستاوردها =====
+    function renderBadges(totalMinutes) {
+      var list = document.getElementById('badgesList');
+      if (!list) return;
+      var badgesData = [
+        { id: 'min100', name: '۱۰۰ دقیقه', unlocked: totalMinutes >= 100 },
+        { id: 'min500', name: '۵۰۰ دقیقه', unlocked: totalMinutes >= 500 },
+        { id: 'min1000', name: '۱۰۰۰ دقیقه', unlocked: totalMinutes >= 1000 },
+        { id: 'streak7', name: '۷ روز پیاپی', unlocked: currentStreak >= 7 },
+        { id: 'streak30', name: '۳۰ روز پیاپی', unlocked: currentStreak >= 30 },
+        { id: 'q100', name: '۱۰۰ سؤال', unlocked: totalQuestions >= 100 }
+      ];
+      list.innerHTML = '';
+      badgesData.forEach(function(b) {
+        var span = document.createElement('span');
+        span.className = 'badge' + (b.unlocked ? '' : ' locked');
+        span.textContent = b.unlocked ? b.name : '؟؟؟';
+        list.appendChild(span);
+      });
+    }
+
+    // ===== تابع فنجون =====
     function loadCupLogic(uid) {
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
@@ -426,6 +472,7 @@
       }
     }
 
+    // ===== توابع آزمون و ژانر =====
     function toShamsi(dateStr) {
       if (!dateStr) return '';
       var d = new Date(dateStr);
@@ -478,6 +525,25 @@
       });
     }
     window.delExam = function(id) { supabaseClient.from('exams').delete().eq('id', id).then(loadExams); }
+
+    if(document.getElementById('addMyExamBtn')) {
+      document.getElementById('addMyExamBtn').addEventListener('click', function() {
+        var subject = document.getElementById('myExamSubject').value.trim();
+        var examDate = document.getElementById('myExamDate').value;
+        if (subject.length < 2 || !examDate) { alert('نام درس و تاریخ رو کامل بزن'); return; }
+        supabaseClient.auth.getUser().then(function(res) {
+          if (!res.data.user) return;
+          supabaseClient.from('exams').insert({
+            subject: subject, exam_date: examDate, class_name: 'شخصی', is_public: false, user_id: res.data.user.id
+          }).then(function(insRes) {
+            if (insRes.error) { alert('خطا: ' + insRes.error.message); return; }
+            document.getElementById('myExamSubject').value = '';
+            document.getElementById('myExamDate').value = '';
+            loadExams();
+          });
+        });
+      });
+    }
 
     function loadGenres(uid) {
       supabaseClient.from('user_genres').select('*').eq('user_id', uid).order('id', { ascending: true }).then(function(res) {
@@ -559,6 +625,7 @@
       });
     }
 
+    // ===== تغییر تم و خروج =====
     var changeThemeBtn = document.getElementById('changeThemeBtn');
     var themeModal = document.getElementById('themeModal');
     var closeThemeBtn = document.getElementById('closeThemeBtn');
