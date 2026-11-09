@@ -7,83 +7,57 @@
   <link rel="stylesheet" href="style.css">
   <style>
     /* ===== استایل کشوها (Accordion) ===== */
-    details.accordion {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 12px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    details.accordion[open] {
-      border-color: var(--green);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    summary.accordion-header {
-      padding: 16px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      list-style: none; /* حذف مثلث پیش‌فرض */
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--text);
-      transition: background 0.2s;
-    }
-    summary.accordion-header:hover {
-      background: rgba(255,255,255,0.02);
-    }
-    /* ساخت مثلث سفارشی */
-    summary.accordion-header::after {
-      content: '▼';
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      transition: transform 0.3s;
-    }
-    details[open] summary.accordion-header::after {
-      transform: rotate(180deg);
-      color: var(--green);
-    }
-    .accordion-content {
-      padding: 0 16px 16px 16px;
-      border-top: 1px solid var(--border);
-      animation: slideDown 0.3s ease;
-    }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
+    details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
+    summary.accordion-header:hover { background: rgba(255,255,255,0.02); }
+    summary.accordion-header::after { content: '▼'; font-size: 0.7rem; color: var(--text-dim); transition: transform 0.3s; }
+    details[open] summary.accordion-header::after { transform: rotate(180deg); color: var(--green); }
+    .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ===== استایل بقیه بخش‌ها ===== */
     .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-    .progress-bar-bg { width: 100%; height: 12px; background: var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.5s ease; }
-    .progress-stats { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; }
+    .level-progress { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-top: 12px; overflow: hidden; }
+    .level-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.6s ease; }
+    .level-next { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
     
     .genre-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 20px; color: var(--text); cursor: pointer; font-family: inherit; transition: 0.2s; margin: 4px; }
     .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
     .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
 
-    /* ویجت فنجون */
-    .cup-container { position: relative; width: 110px; height: 140px; margin: 20px auto; margin-top: 40px; }
-    .cup-body { width: 100%; height: 100%; border: 6px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
-    .cup-handle { position: absolute; right: -25px; top: 30px; width: 30px; height: 55px; border: 6px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
+    /* ===== ویجت‌های تم ===== */
+    .widget-container { text-align: center; padding: 10px; }
+    
+    /* ۱. فنجون قهوه (کافه) */
+    .cup-container { position: relative; width: 100px; height: 130px; margin: 20px auto; margin-top: 40px; }
+    .cup-body { width: 100%; height: 100%; border: 5px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
+    .cup-handle { position: absolute; right: -22px; top: 30px; width: 25px; height: 50px; border: 5px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
     .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s ease; border-radius: 0 0 45px 45px; }
-    .steam { position: absolute; top: -30px; left: 50%; width: 10px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%; filter: blur(4px); animation: rise 2s infinite ease-in; opacity: 0; }
-    .steam:nth-child(2) { left: 30%; animation-delay: 0.5s; }
-    .steam:nth-child(3) { left: 70%; animation-delay: 1s; }
-    @keyframes rise { 0% { transform: translateY(0) scale(1); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(-30px) scale(1.5); opacity: 0; } }
+    
+    /* ۲. درخت ساکورا (ساکورا) */
+    .tree-container { position: relative; width: 120px; height: 150px; margin: 20px auto; margin-top: 30px; }
+    .tree-trunk { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 60px; background: #5D4037; border-radius: 5px; }
+    .tree-canopy { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 120px; height: 100px; background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%); border-radius: 50%; clip-path: inset(100% 0 0 0); transition: clip-path 1s ease; }
+    
+    /* ۳. سیاره کهکشانی (کهکشان) */
+    .planet-container { position: relative; width: 120px; height: 120px; margin: 20px auto; margin-top: 30px; }
+    .planet-body { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #8e44ad, #2c3e50); position: relative; overflow: hidden; box-shadow: inset -15px -15px 30px rgba(0,0,0,0.6); }
+    .planet-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #00d2ff, #3a7bd5); transition: height 1s ease; mix-blend-mode: screen; opacity: 0.8; }
+    .planet-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); width: 160px; height: 40px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 2; pointer-events: none; }
+
+    /* ۴. نوار پیشرفت ساده (تم‌های رنگی) */
+    .simple-bar-container { margin: 30px auto; width: 80%; }
+    .simple-bar-bg { width: 100%; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .simple-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 1s ease; border-radius: 10px; }
 
     .goal-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin: 4px; transition: 0.2s; width: calc(33% - 10px); }
     .goal-btn.active { background: var(--green); color: #fff; border-color: var(--green); box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
     .smart-text { font-size: 0.85rem; color: var(--blue); margin-top: 15px; background: rgba(52,152,219,0.1); padding: 10px; border-radius: 8px; line-height: 1.6; display: none; }
 
-    /* مسیر پیشرفت */
     .level-path-item { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
     .level-path-item.current { background: rgba(46,204,113,0.1); border-radius: 8px; border-bottom: none; font-weight: bold; color: var(--green); }
 
-    /* دستاوردها */
     .badges { display: flex; flex-wrap: wrap; gap: 8px; }
     .badge { background: var(--bg); border: 1px solid var(--green); color: var(--green); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
     .badge.locked { border-color: var(--border); color: var(--text-dim); opacity: 0.5; }
@@ -101,12 +75,11 @@
 
   <main class="container">
 
-    <!-- کشوی ۱: وضعیت من (باز به صورت پیش‌فرض) -->
+    <!-- کشوی ۱: وضعیت من -->
     <details class="accordion" open>
       <summary class="accordion-header">📊 وضعیت من</summary>
       <div class="accordion-content">
         
-        <!-- کارت پروفایل -->
         <div class="profile-card" style="margin-bottom: 16px;">
           <div class="profile-avatar">—</div>
           <h2 class="profile-name">—</h2>
@@ -119,25 +92,15 @@
           <p class="level-next" id="levelNext"></p>
         </div>
 
-        <!-- ویجت فنجون -->
-        <div class="garden-widget" style="text-align:center;">
-          <div class="cup-container">
-            <div class="steam"></div>
-            <div class="steam"></div>
-            <div class="steam"></div>
-            <div class="cup-body">
-              <div class="cup-liquid" id="cupLiquid"></div>
-            </div>
-            <div class="cup-handle"></div>
-          </div>
-          
-          <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold;">در حال بارگذاری...</p>
-          <div id="goalButtons" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; justify-content: center;"></div>
-          <div id="smartText" class="smart-text"></div>
+        <div class="widget-container" id="themeWidget">
+          <!-- اینجا با جاوااسکریپت بر اساس تم پر می‌شه -->
         </div>
+        
+        <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold; text-align: center;">در حال بارگذاری...</p>
+        <div id="goalButtons" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; justify-content: center;"></div>
+        <div id="smartText" class="smart-text"></div>
 
-        <!-- آمار و استریک -->
-        <div class="streak-box" style="text-align: center; background: var(--bg-card); border-radius: 14px; padding: 15px; margin-bottom: 16px;">
+        <div class="streak-box" style="text-align: center; background: var(--bg-card); border-radius: 14px; padding: 15px; margin: 16px 0;">
           <div class="streak-fire" style="font-size: 1.5rem;">🔥</div>
           <div class="streak-number" style="font-size: 2rem; font-weight: bold; color: var(--green);">۰</div>
           <div class="streak-label" style="font-size: 0.8rem; color: var(--text-dim);">روز پیاپی مطالعه</div>
@@ -152,27 +115,20 @@
       </div>
     </details>
 
-    <!-- کشوی ۲: مسیر پیشرفت -->
     <details class="accordion">
       <summary class="accordion-header">🗺️ مسیر پیشرفت (سطح ۱ تا ۱۰)</summary>
       <div class="accordion-content">
-        <div id="levelPathList" style="display:flex; flex-direction:column; gap:8px; margin-top: 10px;">
-          <!-- با جاوااسکریپت پر میشه -->
-        </div>
+        <div id="levelPathList" style="display:flex; flex-direction:column; gap:8px; margin-top: 10px;"></div>
       </div>
     </details>
 
-    <!-- کشوی ۳: دستاوردها -->
     <details class="accordion">
       <summary class="accordion-header">🎖 دستاوردها</summary>
       <div class="accordion-content">
-        <div class="badges" id="badgesList" style="margin-top: 10px;">
-          <!-- با جاوااسکریپت پر میشه -->
-        </div>
+        <div class="badges" id="badgesList" style="margin-top: 10px;"></div>
       </div>
     </details>
 
-    <!-- کشوی ۴: ژانر کتاب‌خوانی -->
     <details class="accordion">
       <summary class="accordion-header">🎭 ژانر کتاب‌خوانی من</summary>
       <div class="accordion-content">
@@ -183,7 +139,6 @@
       </div>
     </details>
 
-    <!-- کشوی ۵: روزشمار آزمون‌ها -->
     <details class="accordion">
       <summary class="accordion-header">⏳ روزشمار آزمون‌ها</summary>
       <div class="accordion-content">
@@ -199,7 +154,6 @@
       </div>
     </details>
 
-    <!-- کشوی ۶: تنظیمات و راهنما -->
     <details class="accordion">
       <summary class="accordion-header">⚙️ تنظیمات و راهنما</summary>
       <div class="accordion-content">
@@ -232,7 +186,6 @@
 
   </main>
 
-  <!-- منوی پایین -->
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
@@ -269,7 +222,6 @@
         userClassName = profile.class_name;
         var titleTheme = profile.level_theme || 'پیش فرض';
 
-        // آپدیت کارت پروفایل
         var nameEl = document.querySelector('.profile-name'); if(nameEl) nameEl.textContent = profile.username;
         var classEl = document.querySelector('.profile-class'); if(classEl) classEl.textContent = profile.class_name;
         var pAvatarEl = document.querySelector('.profile-avatar'); if(pAvatarEl) pAvatarEl.textContent = profile.username.charAt(0);
@@ -280,7 +232,6 @@
         if(stats[0]) stats[0].textContent = profile.total_minutes || 0;
         if(stats[1]) stats[1].textContent = profile.xp || 0;
 
-        // سطح
         try {
           var minutes = profile.total_minutes || 0;
           var level = getLevel(minutes);
@@ -307,10 +258,8 @@
           renderLevelPath(level);
         } catch (e) { console.error("خطای سطح:", e); }
 
-        // منطق فنجون
         loadCupLogic(uid);
 
-        // آمار مطالعه، استریک و دستاوردها
         supabaseClient.from('study_sessions').select('questions, minutes, created_at').eq('user_id', uid).then(function(s) {
           var rows = s.data || [];
           totalQuestions = 0;
@@ -331,7 +280,7 @@
             d.setDate(today.getDate() - i);
             var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
             if (days[key]) { currentStreak++; }
-            else if (i === 0) { continue; } // اگر امروز نخونده بود، دیروز رو چک کن
+            else if (i === 0) { continue; }
             else { break; }
           }
           
@@ -347,14 +296,10 @@
       });
     });
 
-    // ===== نمایش مسیر پیشرفت =====
     function renderLevelPath(currentLevel) {
       var list = document.getElementById('levelPathList');
       if (!list) return;
-      var levels = [
-        { n: 1, h: 0 }, { n: 2, h: 5 }, { n: 3, h: 15 }, { n: 4, h: 35 }, { n: 5, h: 65 },
-        { n: 6, h: 105 }, { n: 7, h: 155 }, { n: 8, h: 215 }, { n: 9, h: 285 }, { n: 10, h: 360 }
-      ];
+      var levels = [{ n: 1, h: 0 }, { n: 2, h: 5 }, { n: 3, h: 15 }, { n: 4, h: 35 }, { n: 5, h: 65 }, { n: 6, h: 105 }, { n: 7, h: 155 }, { n: 8, h: 215 }, { n: 9, h: 285 }, { n: 10, h: 360 }];
       list.innerHTML = '';
       levels.forEach(function(lvl) {
         var div = document.createElement('div');
@@ -364,7 +309,6 @@
       });
     }
 
-    // ===== نمایش دستاوردها =====
     function renderBadges(totalMinutes) {
       var list = document.getElementById('badgesList');
       if (!list) return;
@@ -385,17 +329,20 @@
       });
     }
 
-    // ===== تابع فنجون =====
+    // ===== تابع فنجون/درخت/سیاره =====
     function loadCupLogic(uid) {
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
-      
       var yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
       var yesterdayStr = yesterday.getFullYear() + '-' + (yesterday.getMonth()+1) + '-' + yesterday.getDate();
 
       yesterdayMinutes = 0;
       todayMinutes = 0;
+
+      // پیدا کردن تم فعلی
+      var activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      renderThemeWidget(activeTheme); // ساخت ویجت بر اساس تم
 
       supabaseClient.from('study_sessions').select('minutes, created_at').eq('user_id', uid).then(function(res) {
         var rows = res.data || [];
@@ -420,7 +367,6 @@
         ];
 
         var savedChoice = localStorage.getItem('cup_choice_' + todayStr);
-        
         if (savedChoice) {
           selectedOption = parseInt(savedChoice);
           currentTarget = buttonsData.find(b => b.id === selectedOption).val;
@@ -437,9 +383,9 @@
             selectedOption = btnData.id;
             currentTarget = btnData.val;
             localStorage.setItem('cup_choice_' + todayStr, selectedOption);
-            document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            updateCupVisuals();
+            
+            // هدایت به صفحه مطالعه با هدف انتخاب شده
+            window.location.href = 'study.html?goal=' + currentTarget;
           };
           btnContainer.appendChild(btn);
         });
@@ -448,16 +394,59 @@
       });
     }
 
+    function renderThemeWidget(theme) {
+      var container = document.getElementById('themeWidget');
+      if (!container) return;
+
+      if (theme === 'cafe') {
+        container.innerHTML = `
+          <div class="cup-container">
+            <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
+            <div class="cup-handle"></div>
+          </div>`;
+      } else if (theme === 'sakura') {
+        container.innerHTML = `
+          <div class="tree-container">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy" id="sakuraCanopy"></div>
+          </div>`;
+      } else if (theme === 'galaxy') {
+        container.innerHTML = `
+          <div class="planet-container">
+            <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
+            <div class="planet-ring"></div>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div class="simple-bar-container">
+            <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
+          </div>`;
+      }
+    }
+
     function updateCupVisuals() {
       var statusEl = document.getElementById('cupStatus');
-      var liquidEl = document.getElementById('cupLiquid');
       var smartTextEl = document.getElementById('smartText');
-
       var percent = Math.min(Math.round((todayMinutes / currentTarget) * 100), 100);
-      liquidEl.style.height = percent + '%';
+
+      // آپدیت گرافیک بر اساس تم
+      var activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      if (activeTheme === 'cafe') {
+        var liquidEl = document.getElementById('cupLiquid');
+        if (liquidEl) liquidEl.style.height = percent + '%';
+      } else if (activeTheme === 'sakura') {
+        var canopyEl = document.getElementById('sakuraCanopy');
+        if (canopyEl) canopyEl.style.clipPath = 'inset(' + (100 - percent) + '% 0 0 0)';
+      } else if (activeTheme === 'galaxy') {
+        var galaxyEl = document.getElementById('galaxyLiquid');
+        if (galaxyEl) galaxyEl.style.height = percent + '%';
+      } else {
+        var barEl = document.getElementById('simpleBarFill');
+        if (barEl) barEl.style.width = percent + '%';
+      }
       
       if (percent >= 100) {
-        statusEl.textContent = '🎉 آفرین! فنجون امروزت پر شد.';
+        statusEl.textContent = '🎉 آفرین! هدف امروزت پر شد.';
         statusEl.style.color = 'var(--green)';
       } else {
         statusEl.textContent = todayMinutes + ' از ' + currentTarget + ' دقیقه';
@@ -472,7 +461,7 @@
       }
     }
 
-    // ===== توابع آزمون و ژانر =====
+    // ===== بقیه توابع =====
     function toShamsi(dateStr) {
       if (!dateStr) return '';
       var d = new Date(dateStr);
@@ -482,40 +471,29 @@
     function loadExams() {
       var listEl = document.getElementById('examCountdownList');
       if (!listEl) return;
-
       supabaseClient.auth.getUser().then(function(res) {
         if (!res.data.user) return;
         var uid = res.data.user.id;
-
         supabaseClient.from('exams').select('*').or('is_public.eq.true,user_id.eq.' + uid).order('exam_date', { ascending: true }).then(function(examRes) {
           var rows = examRes.data || [];
           var today = new Date();
           today.setHours(0, 0, 0, 0);
-
           var upcoming = rows.filter(function(e) {
             if (new Date(e.exam_date) < today) return false;
             if (e.is_public && e.class_name !== 'همه' && userClassName.indexOf(e.class_name) === -1) return false;
             return true;
           });
-
-          if (upcoming.length === 0) {
-            listEl.innerHTML = '<p class="lock-note">هیچ آزمونی پیش رو نداری 😎</p>';
-            return;
-          }
-
+          if (upcoming.length === 0) { listEl.innerHTML = '<p class="lock-note">هیچ آزمونی پیش رو نداری 😎</p>'; return; }
           listEl.innerHTML = '';
           upcoming.forEach(function(exam) {
             var examDate = new Date(exam.exam_date);
             examDate.setHours(0, 0, 0, 0);
             var diffDays = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
-
             var div = document.createElement('div');
             div.className = 'admin-row';
             div.style.borderColor = diffDays <= 3 ? '#e74c3c' : 'var(--border)';
-
             var label = exam.is_public ? '🏫 آزمون مدرسه' : '📝 آزمون شخصی';
             var countdown = diffDays === 0 ? 'امروز!' : (diffDays === 1 ? 'فردا' : diffDays + ' روز مونده');
-
             div.innerHTML = '<div><strong>' + exam.subject + '</strong><span class="admin-sub">' + label + ' | ' + toShamsi(exam.exam_date) + '</span></div>' +
               '<div class="admin-actions"><span style="color:' + (diffDays <= 3 ? '#e74c3c' : 'var(--green)') + ';font-weight:700;font-size:0.85rem;">⏳ ' + countdown + '</span>' +
               (!exam.is_public ? '<button class="btn btn-dim btn-sm" onclick="delExam(' + exam.id + ')">حذف</button>' : '') + '</div>';
@@ -533,9 +511,7 @@
         if (subject.length < 2 || !examDate) { alert('نام درس و تاریخ رو کامل بزن'); return; }
         supabaseClient.auth.getUser().then(function(res) {
           if (!res.data.user) return;
-          supabaseClient.from('exams').insert({
-            subject: subject, exam_date: examDate, class_name: 'شخصی', is_public: false, user_id: res.data.user.id
-          }).then(function(insRes) {
+          supabaseClient.from('exams').insert({ subject: subject, exam_date: examDate, class_name: 'شخصی', is_public: false, user_id: res.data.user.id }).then(function(insRes) {
             if (insRes.error) { alert('خطا: ' + insRes.error.message); return; }
             document.getElementById('myExamSubject').value = '';
             document.getElementById('myExamDate').value = '';
@@ -557,7 +533,6 @@
       var display = document.getElementById('genreTitleDisplay');
       var text = document.getElementById('genreTitleText');
       var list = document.getElementById('myGenresList');
-
       if (selectedGenres.length > 0) {
         if(display) display.style.display = 'inline-block';
         if(text) text.textContent = title;
@@ -586,12 +561,8 @@
     var genreOptions = document.getElementById('genreOptions');
 
     if (selectGenreBtn) {
-      selectGenreBtn.addEventListener('click', function() {
-        if(genreModal) genreModal.classList.remove('hidden');
-        renderGenreOptions();
-      });
+      selectGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.remove('hidden'); renderGenreOptions(); });
       if(closeGenreBtn) closeGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.add('hidden'); });
-
       if(saveGenreBtn) saveGenreBtn.addEventListener('click', function() {
         supabaseClient.auth.getUser().then(function(res) {
           if (!res.data.user) return;
@@ -599,10 +570,7 @@
           supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
             if (selectedGenres.length === 0) { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); return; }
             var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
-            supabaseClient.from('user_genres').insert(inserts).then(function() {
-              if(genreModal) genreModal.classList.add('hidden');
-              updateGenreUI();
-            });
+            supabaseClient.from('user_genres').insert(inserts).then(function() { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); });
           });
         });
       });
@@ -625,7 +593,6 @@
       });
     }
 
-    // ===== تغییر تم و خروج =====
     var changeThemeBtn = document.getElementById('changeThemeBtn');
     var themeModal = document.getElementById('themeModal');
     var closeThemeBtn = document.getElementById('closeThemeBtn');
