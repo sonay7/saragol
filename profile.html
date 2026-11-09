@@ -6,7 +6,7 @@
   <title>پروفایل | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* ===== استایل کشوها (Accordion) ===== */
+    /* استایل کشوها */
     details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
     details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
@@ -16,7 +16,7 @@
     .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ===== استایل بقیه بخش‌ها ===== */
+    /* بخش‌های دیگر */
     .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
     .level-progress { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-top: 12px; overflow: hidden; }
     .level-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.6s ease; }
@@ -26,7 +26,7 @@
     .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
     .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
 
-    /* ===== ویجت‌های تم ===== */
+    /* ویجت‌های تم */
     .widget-container { text-align: center; padding: 10px; }
     
     /* ۱. فنجون قهوه (کافه) */
@@ -47,7 +47,7 @@
     .planet-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); width: 160px; height: 40px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 2; pointer-events: none; }
 
     /* ۴. نوار پیشرفت ساده (تم‌های رنگی) */
-    .simple-bar-container { margin: 30px auto; width: 80%; }
+    .simple-bar-container { margin: 40px auto; width: 80%; }
     .simple-bar-bg { width: 100%; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
     .simple-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 1s ease; border-radius: 10px; }
 
@@ -75,7 +75,6 @@
 
   <main class="container">
 
-    <!-- کشوی ۱: وضعیت من -->
     <details class="accordion" open>
       <summary class="accordion-header">📊 وضعیت من</summary>
       <div class="accordion-content">
@@ -93,7 +92,7 @@
         </div>
 
         <div class="widget-container" id="themeWidget">
-          <!-- اینجا با جاوااسکریپت بر اساس تم پر می‌شه -->
+          <!-- ویجت با جاوااسکریپت لود میشه -->
         </div>
         
         <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold; text-align: center;">در حال بارگذاری...</p>
@@ -201,6 +200,10 @@
   <script src="themes.js?v=2"></script>
   
   <script>
+    // ===== این بخش رو بیرون از دیتابیس آوردیم تا سریع اجرا بشه =====
+    var currentThemeColor = document.documentElement.getAttribute('data-theme') || 'dark';
+    renderThemeWidget(currentThemeColor);
+
     var userClassName = '';
     var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
     var selectedGenres = [];
@@ -211,6 +214,7 @@
     var selectedOption = 0;
     var currentStreak = 0;
     var totalQuestions = 0;
+    var hasMorningStudy = false;
 
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -263,7 +267,12 @@
         supabaseClient.from('study_sessions').select('questions, minutes, created_at').eq('user_id', uid).then(function(s) {
           var rows = s.data || [];
           totalQuestions = 0;
-          rows.forEach(function(r) { totalQuestions += r.questions || 0; });
+          
+          rows.forEach(function(r) {
+            totalQuestions += r.questions || 0;
+            var h = new Date(r.created_at).getHours();
+            if (h >= 4 && h < 8) hasMorningStudy = true;
+          });
           if(stats[3]) stats[3].textContent = totalQuestions;
 
           var days = {};
@@ -318,7 +327,16 @@
         { id: 'min1000', name: '۱۰۰۰ دقیقه', unlocked: totalMinutes >= 1000 },
         { id: 'streak7', name: '۷ روز پیاپی', unlocked: currentStreak >= 7 },
         { id: 'streak30', name: '۳۰ روز پیاپی', unlocked: currentStreak >= 30 },
-        { id: 'q100', name: '۱۰۰ سؤال', unlocked: totalQuestions >= 100 }
+        { id: 'q100', name: '۱۰۰ سؤال', unlocked: totalQuestions >= 100 },
+        { id: 'q500', name: '۵۰۰ سؤال', unlocked: totalQuestions >= 500 },
+        { id: 'morning', name: 'مطالعه صبحگاهی', unlocked: hasMorningStudy },
+        { id: 'league1', name: 'برنده لیگ هفته', unlocked: false },
+        { id: 'class1', name: 'رتبه اول کلاس', unlocked: false },
+        { id: 'top10', name: '۳ هفته تاپ ۱۰', unlocked: false },
+        { id: 'book1', name: 'اولین کتاب', unlocked: false },
+        { id: 'book5', name: '۵ کتاب', unlocked: false },
+        { id: 'bookreview', name: 'نقد کتاب', unlocked: false },
+        { id: 'firstmsg', name: 'اولین پیام', unlocked: false }
       ];
       list.innerHTML = '';
       badgesData.forEach(function(b) {
@@ -329,7 +347,36 @@
       });
     }
 
-    // ===== تابع فنجون/درخت/سیاره =====
+    function renderThemeWidget(theme) {
+      var container = document.getElementById('themeWidget');
+      if (!container) return;
+
+      if (theme === 'cafe') {
+        container.innerHTML = `
+          <div class="cup-container">
+            <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
+            <div class="cup-handle"></div>
+          </div>`;
+      } else if (theme === 'sakura') {
+        container.innerHTML = `
+          <div class="tree-container">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy" id="sakuraCanopy"></div>
+          </div>`;
+      } else if (theme === 'galaxy') {
+        container.innerHTML = `
+          <div class="planet-container">
+            <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
+            <div class="planet-ring"></div>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div class="simple-bar-container">
+            <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
+          </div>`;
+      }
+    }
+
     function loadCupLogic(uid) {
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
@@ -339,10 +386,6 @@
 
       yesterdayMinutes = 0;
       todayMinutes = 0;
-
-      // پیدا کردن تم فعلی
-      var activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-      renderThemeWidget(activeTheme); // ساخت ویجت بر اساس تم
 
       supabaseClient.from('study_sessions').select('minutes, created_at').eq('user_id', uid).then(function(res) {
         var rows = res.data || [];
@@ -384,7 +427,7 @@
             currentTarget = btnData.val;
             localStorage.setItem('cup_choice_' + todayStr, selectedOption);
             
-            // هدایت به صفحه مطالعه با هدف انتخاب شده
+            // هدایت به صفحه مطالعه
             window.location.href = 'study.html?goal=' + currentTarget;
           };
           btnContainer.appendChild(btn);
@@ -394,50 +437,18 @@
       });
     }
 
-    function renderThemeWidget(theme) {
-      var container = document.getElementById('themeWidget');
-      if (!container) return;
-
-      if (theme === 'cafe') {
-        container.innerHTML = `
-          <div class="cup-container">
-            <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
-            <div class="cup-handle"></div>
-          </div>`;
-      } else if (theme === 'sakura') {
-        container.innerHTML = `
-          <div class="tree-container">
-            <div class="tree-trunk"></div>
-            <div class="tree-canopy" id="sakuraCanopy"></div>
-          </div>`;
-      } else if (theme === 'galaxy') {
-        container.innerHTML = `
-          <div class="planet-container">
-            <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
-            <div class="planet-ring"></div>
-          </div>`;
-      } else {
-        container.innerHTML = `
-          <div class="simple-bar-container">
-            <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
-          </div>`;
-      }
-    }
-
     function updateCupVisuals() {
       var statusEl = document.getElementById('cupStatus');
       var smartTextEl = document.getElementById('smartText');
       var percent = Math.min(Math.round((todayMinutes / currentTarget) * 100), 100);
 
-      // آپدیت گرافیک بر اساس تم
-      var activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-      if (activeTheme === 'cafe') {
+      if (currentThemeColor === 'cafe') {
         var liquidEl = document.getElementById('cupLiquid');
         if (liquidEl) liquidEl.style.height = percent + '%';
-      } else if (activeTheme === 'sakura') {
+      } else if (currentThemeColor === 'sakura') {
         var canopyEl = document.getElementById('sakuraCanopy');
         if (canopyEl) canopyEl.style.clipPath = 'inset(' + (100 - percent) + '% 0 0 0)';
-      } else if (activeTheme === 'galaxy') {
+      } else if (currentThemeColor === 'galaxy') {
         var galaxyEl = document.getElementById('galaxyLiquid');
         if (galaxyEl) galaxyEl.style.height = percent + '%';
       } else {
@@ -461,7 +472,6 @@
       }
     }
 
-    // ===== بقیه توابع =====
     function toShamsi(dateStr) {
       if (!dateStr) return '';
       var d = new Date(dateStr);
