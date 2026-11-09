@@ -12,43 +12,22 @@ function saveStudySession(subject, minutes, questions) {
       return supabaseClient.from('profiles').select('total_minutes, xp').eq('id', userId).single().then(function(p) {
         var newMinutes = (p.data.total_minutes || 0) + minutes;
         var newXp = (p.data.xp || 0) + minutes * 2;
-        
-        // آپدیت باغ/کافه هم انجام بشه
-        supabaseClient.from('user_gardens').select('*').eq('user_id', userId).single().then(function(gRes) {
-          if (gRes.data) {
-            var todayStr = new Date().toISOString().split('T')[0];
-            var minsToday = gRes.data.last_active_date === todayStr ? (gRes.data.minutes_today || 0) : 0;
-            minsToday += minutes;
-            var coins = gRes.data.coins || 0;
-            var goal = gRes.data.daily_goal || 30;
-            
-            // اگه هدف رو رد کرد، سکه بده
-            if (minsToday >= goal && (gRes.data.minutes_today < goal)) {
-              coins += 1;
-            }
-            
-            supabaseClient.from('user_gardens').update({
-              total_minutes: newMinutes,
-              xp: newXp,
-              minutes_today: minsToday,
-              coins: coins,
-              last_active_date: todayStr
-            }).eq('user_id', userId); // Wait, update in profiles or gardens? Gardens has no total_minutes in db, but let's assume we update profiles.
-          }
-        });
-
         return supabaseClient.from('profiles').update({ total_minutes: newMinutes, xp: newXp }).eq('id', userId);
       });
     });
   });
 }
 
-// ===== تب‌ها و تایمر =====
+// ===== تایمر =====
 if (document.getElementById('timer')) {
   var mode = 'pomodoro';
   var totalSeconds = 25 * 60;
   var remaining = totalSeconds;
+  
   var timerInterval = null;
+  var endTime = null;
+  var freeStartTime = null;
+  var freeElapsedBase = 0;
   var elapsedSeconds = 0;
 
   var timerEl = document.getElementById('timer');
@@ -72,6 +51,15 @@ if (document.getElementById('timer')) {
   var timerBox = document.getElementById('timerBox');
   var finishSection = document.getElementById('finishSection');
 
+  // بررسی وجود هدف در URL (از پروفایل اومده)
+  var urlParams = new URLSearchParams(window.location.search);
+  var goalParam = urlParams.get('goal');
+  if (goalParam) {
+    totalSeconds = parseInt(goalParam) * 60;
+    remaining = totalSeconds;
+    setTimeout(function() { startTimer(); }, 500); // خودکار شروع کن
+  }
+
   function toPersian(num) {
     return String(num).replace(/\d/g, function(d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
   }
@@ -92,32 +80,47 @@ if (document.getElementById('timer')) {
 
   function startTimer() {
     if (timerInterval) return;
+    
+    if (mode === 'pomodoro') {
+      endTime = Date.now() + (remaining * 1000);
+    } else {
+      freeStartTime = Date.now();
+    }
+
     timerInterval = setInterval(function() {
       if (mode === 'pomodoro') {
-        if (remaining > 0) {
-          remaining--;
-          updateTimer();
-        } else {
+        var now = Date.now();
+        remaining = Math.max(0, Math.round((endTime - now) / 1000));
+        updateTimer();
+        if (remaining <= 0) {
           clearInterval(timerInterval);
           timerInterval = null;
           alert('زمان تموم شد! 🎉');
         }
       } else {
-        elapsedSeconds++;
+        var now = Date.now();
+        elapsedSeconds = freeElapsedBase + Math.floor((now - freeStartTime) / 1000);
         updateTimer();
       }
     }, 1000);
   }
 
   function pauseTimer() {
+    if (mode === 'free' && freeStartTime) {
+      freeElapsedBase = elapsedSeconds;
+    }
     clearInterval(timerInterval);
     timerInterval = null;
   }
 
   function resetTimer() {
     pauseTimer();
-    if (mode === 'pomodoro') remaining = totalSeconds;
-    else elapsedSeconds = 0;
+    if (mode === 'pomodoro') {
+      remaining = totalSeconds;
+    } else {
+      elapsedSeconds = 0;
+      freeElapsedBase = 0;
+    }
     updateTimer();
   }
 
@@ -125,14 +128,13 @@ if (document.getElementById('timer')) {
   pauseBtn.addEventListener('click', pauseTimer);
   resetBtn.addEventListener('click', resetTimer);
 
-  // ===== سوییچ تب‌ها =====
+  // سوییچ تب‌ها
   function hideAllTabs() {
     pomodoroSection.classList.add('hidden');
     freeSection.classList.add('hidden');
     panicSection.classList.add('hidden');
     timerBox.classList.add('hidden');
     finishSection.classList.add('hidden');
-    
     tabPomodoro.classList.remove('active');
     tabFree.classList.remove('active');
     tabPanic.classList.remove('active');
@@ -145,7 +147,6 @@ if (document.getElementById('timer')) {
     pomodoroSection.classList.remove('hidden');
     timerBox.classList.remove('hidden');
     finishSection.classList.remove('hidden');
-    pauseTimer();
     resetTimer();
   });
 
@@ -156,7 +157,6 @@ if (document.getElementById('timer')) {
     freeSection.classList.remove('hidden');
     timerBox.classList.remove('hidden');
     finishSection.classList.remove('hidden');
-    pauseTimer();
     resetTimer();
   });
 
@@ -166,10 +166,10 @@ if (document.getElementById('timer')) {
     tabPanic.classList.add('active');
     panicSection.classList.remove('hidden');
     pauseTimer();
-    loadPanicNotes(); // لود کردن نکات
+    loadPanicNotes();
   });
 
-  // ===== زمان‌های آماده و دلخواه =====
+  // زمان‌های آماده
   document.querySelectorAll('.preset').forEach(function(btn) {
     btn.addEventListener('click', function() {
       totalSeconds = parseInt(btn.getAttribute('data-min')) * 60;
@@ -184,7 +184,7 @@ if (document.getElementById('timer')) {
     resetTimer();
   });
 
-  // ===== پایان جلسه =====
+  // پایان جلسه
   finishBtn.addEventListener('click', function() {
     pauseTimer();
     var studiedMinutes, subject;
@@ -196,7 +196,7 @@ if (document.getElementById('timer')) {
       studiedMinutes = Math.floor(elapsedSeconds / 60);
       subject = freeSubjectEl.value;
     } else {
-      return; // توی حالت panic ثبت نمی‌شه
+      return;
     }
 
     var questions = questionsEl.value || '۰';
@@ -211,7 +211,7 @@ if (document.getElementById('timer')) {
 
     setTimeout(function() {
       if (mode === 'pomodoro') remaining = totalSeconds;
-      else elapsedSeconds = 0;
+      else { elapsedSeconds = 0; freeElapsedBase = 0; }
       updateTimer();
     }, 2000);
   });
@@ -219,7 +219,7 @@ if (document.getElementById('timer')) {
   updateTimer();
 }
 
-// ===== سیستم شب امتحان (Panic Mode) =====
+// ===== سیستم شب امتحان =====
 function loadPanicNotes() {
   var listEl = document.getElementById('panicList');
   if (!listEl) return;
@@ -234,17 +234,14 @@ function loadPanicNotes() {
 
     supabaseClient.auth.getUser().then(function(userRes) {
       var currentUserId = userRes.data.user ? userRes.data.user.id : null;
-
       rows.forEach(function(note) {
         var div = document.createElement('div');
         div.className = 'panic-note-card';
         var delBtnHtml = note.user_id === currentUserId ? '<button class="del-panic-btn" onclick="delPanicNote(' + note.id + ')">حذف</button>' : '';
-        
         div.innerHTML = delBtnHtml +
           '<span class="panic-subject">' + note.subject + '</span>' +
           '<p class="panic-text">' + note.note + '</p>' +
           '<p style="font-size:0.7rem; color:var(--text-dim); margin-top:8px;">نویسنده: ' + note.profiles.username + '</p>';
-        
         listEl.appendChild(div);
       });
     });
@@ -260,9 +257,7 @@ if (document.getElementById('addPanicBtn')) {
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) return;
       supabaseClient.from('panic_notes').insert({
-        user_id: res.data.user.id,
-        subject: subject,
-        note: note
+        user_id: res.data.user.id, subject: subject, note: note
       }).then(function(insRes) {
         if (insRes.error) { alert('خطا: ' + insRes.error.message); return; }
         document.getElementById('panicSubject').value = '';
