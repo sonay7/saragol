@@ -9,8 +9,22 @@
     .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 10px; }
     .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
     .quick-start-btn:active { transform: scale(0.98); }
+
+    /* استایل لیگ بزرگ */
+    .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; }
+    .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
+    .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* استایل پیام خوش‌آمدگویی */
+    /* استایل انجمن‌ها */
+    .forum-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (max-width: 380px) { .forum-list { grid-template-columns: repeat(2, 1fr); } }
+    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
+    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); }
+    .forum-icon { font-size: 2rem; }
+    .forum-name { font-size: 0.85rem; font-weight: 600; }
+
+    /* مودال خوش‌آمدگویی */
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .welcome-content h2 { color: var(--green); margin-bottom: 16px; font-size: 1.3rem; }
@@ -24,8 +38,8 @@
   <header class="header">
     <div class="logo">ساراگل</div>
     <div class="user-area">
-      <span class="user-name">علی</span>
-      <div class="avatar">ع</div>
+      <span class="user-name">—</span>
+      <div class="avatar">—</div>
     </div>
   </header>
 
@@ -39,34 +53,55 @@
       <h2>📌 تابلو اعلانات</h2>
       <div class="notice">
         <span class="notice-badge">فوری</span>
-        به سایت جدید ساراگل خوش آمدید!
+        به سایت ساراگل خوش آمدید!
       </div>
     </section>
 
-    <section class="quick-league">
-      <h2>🏆 لیگ این هفته</h2>
-      <div class="league-row"><span>🥇 هشتم ۲</span><span>۱۲۰۰ دقیقه</span></div>
-      <div class="league-row"><span>🥈 هفتم ۱</span><span>۹۸۰ دقیقه</span></div>
-      <div class="league-row"><span>🥉 نهم ۱</span><span>۷۵۰ دقیقه</span></div>
-      <a href="leaderboard.html" class="see-all">دیدن لیست کامل →</a>
+    <!-- لیگ (بزرگ‌تر شده) -->
+    <section class="big-league-card">
+      <h2>
+        <span>🏆 لیگ این هفته</span>
+        <a href="leaderboard.html" class="see-all">مشاهده لیگ کامل ←</a>
+      </h2>
+      <div class="league-row" style="background: linear-gradient(90deg, rgba(46,204,113,0.1), transparent);">
+        <span>🥇 هشتم ۲</span>
+        <span style="font-weight:bold; color:var(--green);">۱۲۰۰ دقیقه</span>
+      </div>
+      <div class="league-row">
+        <span>🥈 هفتم ۱</span>
+        <span>۹۸۰ دقیقه</span>
+      </div>
+      <div class="league-row">
+        <span>🥉 نهم ۱</span>
+        <span>۷۵۰ دقیقه</span>
+      </div>
     </section>
 
+    <!-- انجمن‌ها -->
     <section class="forums">
       <h2>💬 انجمن‌ها</h2>
       <div class="forum-list">
         <a href="books.html" class="forum-card">
           <span class="forum-icon">📚</span>
-          <span class="forum-name">انجمن کتاب‌خوانی</span>
+          <span class="forum-name">کتاب‌خوانی</span>
+        </a>
+        <a href="#" class="forum-card">
+          <span class="forum-icon">🎨</span>
+          <span class="forum-name">هنری</span>
+        </a>
+        <a href="#" class="forum-card">
+          <span class="forum-icon">🎬</span>
+          <span class="forum-name">سینما و سریال</span>
         </a>
       </div>
     </section>
 
   </main>
 
+  <!-- منوی پایین بدون رقابت -->
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item active">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
     <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
     <a href="admin.html" class="nav-item">🛠 ادمین</a>
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
@@ -79,8 +114,8 @@
       <p>اینجا یه مدرسه‌ی دیجیتاله که می‌تونی هم درس بخونی، هم با بچه‌ها رقابت کنی، هم رفیق پیدا کنی!</p>
       <ul>
         <li>⏱ <strong>مطالعه:</strong> تایمر بزن و کلاس‌ت رو ببر بالای جدول!</li>
-        <li>🌸 <strong>همراه روزانه:</strong> توی پروفایل یه کافه یا باغ داری که با درس خوندن بزرگ می‌شه!</li>
-        <li>📚 <strong>کتاب‌خوانی:</strong> کتاب‌های که خوندی رو به قفسه‌ت اضافه کن.</li>
+        <li>🌸 <strong>همراه روزانه:</strong> توی پروفایل یه فنجون یا باغ داری که با درس خوندن بزرگ می‌شه!</li>
+        <li>📚 <strong>کتاب‌خوانی:</strong> کتاب‌هایی که خوندی رو به قفسه‌ت اضافه کن.</li>
         <li>💬 <strong>مشاوره:</strong> هر سوالی داشتی، می‌تونی ناشناس با مشاور حرف بزنی.</li>
       </ul>
       <button id="closeWelcomeBtn" class="btn btn-green btn-full">متوجه شدم، بریم!</button>
@@ -94,12 +129,10 @@
   <script src="script.js"></script>
   
   <script>
-    // نمایش پیام خوش‌آمدگویی فقط بار اول
     document.addEventListener('DOMContentLoaded', function() {
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
       }
-      
       document.getElementById('closeWelcomeBtn').addEventListener('click', function() {
         document.getElementById('welcomeModal').classList.add('hidden');
         localStorage.setItem('hasSeenWelcome', 'true');
