@@ -36,10 +36,7 @@ supabaseClient.auth.getUser().then(function(res) {
       document.querySelectorAll('a[href="admin.html"]').forEach(function(el) { el.style.display = 'none'; });
     }
 
-    // 👇 اینجا تغییر کرد 👇
-    // مخفی کردن کتاب‌خوانی برای غیر عضوها، فقط توی نوار پایین (نه کارت صفحه اصلی)
-    if (!profile.is_book_club_member) {
-      document.querySelectorAll('.nav-item[href="books.html"]').forEach(function(el) { el.style.display = 'none'; });
-    }
+    // ⚠️ تیکه مخفی کردن کتاب‌خوانی رو کلاً برداشتم 
+    // تا دکمه‌اش همیشه توی صفحه خانه دیده بشه.
   });
 });
