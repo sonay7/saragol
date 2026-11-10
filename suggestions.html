@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پیشنهادات | ساراگل</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">ساراگل</div>
+    <div class="user-area">
+      <span class="user-name">—</span>
+      <div class="avatar">—</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>💡 پیشنهادات بچه‌ها</h2>
+      <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px;">
+        هر انتقاد، پیشنهاد یا ایده‌ای برای بهتر شدن سایت داری، اینجا بنویس.
+      </p>
+      <textarea id="suggestionText" class="input" rows="3" placeholder="پیشنهادت رو بنویس..." style="resize: vertical;"></textarea>
+      <button id="sendSuggestionBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ارسال پیشنهاد</button>
+      <p id="suggestionMsg" style="margin-top: 10px; text-align: center; font-size: 0.85rem;"></p>
+    </section>
+
+    <section id="suggestionsList" style="margin-top: 20px;">
+      <h2>پیشنهادهای ثبت‌شده</h2>
+      <div id="listContent"><p class="lock-note">در حال بارگذاری...</p></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+    <a href="suggestions.html" class="nav-item active">💡 پیشنهادات</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="theme.js"></script>
+  <script src="suggestions.js"></script>
+</body>
+</html>
