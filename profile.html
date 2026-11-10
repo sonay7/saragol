@@ -6,7 +6,6 @@
   <title>پروفایل | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* ===== استایل کشوها ===== */
     details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
     details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
@@ -16,7 +15,6 @@
     .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ===== بقیه استایل‌ها ===== */
     .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
     .level-progress { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-top: 12px; overflow: hidden; }
     .level-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.6s ease; }
@@ -26,61 +24,29 @@
     .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
     .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
 
-    /* ===== مخفی کردن همه ویجت‌ها به صورت پیش‌فرض ===== */
     .w-cup, .w-tree, .w-planet { display: none; }
-    
-    /* ===== نمایش ویجت بر اساس تم ===== */
     [data-theme="cafe"] .w-cup { display: block; }
     [data-theme="cafe"] .w-bar { display: none; }
-    
     [data-theme="sakura"] .w-tree { display: block; }
     [data-theme="sakura"] .w-bar { display: none; }
-    
     [data-theme="galaxy"] .w-planet { display: block; }
     [data-theme="galaxy"] .w-bar { display: none; }
 
-    /* ۱. فنجون قهوه */
     .cup-container { position: relative; width: 100px; height: 130px; margin: 20px auto; margin-top: 40px; }
     .cup-body { width: 100%; height: 100%; border: 5px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
     .cup-handle { position: absolute; right: -22px; top: 30px; width: 25px; height: 50px; border: 5px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
     .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s ease; border-radius: 0 0 45px 45px; }
 
-    /* ۲. درخت ساکورا (نسخه جدید با شکوفه) */
     .tree-container { position: relative; width: 140px; height: 160px; margin: 20px auto; margin-top: 30px; }
     .tree-svg { width: 100%; height: 100%; }
-    
-    .blossom {
-      position: absolute;
-      width: 18px; height: 18px;
-      background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%);
-      border-radius: 50%;
-      opacity: 0;
-      transform: scale(0);
-      transition: all 0.5s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      z-index: 3;
-    }
-    /* مختصات شکوفه‌ها روی شاخه‌ها */
-    .b1 { top: 15%; left: 25%; }
-    .b2 { top: 10%; left: 55%; }
-    .b3 { top: 25%; left: 15%; }
-    .b4 { top: 30%; left: 75%; }
-    .b5 { top: 40%; left: 35%; }
-    .b6 { top: 35%; left: 60%; }
-    .b7 { top: 55%; left: 20%; }
-    .b8 { top: 50%; left: 80%; }
-    .b9 { top: 60%; left: 45%; }
-    .b10 { top: 25%; left: 45%; }
-    .b11 { top: 45%; left: 55%; }
-    .b12 { top: 70%; left: 65%; }
+    .blossom { position: absolute; width: 18px; height: 18px; background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%); border-radius: 50%; opacity: 0; transform: scale(0); transition: all 0.5s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 3; }
+    .b1 { top: 15%; left: 25%; } .b2 { top: 10%; left: 55%; } .b3 { top: 25%; left: 15%; } .b4 { top: 30%; left: 75%; } .b5 { top: 40%; left: 35%; } .b6 { top: 35%; left: 60%; } .b7 { top: 55%; left: 20%; } .b8 { top: 50%; left: 80%; } .b9 { top: 60%; left: 45%; } .b10 { top: 25%; left: 45%; } .b11 { top: 45%; left: 55%; } .b12 { top: 70%; left: 65%; }
 
-    /* ۳. سیاره کهکشانی */
     .planet-container { position: relative; width: 120px; height: 120px; margin: 20px auto; margin-top: 30px; }
     .planet-body { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #8e44ad, #2c3e50); position: relative; overflow: hidden; box-shadow: inset -15px -15px 30px rgba(0,0,0,0.6); }
     .planet-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #00d2ff, #3a7bd5); transition: height 1s ease; mix-blend-mode: screen; opacity: 0.8; }
     .planet-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); width: 160px; height: 40px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 2; pointer-events: none; }
 
-    /* ۴. نوار پیشرفت ساده */
     .simple-bar-container { margin: 40px auto; width: 80%; }
     .simple-bar-bg { width: 100%; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
     .simple-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 1s ease; border-radius: 10px; }
@@ -125,10 +91,7 @@
           <p class="level-next" id="levelNext"></p>
         </div>
 
-        <!-- ویجت‌ها (فقط یکی بر اساس تم نمایش داده می‌شود) -->
         <div class="widget-container" style="text-align: center; padding: 10px;">
-          
-          <!-- فنجون -->
           <div class="w-cup">
             <div class="cup-container">
               <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
@@ -136,7 +99,6 @@
             </div>
           </div>
 
-          <!-- درخت ساکورا -->
           <div class="w-tree">
             <div class="tree-container">
               <svg class="tree-svg" viewBox="0 0 100 120">
@@ -157,7 +119,6 @@
             </div>
           </div>
 
-          <!-- سیاره -->
           <div class="w-planet">
             <div class="planet-container">
               <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
@@ -165,7 +126,6 @@
             </div>
           </div>
 
-          <!-- نوار ساده (پیش‌فرض) -->
           <div class="w-bar">
             <div class="simple-bar-container">
               <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
@@ -253,10 +213,17 @@
       </div>
     </div>
 
+    <!-- مودال ژانر (با تیک نمایش) -->
     <div id="genreModal" class="modal hidden">
       <div class="modal-box">
         <h2>ژانرهای مورد علاقه‌ت</h2>
         <div id="genreOptions" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;"></div>
+        
+        <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.85rem; margin-bottom:16px; cursor:pointer; color:var(--text);">
+          <input type="checkbox" id="showGenreToggle" checked style="width:18px; height:18px; accent-color: var(--green);">
+          نمایش لقب برای بقیه
+        </label>
+
         <button id="saveGenreBtn" class="btn btn-green btn-full">ذخیره</button>
         <button id="closeGenreBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button>
       </div>
@@ -290,6 +257,7 @@
     var currentStreak = 0;
     var totalQuestions = 0;
     var hasMorningStudy = false;
+    var globalShowGenre = true; // برای ذخیره تیک نمایش
 
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -300,6 +268,7 @@
         var profile = p.data;
         userClassName = profile.class_name;
         var titleTheme = profile.level_theme || 'پیش فرض';
+        globalShowGenre = profile.show_genre_title !== false;
 
         var nameEl = document.querySelector('.profile-name'); if(nameEl) nameEl.textContent = profile.username;
         var classEl = document.querySelector('.profile-class'); if(classEl) classEl.textContent = profile.class_name;
@@ -472,7 +441,6 @@
             currentTarget = btnData.val;
             localStorage.setItem('cup_choice_' + todayStr, selectedOption);
             
-            // هدایت به صفحه مطالعه
             window.location.href = 'study.html?goal=' + currentTarget;
           };
           btnContainer.appendChild(btn);
@@ -487,19 +455,15 @@
       var smartTextEl = document.getElementById('smartText');
       var percent = Math.min(Math.round((todayMinutes / currentTarget) * 100), 100);
 
-      // آپدیت فنجون
       var cupLiquid = document.getElementById('cupLiquid');
       if(cupLiquid) cupLiquid.style.height = percent + '%';
 
-      // آپدیت سیاره
       var galaxyLiquid = document.getElementById('galaxyLiquid');
       if(galaxyLiquid) galaxyLiquid.style.height = percent + '%';
 
-      // آپدیت نوار ساده
       var simpleBar = document.getElementById('simpleBarFill');
       if(simpleBar) simpleBar.style.width = percent + '%';
 
-      // آپدیت شکوفه‌های درخت
       document.querySelectorAll('.blossom').forEach(function(b) {
         var val = parseInt(b.getAttribute('data-val'));
         if (percent >= val) {
@@ -598,8 +562,9 @@
       var display = document.getElementById('genreTitleDisplay');
       var text = document.getElementById('genreTitleText');
       var list = document.getElementById('myGenresList');
+      
       if (selectedGenres.length > 0) {
-        if(display) display.style.display = 'inline-block';
+        if(display) display.style.display = globalShowGenre ? 'inline-block' : 'none'; // اعمال تیک نمایش
         if(text) text.textContent = title;
         if(list) list.textContent = selectedGenres.join(' + ');
       } else {
@@ -624,18 +589,40 @@
     var closeGenreBtn = document.getElementById('closeGenreBtn');
     var saveGenreBtn = document.getElementById('saveGenreBtn');
     var genreOptions = document.getElementById('genreOptions');
+    var showGenreToggle = document.getElementById('showGenreToggle');
 
     if (selectGenreBtn) {
-      selectGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.remove('hidden'); renderGenreOptions(); });
+      selectGenreBtn.addEventListener('click', function() { 
+        if(genreModal) genreModal.classList.remove('hidden'); 
+        if(showGenreToggle) showGenreToggle.checked = globalShowGenre; // ست کردن تیک
+        renderGenreOptions(); 
+      });
+      
       if(closeGenreBtn) closeGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.add('hidden'); });
+      
       if(saveGenreBtn) saveGenreBtn.addEventListener('click', function() {
+        globalShowGenre = showGenreToggle.checked; // خواندن تیک
+        
         supabaseClient.auth.getUser().then(function(res) {
           if (!res.data.user) return;
           var uid = res.data.user.id;
-          supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
-            if (selectedGenres.length === 0) { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); return; }
-            var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
-            supabaseClient.from('user_genres').insert(inserts).then(function() { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); });
+          
+          // آپدیت ستون نمایش در پروفایل
+          supabaseClient.from('profiles').update({ show_genre_title: globalShowGenre }).eq('id', uid).then(function() {
+            
+            // پاک کردن ژانرهای قبلی و ذخیره جدیدها
+            supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
+              if (selectedGenres.length === 0) { 
+                if(genreModal) genreModal.classList.add('hidden'); 
+                updateGenreUI(); 
+                return; 
+              }
+              var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
+              supabaseClient.from('user_genres').insert(inserts).then(function() { 
+                if(genreModal) genreModal.classList.add('hidden'); 
+                updateGenreUI(); 
+              });
+            });
           });
         });
       });
