@@ -6,6 +6,49 @@
   <title>مطالعه | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* استایل ویجت‌های تم (کپی شده از پروفایل) */
+    .widget-box { text-align: center; margin-bottom: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+    .w-cup, .w-tree, .w-planet { display: none; }
+    [data-theme="cafe"] .w-cup { display: block; }
+    [data-theme="sakura"] .w-tree { display: block; }
+    [data-theme="galaxy"] .w-planet { display: block; }
+    
+    /* مخفی کردن نوار پیشرفت در تم‌های خاص */
+    [data-theme="cafe"] .w-bar { display: none; }
+    [data-theme="sakura"] .w-bar { display: none; }
+    [data-theme="galaxy"] .w-bar { display: none; }
+
+    /* ۱. فنجون */
+    .cup-container { position: relative; width: 100px; height: 130px; margin: 10px auto; }
+    .cup-body { width: 100%; height: 100%; border: 5px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
+    .cup-handle { position: absolute; right: -22px; top: 30px; width: 25px; height: 50px; border: 5px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
+    .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s ease; border-radius: 0 0 45px 45px; }
+
+    /* ۲. درخت ساکورا */
+    .tree-container { position: relative; width: 140px; height: 160px; margin: 10px auto; }
+    .tree-svg { width: 100%; height: 100%; }
+    .blossom { position: absolute; width: 18px; height: 18px; background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%); border-radius: 50%; opacity: 0; transform: scale(0); transition: all 0.5s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 3; }
+    .b1 { top: 15%; left: 25%; } .b2 { top: 10%; left: 55%; } .b3 { top: 25%; left: 15%; } .b4 { top: 30%; left: 75%; } .b5 { top: 40%; left: 35%; } .b6 { top: 35%; left: 60%; } .b7 { top: 55%; left: 20%; } .b8 { top: 50%; left: 80%; } .b9 { top: 60%; left: 45%; } .b10 { top: 25%; left: 45%; } .b11 { top: 45%; left: 55%; } .b12 { top: 70%; left: 65%; }
+
+    /* ۳. سیاره */
+    .planet-container { position: relative; width: 120px; height: 120px; margin: 10px auto; }
+    .planet-body { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #8e44ad, #2c3e50); position: relative; overflow: hidden; box-shadow: inset -15px -15px 30px rgba(0,0,0,0.6); }
+    .planet-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #00d2ff, #3a7bd5); transition: height 1s ease; mix-blend-mode: screen; opacity: 0.8; }
+    .planet-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); width: 160px; height: 40px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 2; pointer-events: none; }
+
+    /* ۴. نوار پیشرفت ساده */
+    .simple-bar-container { margin: 20px auto; width: 80%; }
+    .simple-bar-bg { width: 100%; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .simple-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 1s ease; border-radius: 10px; }
+    
+    /* بقیه استایل‌های صفحه مطالعه */
+    .label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; }
+    .select, .input { width: 100%; padding: 12px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 0.95rem; font-family: inherit; transition: background 0.3s; }
+    .select:focus, .input:focus { outline: none; border-color: var(--green); }
+    .timer-box { text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 30px 20px; transition: background 0.3s; }
+    .timer { font-size: 3.5rem; font-weight: 700; letter-spacing: 2px; background: linear-gradient(90deg, var(--green), var(--blue)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
+    .timer-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    
     .panic-note-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; position: relative; }
     .panic-subject { font-size: 0.75rem; color: var(--blue); font-weight: bold; margin-bottom: 4px; display: inline-block; background: rgba(52,152,219,0.1); padding: 2px 8px; border-radius: 10px; }
     .panic-text { font-size: 0.9rem; color: var(--text); line-height: 1.6; }
@@ -25,12 +68,30 @@
   <main class="container">
 
     <section>
-      <h2>⏱ مطالعه</h2>
-      
       <div class="tabs" style="margin-bottom: 16px;">
         <button class="tab active" id="tabPomodoro">🍅 پومودورو</button>
         <button class="tab" id="tabFree">⏱ آزاد</button>
         <button class="tab" id="tabPanic">🚨 شب امتحان</button>
+      </div>
+
+      <!-- ویجت تم (فنجون/درخت/سیاره) -->
+      <div class="widget-box">
+        <div class="w-cup">
+          <div class="cup-container"><div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div><div class="cup-handle"></div></div>
+        </div>
+        <div class="w-tree">
+          <div class="tree-container">
+            <svg class="tree-svg" viewBox="0 0 100 120"><path d="M50,120 Q48,80 50,50 M50,85 Q30,70 20,45 M50,75 Q70,60 80,40 M50,60 Q35,45 30,25 M50,55 Q65,40 70,20 M50,50 Q50,30 50,15" stroke="#5D4037" stroke-width="5" stroke-linecap="round" fill="none" /></svg>
+            <div class="blossom b1" data-val="5"></div><div class="blossom b2" data-val="10"></div><div class="blossom b3" data-val="20"></div><div class="blossom b4" data-val="30"></div><div class="blossom b5" data-val="40"></div><div class="blossom b6" data-val="50"></div><div class="blossom b7" data-val="60"></div><div class="blossom b8" data-val="70"></div><div class="blossom b9" data-val="80"></div><div class="blossom b10" data-val="90"></div><div class="blossom b11" data-val="95"></div><div class="blossom b12" data-val="100"></div>
+          </div>
+        </div>
+        <div class="w-planet">
+          <div class="planet-container"><div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div><div class="planet-ring"></div></div>
+        </div>
+        <div class="w-bar">
+          <div class="simple-bar-container"><div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div></div>
+        </div>
+        <p id="widgetStatus" style="font-size: 0.9rem; font-weight: bold; margin-top: 10px; color: var(--green);"></p>
       </div>
 
       <!-- بخش پومودورو -->
@@ -74,14 +135,28 @@
 
       <!-- بخش شب امتحان -->
       <div id="panicSection" class="hidden">
-        <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px;">
-          فرمول‌ها یا نکات مهمی که فکر می‌کنی بقیه قبل امتحان باید ببینن رو اینجا بنویس.
-        </p>
-        <input id="panicSubject" type="text" class="input" placeholder="نام درس (مثلاً ریاضی)" style="margin-bottom: 8px;">
-        <textarea id="panicNote" class="input" placeholder="نکته یا فرمول مهم..." rows="3" style="margin-bottom: 8px; resize: vertical;"></textarea>
-        <button id="addPanicBtn" class="btn btn-green btn-full" style="margin-bottom: 20px;">ثبت نکته</button>
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+          <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px;">فرمول‌ها یا نکات مهمی که فکر می‌کنی بقیه قبل امتحان باید ببینن رو اینجا بنویس.</p>
+          <input id="panicSubject" type="text" class="input" placeholder="نام درس (مثلاً ریاضی)" style="margin-bottom: 8px;">
+          <input id="panicChapter" type="text" class="input" placeholder="فصل/درس (مثلاً فصل ۳)" style="margin-bottom: 8px;">
+          <textarea id="panicNote" class="input" placeholder="نکته یا فرمول مهم..." rows="3" style="margin-bottom: 8px; resize: vertical;"></textarea>
+          <button id="addPanicBtn" class="btn btn-green btn-full">ثبت نکته</button>
+        </div>
         
-        <h3 style="font-size: 0.95rem; margin-bottom: 10px;">نکات بچه‌ها:</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+          <select id="filterSubject" class="select" style="flex:1;">
+            <option value="">همه دروس</option>
+            <option value="ریاضی">ریاضی</option>
+            <option value="علوم">علوم</option>
+            <option value="فارسی">فارسی</option>
+            <option value="عربی">عربی</option>
+            <option value="انگلیسی">انگلیسی</option>
+            <option value="مطالعات">مطالعات</option>
+            <option value="قرآن">قرآن</option>
+          </select>
+          <input id="filterChapter" type="text" class="input" placeholder="جستجوی فصل..." style="flex:1;">
+        </div>
+
         <div id="panicList">
           <p class="lock-note">در حال بارگذاری...</p>
         </div>
@@ -89,7 +164,7 @@
 
     </section>
 
-    <!-- تایمر (فقط برای پومودورو و آزاد نمایش داده میشه) -->
+    <!-- تایمر -->
     <section class="timer-box" id="timerBox">
       <div id="timer" class="timer">۲۵:۰۰</div>
       <div class="timer-buttons">
@@ -111,6 +186,7 @@
     </section>
 
   </main>
+
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item active">⏱ مطالعه</a>
@@ -118,7 +194,7 @@
     <a href="admin.html" class="nav-item">🛠 ادمین</a>
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
