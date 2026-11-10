@@ -36,9 +36,9 @@ supabaseClient.auth.getUser().then(function(res) {
       document.querySelectorAll('a[href="admin.html"]').forEach(function(el) { el.style.display = 'none'; });
     }
 
-    // مخفی کردن کتاب‌خوانی برای غیر عضوها
+    // ✅ فقط لینک کتاب‌خوانی توی منوی پایین رو مخفی کن (نه توی صفحه خانه)
     if (!profile.is_book_club_member) {
-      document.querySelectorAll('a[href="books.html"]').forEach(function(el) { el.style.display = 'none'; });
+      document.querySelectorAll('.bottom-nav a[href="books.html"]').forEach(function(el) { el.style.display = 'none'; });
     }
   });
 });
