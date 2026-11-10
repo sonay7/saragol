@@ -242,10 +242,89 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
-  <script src="theme.js"></script>
-  <script src="themes.js?v=2"></script>
   
   <script>
+    // ================= تمام کدهای جاوااسکریپت یکجا اینجاست =================
+
+    // --- کدهای مربوط به تم رنگی سایت (از theme.js) ---
+    (function () {
+      var savedTheme = localStorage.getItem('site-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+
+    window.createThemeSwitcher = function () {
+      if (document.getElementById('themeSwitcherBtn')) return;
+      var userArea = document.querySelector('.user-area');
+      if (!userArea) return;
+      var btn = document.createElement('button');
+      btn.id = 'themeSwitcherBtn';
+      btn.className = 'theme-btn';
+      btn.innerHTML = '🎨';
+      btn.title = 'تغییر تم سایت';
+      userArea.insertBefore(btn, userArea.firstChild);
+
+      btn.addEventListener('click', function () {
+        var themes = ['dark', 'light', 'sakura', 'cafe', 'galaxy', 'ocean', 'lavender', 'peach', 'forest'];
+        var current = localStorage.getItem('site-theme') || 'dark';
+        var currentIndex = themes.indexOf(current);
+        var nextIndex = (currentIndex + 1) % themes.length;
+        var newTheme = themes[nextIndex];
+        var msgMap = {
+          'dark': 'شب 🌙', 'light': 'روز ☀️', 'sakura': 'ساکورا 🌸',
+          'cafe': 'کافه ☕', 'galaxy': 'کهکشان 🌌', 'ocean': 'اقیانوس 🌊',
+          'lavender': 'اسطوخودوس 🪻', 'peach': 'هلویی 🍑', 'forest': 'جنگل 🌲'
+        };
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('site-theme', newTheme);
+        var toast = document.createElement('div');
+        toast.textContent = 'تم تغییر کرد به: ' + msgMap[newTheme];
+        toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:10px 20px; border-radius:20px; z-index:9999; font-family:inherit; font-size:0.85rem; box-shadow:0 4px 10px rgba(0,0,0,0.2); transition: opacity 0.3s;';
+        document.body.appendChild(toast);
+        setTimeout(function () { toast.style.opacity = '0'; setTimeout(function () { toast.remove(); }, 300); }, 2000);
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', window.createThemeSwitcher);
+    } else {
+      window.createThemeSwitcher();
+    }
+
+    // --- کدهای مربوط به القاب و سطح‌ها (از themes.js) ---
+    var THEMES = {
+      'پیش فرض': ['تازه‌وارد', 'کوشا', 'پیگیر', 'پرتلاش', 'توانمند', 'برتر', 'سرآمد', 'نمونه', 'افتخارآفرین', 'الگو'],
+      'گیمینگ': ['مبتدی', 'ماجراجو', 'حرفه‌ای', 'استاد', 'اسطوره', 'قهرمان', 'افسانه', 'اوبی', 'باس', 'گاد'],
+      'ورزشی': ['آماتور', 'تمرین‌کار', 'بازیکن', 'حرفه‌ای', 'ستاره', 'کاپیتان', 'ملی‌پوش', 'اسطوره', 'قهرمان جهان', 'افسانه'],
+      'فضایی': ['ستاره‌ی کوچک', 'سیارک', 'سیاره', 'ستاره', 'ابرنواختر', 'کهکشان', 'خوشه‌ی کهکشانی', 'کائنات', 'سیاه‌چاله', 'بیگ‌بنگ'],
+      'آتش': ['جرقه', 'شعله', 'شعله‌ور', 'آتشین', 'سوزان', 'تب‌دار', 'کوره', 'آتش‌فشان', 'خورشید', 'ابرخورشید'],
+      'سفر': ['مسافر', 'رهرو', 'رهنورد', 'کاوشگر', 'ماجراجو', 'پیشرو', 'پیشگام', 'فاتح', 'سرآمد', 'اسطوره'],
+      'پادشاهی': ['سرباز', 'نگهبان', 'سردار', 'فرمانده', 'سپهسالار', 'وزیر', 'شاهزاده', 'پادشاه', 'امپراتور', 'اسطوره']
+    };
+    var LEVEL_HOURS = [0, 3, 8, 16, 30, 50, 80, 120, 170, 250];
+
+    function getLevel(minutes) {
+      var hours = minutes / 60;
+      var level = 1;
+      for (var i = 0; i < LEVEL_HOURS.length; i++) {
+        if (hours >= LEVEL_HOURS[i]) level = i + 1;
+      }
+      return level;
+    }
+
+    function getTitle(level, theme) {
+      var t = THEMES[theme] || THEMES['پیش فرض'] || ['کتاب‌خوان'];
+      var idx = level - 1;
+      if (idx < 0) idx = 0;
+      if (idx > 9) idx = 9;
+      return t[idx];
+    }
+
+    function getNextLevelHours(level) {
+      if (level >= 10) return null;
+      return LEVEL_HOURS[level];
+    }
+
+    // --- کدهای اصلی پروفایل (از profile.html) ---
     var userClassName = '';
     var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
     var selectedGenres = [];
@@ -257,7 +336,7 @@
     var currentStreak = 0;
     var totalQuestions = 0;
     var hasMorningStudy = false;
-    var globalShowGenre = true; // برای ذخیره تیک نمایش
+    var globalShowGenre = true; 
 
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -564,7 +643,7 @@
       var list = document.getElementById('myGenresList');
       
       if (selectedGenres.length > 0) {
-        if(display) display.style.display = globalShowGenre ? 'inline-block' : 'none'; // اعمال تیک نمایش
+        if(display) display.style.display = globalShowGenre ? 'inline-block' : 'none'; 
         if(text) text.textContent = title;
         if(list) list.textContent = selectedGenres.join(' + ');
       } else {
@@ -594,23 +673,21 @@
     if (selectGenreBtn) {
       selectGenreBtn.addEventListener('click', function() { 
         if(genreModal) genreModal.classList.remove('hidden'); 
-        if(showGenreToggle) showGenreToggle.checked = globalShowGenre; // ست کردن تیک
+        if(showGenreToggle) showGenreToggle.checked = globalShowGenre; 
         renderGenreOptions(); 
       });
       
       if(closeGenreBtn) closeGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.add('hidden'); });
       
       if(saveGenreBtn) saveGenreBtn.addEventListener('click', function() {
-        globalShowGenre = showGenreToggle.checked; // خواندن تیک
+        globalShowGenre = showGenreToggle.checked; 
         
         supabaseClient.auth.getUser().then(function(res) {
           if (!res.data.user) return;
           var uid = res.data.user.id;
           
-          // آپدیت ستون نمایش در پروفایل
           supabaseClient.from('profiles').update({ show_genre_title: globalShowGenre }).eq('id', uid).then(function() {
             
-            // پاک کردن ژانرهای قبلی و ذخیره جدیدها
             supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
               if (selectedGenres.length === 0) { 
                 if(genreModal) genreModal.classList.add('hidden'); 
