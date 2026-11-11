@@ -5,103 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ساراگل | مدرسه‌ی ما</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
-    .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
-
-    .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; margin-bottom: 20px; }
-    .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
-    .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
-    .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
-    
-    /* ===== انجمن‌ها (با آی‌دی جدید برای فرار از دست اسکریپت‌ها) ===== */
-    .forum-grid { 
-      display: flex !important; 
-      flex-wrap: wrap !important;
-      justify-content: space-between !important; 
-      gap: 12px !important; 
-      width: 100%;
-    }
-    .forum-card { 
-      flex: 1 1 calc(50% - 12px) !important;
-      max-width: calc(50% - 12px) !important;
-      background: var(--bg-card) !important; 
-      border: 1px solid var(--border) !important; 
-      border-radius: 16px !important; 
-      padding: 24px 10px !important; 
-      text-align: center !important; 
-      text-decoration: none !important; 
-      color: var(--text) !important; 
-      display: flex !important; 
-      flex-direction: column !important; 
-      align-items: center !important; 
-      justify-content: center !important;
-      gap: 12px !important; 
-      transition: 0.2s !important; 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important; 
-      visibility: visible !important; 
-      opacity: 1 !important;
-    }
-    .forum-card:hover { transform: translateY(-3px) !important; border-color: var(--green) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important; }
-    .forum-icon { font-size: 3rem; }
-    .forum-name { font-size: 1rem; font-weight: 600; }
-
-    /* ===== دسترسی سریع (وسط چین کردن دقیق) ===== */
-    .quick-links-grid { 
-      display: flex !important; 
-      flex-wrap: wrap !important; 
-      justify-content: center !important; 
-      gap: 10px !important; 
-      margin-top: 12px; 
-    }
-    .quick-link { 
-      flex: 0 0 calc(33.333% - 10px); 
-      background: var(--bg); 
-      border: 1px solid var(--border); 
-      border-radius: 12px; 
-      padding: 12px 8px; 
-      text-align: center; 
-      text-decoration: none; 
-      color: var(--text); 
-      font-size: 0.8rem; 
-      transition: 0.2s; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      gap: 4px; 
-    }
-    .quick-link:hover { border-color: var(--blue); color: var(--blue); }
-
-    /* ===== مودال خوش‌آمدگویی ===== */
-    .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
-    .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
-    .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
-    .welcome-content p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
-    .welcome-content button { margin-top: 24px; }
-    .welcome-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
-
-    /* ===== استایل اعلان‌ها ===== */
-    .notice {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--bg-card);
-      padding: 14px 16px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      border: 1px solid var(--border);
-      font-size: 0.95rem;
-    }
-    .notice-badge {
-      background: var(--green);
-      color: #fff;
-      padding: 4px 14px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-  </style>
 </head>
 <body>
 
@@ -115,25 +18,30 @@
 
   <main class="container">
 
-    <a href="study.html" class="quick-start-btn"><span>🚀</span> شروع سریع مطالعه</a>
+    <a href="study.html" class="btn btn-green btn-full" style="padding: 20px; font-size: 1.2rem; border-radius: 16px; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 10px;">
+      <span>🚀</span> شروع سریع مطالعه
+    </a>
 
-    <section class="notice-board">
+    <section>
       <h2>📌 تابلو اعلانات</h2>
       <div id="noticesList">
         <p class="lock-note">در حال بارگذاری...</p>
       </div>
     </section>
 
-    <section class="big-league-card">
-      <h2><span>🏆 لیگ این هفته</span><a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a></h2>
+    <section class="big-league-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px;">
+      <h2 style="display: flex; justify-content: space-between; align-items: center;">
+        <span>🏆 لیگ این هفته</span>
+        <a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a>
+      </h2>
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <section style="margin-bottom: 20px;">
-      <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
-      <div class="forum-grid">
-        <!-- آی‌دی کارت رو عوض کردم تا اسکریپت‌های دیگه نتونن پیداش کنن و مخفیش کنن -->
-        <a href="books.html" class="forum-card" id="permanent-book-club">
+    <!-- بخش انجمن‌ها (استفاده از کلاس‌های خودت در style.css) -->
+    <section>
+      <h2>💬 انجمن‌ها</h2>
+      <div class="forum-list">
+        <a href="books.html" class="forum-card">
           <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
         <a href="#" class="forum-card">
@@ -142,16 +50,28 @@
       </div>
     </section>
 
-    <section class="big-league-card">
-      <h2 style="margin-bottom: 12px; font-size: 1.1rem;">🔗 دسترسی سریع</h2>
-      <div class="quick-links-grid">
-        <a href="counselor.html" class="quick-link"><span>💬</span><span>مشاوره</span></a>
-        <a href="contact.html" class="quick-link"><span>🚨</span><span>ارتباط با ادمین</span></a>
-        <a href="games.html" class="quick-link"><span>🎮</span><span>بازی و معما</span></a>
-        <a href="mafia.html" class="quick-link"><span>🕵️</span><span>مافیا</span></a>
-        <a href="explore.html" class="quick-link"><span>🎬</span><span>اکسپلور</span></a>
+    <!-- بخش دسترسی سریع (دقیقاً با همون کلاس‌های انجمن‌ها تا ۳ ستونه و منظم بشه) -->
+    <section>
+      <h2>🔗 دسترسی سریع</h2>
+      <div class="forum-list">
+        <a href="counselor.html" class="forum-card">
+          <span class="forum-icon">💬</span><span class="forum-name">مشاوره</span>
+        </a>
+        <a href="contact.html" class="forum-card">
+          <span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span>
+        </a>
+        <a href="games.html" class="forum-card">
+          <span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span>
+        </a>
+        <a href="mafia.html" class="forum-card">
+          <span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span>
+        </a>
+        <a href="explore.html" class="forum-card">
+          <span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span>
+        </a>
       </div>
     </section>
+
   </main>
 
   <nav class="bottom-nav">
@@ -162,11 +82,10 @@
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
-  <!-- مودال خوش‌آمدگویی قشنگ -->
+  <!-- متن خوش‌آمدگویی (با کلاس‌های خودت) -->
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
-      <span class="welcome-emoji">🌸</span>
-      <h2>سلام! به ساراگل خوش اومدی 👋</h2>
+      <h2>🌸 سلام! به ساراگل خوش اومدی 👋</h2>
       <p>اینجا قراره با هم درس بخونیم، رقابت کنیم، بازی کنیم و پیشرفت کنیم. آماده‌ای که بهترین نسخه‌ی خودت بشی؟ 🚀</p>
       <button id="closeWelcomeBtn" class="btn btn-green btn-full">بزن بریم! 🚀</button>
     </div>
@@ -180,7 +99,6 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // نمایش مودال خوش‌آمدگویی (فقط بار اول)
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
       }
@@ -191,7 +109,6 @@
 
       loadNotices();
 
-      // لود لیگ
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
         var container = document.getElementById('homeLeaderboard');
         if (res.error || !res.data || res.data.length === 0) {
