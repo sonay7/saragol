@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ثبت‌نام | مدرسه‌ی ما</title>
+  <title>ثبت‌نام | ساراگل</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header class="header">
-    <div class="logo">مدرسه‌ی ما</div>
+    <div class="logo">ساراگل</div>
   </header>
 
   <main class="container">
@@ -20,8 +20,11 @@
     </section>
 
     <section>
-      <label class="label">اسم کاربری</label>
-      <input id="username" type="text" class="input" placeholder="مثلاً ali71">
+      <label class="label">نام (فارسی)</label>
+      <input id="firstName" type="text" class="input" placeholder="مثلاً علی">
+
+      <label class="label" style="margin-top: 12px;">نام خانوادگی (فارسی)</label>
+      <input id="lastName" type="text" class="input" placeholder="مثلاً رضایی">
 
       <label class="label" style="margin-top: 12px;">کلاس</label>
       <select id="class" class="select">
@@ -41,7 +44,7 @@
         <option value="نهم ۴">نهم ۴</option>
       </select>
 
-      <label class="label" style="margin-top: 12px;">رمز</label>
+      <label class="label" style="margin-top: 12px;">رمز (حداقل ۶ کاراکتر)</label>
       <input id="password" type="password" class="input" placeholder="حداقل ۶ کاراکتر">
 
       <button id="signupBtn" class="btn btn-green btn-full" style="margin-top: 16px;">ثبت‌نام</button>
@@ -57,7 +60,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
-    <script src="theme.js"></script>
   <script src="signup.js"></script>
 </body>
 </html>
