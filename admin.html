@@ -67,18 +67,24 @@
 
     <!-- ===== تب اطلاع‌رسانی ===== -->
     <div id="tab-announcements" class="admin-tab-content hidden">
-      <section>
-        <h2>📌 اعلان جدید</h2>
-        <input id="noticeText" type="text" class="input" placeholder="متن اعلان...">
-        <select id="noticeType" class="select" style="margin-top: 8px;">
-          <option value="عادی">عادی</option>
-          <option value="مهم">مهم</option>
-          <option value="فوری">فوری</option>
-        </select>
-        <button id="addNoticeBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت اعلان</button>
-        <p id="noticeMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
-      </section>
-      <section>
+  <h2>📌 مدیریت اعلانات</h2>
+  <!-- فرم ثبت اعلان جدید -->
+  <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border);">
+    <h3 style="font-size: 1rem; margin-bottom: 12px;">افزودن اعلان جدید</h3>
+    <textarea id="noticeText" class="input" placeholder="متن اعلان..." style="min-height: 80px; resize: vertical;"></textarea>
+    <select id="noticeType" class="input" style="margin-top: 8px;">
+      <option value="urgent">فوری</option>
+      <option value="important">مهم</option>
+      <option value="info">عادی</option>
+    </select>
+    <button id="addNoticeBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت اعلان</button>
+    <p id="noticeMsg" style="font-size: 0.85rem; margin-top: 8px;"></p>
+  </div>
+
+  <!-- لیست اعلان‌های فعلی و دکمه حذف -->
+  <h3 style="font-size: 1rem; margin-bottom: 12px;">اعلان‌های فعلی:</h3>
+  <div id="adminNoticesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+</section>
         <h2>📅 افزودن آزمون رسمی</h2>
         <input id="examSubject" type="text" class="input" placeholder="نام درس">
         <input id="examDate" type="date" class="input" style="margin-top: 8px;">
