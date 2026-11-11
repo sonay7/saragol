@@ -9,6 +9,7 @@ supabaseClient.auth.getUser().then(function(res) {
 function loadExplore() {
   var feed = document.getElementById('exploreFeed');
   
+  // گرفتن محتواهای تأیید شده از admin_inbox + تعداد لایک‌ها
   supabaseClient.from('admin_inbox')
     .select('id, file_url, file_type, created_at, explore_likes(user_id)')
     .eq('status', 'approved')
@@ -32,20 +33,16 @@ function loadExplore() {
         var iLiked = likes.some(function(l) { return l.user_id === currentUserId; });
 
         var div = document.createElement('div');
-        div.className = 'result';
+        div.className = 'result'; 
         div.style.padding = '0';
         div.style.overflow = 'hidden';
         div.style.marginBottom = '20px';
         div.style.border = '1px solid var(--border)';
 
         var mediaHtml = '';
-        
-        // ===== بهینه‌سازی لودینگ =====
         if (item.file_type && item.file_type.indexOf('video') === 0) {
-          // ویدیو: preload="none" یعنی تا کاربر Play نزنه، دانلود نمی‌شه
           mediaHtml = '<video src="' + item.file_url + '" controls preload="none" playsinline style="width:100%; max-height: 500px; background: #000; display: block;"></video>';
         } else {
-          // عکس: loading="lazy" یعنی فقط وقتی اومد توی دید، دانلود می‌شه
           mediaHtml = '<img src="' + item.file_url + '" loading="lazy" style="width:100%; max-height: 500px; object-fit: contain; background: #000; display: block;">';
         }
 
@@ -77,24 +74,18 @@ function toggleLike(inboxId, btn) {
   var isLiked = heartEl.textContent === '❤️';
 
   if (isLiked) {
-    supabaseClient.from('explore_likes')
-      .delete()
-      .eq('inbox_id', inboxId)
-      .eq('user_id', currentUserId)
-      .then(function() {
-        heartEl.textContent = '🤍';
-        heartEl.style.color = 'var(--text-dim)';
-        countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
-      });
+    supabaseClient.from('explore_likes').delete().eq('inbox_id', inboxId).eq('user_id', currentUserId).then(function() {
+      heartEl.textContent = '🤍';
+      heartEl.style.color = 'var(--text-dim)';
+      countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
+    });
   } else {
-    supabaseClient.from('explore_likes')
-      .insert({ inbox_id: inboxId, user_id: currentUserId })
-      .then(function(res) {
-        if (!res.error) {
-          heartEl.textContent = '❤️';
-          heartEl.style.color = '#e74c3c';
-          countEl.textContent = parseInt(countEl.textContent) + 1;
-        }
-      });
+    supabaseClient.from('explore_likes').insert({ inbox_id: inboxId, user_id: currentUserId }).then(function(res) {
+      if (!res.error) {
+        heartEl.textContent = '❤️';
+        heartEl.style.color = '#e74c3c';
+        countEl.textContent = parseInt(countEl.textContent) + 1;
+      }
+    });
   }
 }
