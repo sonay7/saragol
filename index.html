@@ -8,28 +8,23 @@
   <style>
     .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 10px; }
     .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
-    .quick-start-btn:active { transform: scale(0.98); }
 
-    /* استایل لیگ */
     .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; }
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
+    /* آیکون‌ها */
     .forum-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    @media (max-width: 380px) { .forum-list { grid-template-columns: repeat(2, 1fr); } }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
     .forum-card:hover { transform: translateY(-3px); border-color: var(--green); }
     .forum-icon { font-size: 2rem; }
     .forum-name { font-size: 0.85rem; font-weight: 600; }
 
-    /* مودال خوش‌آمدگویی */
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-    .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .welcome-content h2 { color: var(--green); margin-bottom: 16px; font-size: 1.3rem; }
-    .welcome-content p { font-size: 0.9rem; color: var(--text); line-height: 1.8; margin-bottom: 12px; text-align: right; }
-    .welcome-content ul { text-align: right; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; padding-right: 20px; line-height: 1.8; }
-    .welcome-content li { margin-bottom: 8px; }
+    .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; }
+    .welcome-content h2 { color: var(--green); margin-bottom: 16px; }
+    .welcome-content button { margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -44,40 +39,39 @@
 
   <main class="container">
 
-    <a href="study.html" class="quick-start-btn">
-      <span>🚀</span> شروع سریع مطالعه
-    </a>
+    <a href="study.html" class="quick-start-btn"><span>🚀</span> شروع سریع مطالعه</a>
 
     <section class="notice-board">
       <h2>📌 تابلو اعلانات</h2>
-      <div class="notice">
-        <span class="notice-badge">فوری</span>
-        به سایت ساراگل خوش آمدید!
-      </div>
+      <div class="notice"><span class="notice-badge">فوری</span> به سایت ساراگل خوش آمدید!</div>
     </section>
 
     <section class="big-league-card">
-      <h2>
-        <span>🏆 لیگ این هفته</span>
-        <a href="leaderboard.html" class="see-all">مشاهده لیگ کامل ←</a>
-      </h2>
-      <div id="homeLeaderboard">
-        <p class="lock-note" style="font-size: 0.8rem;">در حال بارگذاری...</p>
-      </div>
+      <h2><span>🏆 لیگ این هفته</span><a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a></h2>
+      <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
     <section class="forums">
-      <h2>💬 انجمن‌ها</h2>
+      <h2>دسترسی سریع</h2>
       <div class="forum-list">
         <a href="books.html" class="forum-card">
-          <span class="forum-icon">📚</span>
-          <span class="forum-name">کتاب‌خوانی</span>
+          <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
-        <a href="#" class="forum-card">
-          <span class="forum-icon">🎨</span>
-          <span class="forum-name">هنری</span>
+        <a href="counselor.html" class="forum-card">
+          <span class="forum-icon">💬</span><span class="forum-name">مشاوره</span>
         </a>
-            
+        <a href="contact.html" class="forum-card">
+          <span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span>
+        </a>
+        <a href="games.html" class="forum-card">
+          <span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span>
+        </a>
+        <a href="mafia.html" class="forum-card">
+          <span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span>
+        </a>
+        <a href="explore.html" class="forum-card">
+          <span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span>
+        </a>
       </div>
     </section>
 
@@ -94,14 +88,8 @@
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
       <h2>سلام! به ساراگل خوش اومدی 👋</h2>
-      <p>اینجا یه مدرسه‌ی دیجیتاله که می‌تونی هم درس بخونی، هم با بچه‌ها رقابت کنی، هم رفیق پیدا کنی!</p>
-      <ul>
-        <li>⏱ <strong>مطالعه:</strong> تایمر بزن و کلاس‌ت رو ببر بالای جدول!</li>
-        <li>🌸 <strong>همراه روزانه:</strong> توی پروفایل یه فنجون یا باغ داری که با درس خوندن بزرگ می‌شه!</li>
-        <li>📚 <strong>کتاب‌خوانی:</strong> کتاب‌هایی که خوندی رو به قفسه‌ت اضافه کن.</li>
-        <li>💬 <strong>مشاوره:</strong> هر سوالی داشتی، می‌تونی ناشناس با مشاور حرف بزنی.</li>
-      </ul>
-      <button id="closeWelcomeBtn" class="btn btn-green btn-full">متوجه شدم، بریم!</button>
+      <p>اینجا می‌تونی درس بخونی، رقابت کنی، بازی کنی و رفیق پیدا کنی!</p>
+      <button id="closeWelcomeBtn" class="btn btn-green btn-full">متوجه شدم!</button>
     </div>
   </div>
 
@@ -112,7 +100,6 @@
   <script src="script.js"></script>
   
   <script>
-    // نمایش مودال خوش‌آمدگویی
     document.addEventListener('DOMContentLoaded', function() {
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
@@ -122,31 +109,21 @@
         localStorage.setItem('hasSeenWelcome', 'true');
       });
 
-      // بارگذاری لیگ واقعی برای صفحه خانه
+      // لیگ
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
         var container = document.getElementById('homeLeaderboard');
         if (res.error || !res.data || res.data.length === 0) {
-          container.innerHTML = '<p class="lock-note" style="font-size: 0.8rem;">هنوز کسی این هفته مطالعه نکرده</p>';
-          return;
+          container.innerHTML = '<p class="lock-note">هنوز کسی این هفته مطالعه نکرده</p>'; return;
         }
-
-        // جمع کردن دقیقه‌ها بر اساس کلاس
         var classes = {};
-        res.data.forEach(function(u) {
-          if (!u.class_name) return;
-          if (!classes[u.class_name]) classes[u.class_name] = 0;
-          classes[u.class_name] += parseInt(u.weekly_minutes);
-        });
-
+        res.data.forEach(function(u) { if(!u.class_name) return; classes[u.class_name] = (classes[u.class_name]||0) + parseInt(u.weekly_minutes); });
         var sorted = Object.keys(classes).sort(function(a, b) { return classes[b] - classes[a]; });
-        
         container.innerHTML = '';
         sorted.slice(0, 3).forEach(function(className, index) {
           var medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : '🥉');
           var div = document.createElement('div');
           div.className = 'league-row';
-          if (index === 0) div.style.background = 'linear-gradient(90deg, rgba(46,204,113,0.1), transparent)';
-          div.innerHTML = '<span>' + medal + ' ' + className + '</span><span style="font-weight:bold; color:var(--green);">' + classes[className] + ' دقیقه</span>';
+          div.innerHTML = '<span>' + medal + ' ' + className + '</span><span>' + classes[className] + ' دقیقه</span>';
           container.appendChild(div);
         });
       });
