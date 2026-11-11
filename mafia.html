@@ -6,145 +6,467 @@
   <title>مافیا | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .game-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
-    .game-card.waiting { border-color: var(--green); }
-    .game-card.playing { border-color: var(--blue); }
-    .game-card.finished { opacity: 0.6; }
-    .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .game-status { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; }
-    .game-status.waiting { background: rgba(46,204,113,0.15); color: var(--green); }
-    .game-status.playing { background: rgba(52,152,219,0.15); color: var(--blue); }
-    .game-status.finished { background: rgba(150,150,150,0.15); color: var(--text-dim); }
-    .players-count { font-size: 0.8rem; color: var(--text-dim); }
-    .join-btn { width: 100%; padding: 10px; border: none; border-radius: 10px; background: var(--green); color: #fff; font-weight: bold; cursor: pointer; font-family: inherit; margin-top: 8px; }
-    .create-box { background: var(--bg-card); border: 1px dashed var(--border); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
+    .mafia-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .mafia-btn { background: var(--green); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 1rem; width: 100%; margin-top: 8px; }
+    .mafia-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .mafia-btn-danger { background: #e74c3c; }
+    .mafia-btn-blue { background: var(--blue); }
+    .mafia-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; margin-top: 8px; box-sizing: border-box; }
+    .mafia-players { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .mafia-player { background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 20px; font-size: 0.85rem; }
+    .mafia-player.dead { opacity: 0.4; text-decoration: line-through; }
+    .mafia-player.self { border-color: var(--green); }
+    .mafia-chat { max-height: 300px; overflow-y: auto; background: var(--bg); border-radius: 10px; padding: 12px; margin-top: 12px; }
+    .mafia-msg { margin-bottom: 8px; font-size: 0.85rem; line-height: 1.6; }
+    .mafia-msg strong { color: var(--green); }
+    .mafia-msg.night { color: #9b59b6; }
+    .mafia-role-box { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; padding: 20px; border-radius: 14px; text-align: center; margin: 16px 0; }
+    .mafia-phase { text-align: center; font-size: 1.5rem; font-weight: bold; margin: 16px 0; padding: 12px; border-radius: 10px; }
+    .mafia-phase.day { background: rgba(241, 196, 15, 0.15); color: #f1c40f; }
+    .mafia-phase.night { background: rgba(155, 89, 182, 0.15); color: #9b59b6; }
+    .mafia-phase.voting { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+    .mafia-timer { font-size: 0.9rem; color: var(--text-dim); text-align: center; }
+    .mafia-log { font-size: 0.8rem; color: var(--text-dim); margin-top: 8px; }
+    
+    /* استایل مودال راهنما */
+    .tutorial-box { max-height: 80vh; overflow-y: auto; text-align: right; }
+    .tutorial-box h3 { margin-top: 16px; color: var(--green); font-size: 1rem; }
+    .tutorial-box ul { padding-right: 20px; font-size: 0.85rem; line-height: 1.8; color: var(--text); margin-top: 8px; }
+    .tutorial-box li { margin-bottom: 6px; }
+    .tutorial-audio-btn { background: var(--blue); color: #fff; width: 100%; padding: 12px; border-radius: 10px; border: none; margin-top: 20px; cursor: pointer; font-family: inherit; font-size: 1rem; }
   </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="logo">ساراگل</div>
-    <div class="user-area">
-      <span class="user-name">—</span>
-      <div class="avatar">—</div>
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- نمای لابی -->
+  <div id="lobbyView">
+    <div class="mafia-card">
+      <h2 style="display: flex; justify-content: space-between; align-items: center;">
+        🎭 بازی مافیا
+        <button id="showTutorialBtn" style="background:var(--bg); border:1px solid var(--border); padding:6px 12px; border-radius:8px; color:var(--text); cursor:pointer; font-family:inherit; font-size:0.8rem;">📖 راهنما</button>
+      </h2>
+      <p style="font-size:0.85rem; color:var(--text-dim); margin-top:8px;">حداقل ۴ نفر برای شروع لازمه.</p>
+      
+      <!-- دکمه ساخت اتاق فقط با جاوااسکریپت برای ادمین نمایش داده میشه -->
+      <button class="mafia-btn" id="createRoomBtn" style="display: none;">➕ ساخت اتاق جدید (فقط ادمین)</button>
+      
+      <input class="mafia-input" id="joinCode" placeholder="کد اتاق رو وارد کن" maxlength="6">
+      <button class="mafia-btn mafia-btn-blue" id="joinRoomBtn">🚪 ورود به اتاق</button>
     </div>
-  </header>
+  </div>
 
-  <main class="container">
-
-    <section>
-      <h2>🎭 مافیا</h2>
-      <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6;">
-        یه بازی گروهی مرموز! هر کی یه نقش داره، باید همدیگه رو بشناسید و مافیا رو پیدا کنید.
-      </p>
-    </section>
-
-    <section class="create-box">
-      <p style="font-size: 0.9rem; margin-bottom: 12px;">تو می‌تونی یه بازی جدید بسازی و بقیه رو دعوت کنی!</p>
-      <button id="createGameBtn" class="btn btn-green btn-full">➕ ساخت بازی جدید</button>
-    </section>
-
-    <section>
-      <h2>🎮 بازی‌های فعال</h2>
-      <div id="gamesList">
-        <p class="lock-note">در حال بارگذاری...</p>
+  <!-- نمای بازی -->
+  <div id="gameView" class="hidden">
+    <div class="mafia-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>اتاق: <span id="roomCodeDisplay"></span></strong>
+        <button class="mafia-btn mafia-btn-danger" style="width:auto; padding:6px 12px; font-size:0.8rem;" id="leaveRoomBtn">خروج</button>
       </div>
-    </section>
+      <div class="mafia-phase" id="phaseDisplay">در انتظار بازیکنان...</div>
+      <div class="mafia-timer" id="timerDisplay"></div>
+    </div>
 
-  </main>
+    <div class="mafia-card" id="roleCard" style="display:none;">
+      <h3>نقش تو:</h3>
+      <div class="mafia-role-box" id="myRoleBox"></div>
+      <p id="roleHint" style="font-size:0.85rem; color:var(--text-dim);"></p>
+    </div>
 
-  <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 خانه</a>
-    <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
-    <a href="profile.html" class="nav-item">👤 پروفایل</a>
-  </nav>
+    <div class="mafia-card">
+      <h3>بازیکنان:</h3>
+      <div class="mafia-players" id="playersList"></div>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-  <script src="auth.js"></script>
-  <script src="theme.js"></script>
-  <script>
-    var currentUser = null;
+    <div class="mafia-card" id="actionCard" style="display:none;">
+      <h3 id="actionTitle">اقدام شب:</h3>
+      <div class="mafia-players" id="actionTargets"></div>
+    </div>
 
-    supabaseClient.auth.getUser().then(function(res) {
-      if (!res.data.user) { window.location.href = 'login.html'; return; }
-      currentUser = res.data.user;
-      loadGames();
+    <div class="mafia-card" id="voteCard" style="display:none;">
+      <h3>رأی‌گیری:</h3>
+      <div class="mafia-players" id="voteTargets"></div>
+    </div>
 
-      // آپدیت خودکار
-      setInterval(loadGames, 3000);
+    <div class="mafia-card" id="chatCard">
+      <h3>💬 گفتگو</h3>
+      <div class="mafia-chat" id="chatBox"></div>
+      <input class="mafia-input" id="chatInput" placeholder="پیامت رو بنویس..." maxlength="200">
+      <button class="mafia-btn" id="sendMsgBtn">ارسال</button>
+    </div>
+
+    <div class="mafia-card">
+      <div class="mafia-log" id="logBox"></div>
+    </div>
+  </div>
+</main>
+
+<!-- مودال راهنمای بازی -->
+<div id="tutorialModal" class="modal hidden">
+  <div class="modal-box tutorial-box">
+    <h2 style="color:var(--green); text-align:center;">📖 راهنمای بازی مافیا</h2>
+    
+    <h3>🎭 نقش‌ها</h3>
+    <ul>
+      <li><strong>🕵️ مافیا:</strong> هر شب با هماهنگی هم یک نفر از شهروندان را حذف می‌کند.</li>
+      <li><strong>💊 دکتر:</strong> هر شب یک نفر را نجات می‌دهد (می‌تواند خودش هم باشد).</li>
+      <li><strong>🔍 کارآگاه:</strong> هر شب نقش یک نفر را استعلام می‌کند تا مافیا را پیدا کند.</li>
+      <li><strong>👤 شهروند:</strong> هیچ کار شبانه‌ای ندارد، اما با بحث و رأی‌گیری در روز مافیا را اخراج می‌کند.</li>
+    </ul>
+
+    <h3>☀️ روز</h3>
+    <p style="font-size:0.85rem; line-height:1.7;">در این مرحله همه با هم چت می‌کنند، به همدیگر شک می‌کنند و سعی می‌کنند مافیا را شناسایی کنند.</p>
+
+    <h3>🌙 شب</h3>
+    <p style="font-size:0.85rem; line-height:1.7;">در این مرحله چت بسته می‌شود و فقط مافیا، دکتر و کارآگاه کارهای مخفی خود را انجام می‌دهند.</p>
+
+    <h3>🗳️ رأی‌گیری</h3>
+    <p style="font-size:0.85rem; line-height:1.7;">در پایان روز، همه به یک نفر رأی می‌دهند. کسی که بیشترین رأی را بیاورد از بازی خارج می‌شود.</p>
+
+    <button class="tutorial-audio-btn" id="playAudioGuideBtn">🔊 پخش راهنمای صوتی</button>
+    
+    <!-- فایل صوتی اینجا قرار می‌گیره -->
+    <audio id="mafiaAudio" src="" style="display:none;"></audio>
+
+    <button id="closeTutorialBtn" class="btn btn-dim btn-full" style="margin-top: 20px;">متوجه شدم، بستن</button>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
+  <a href="admin.html" class="nav-item">🛠 ادمین</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+
+<script>
+var myUid = null, myName = '', myRole = 'student', myRoomId = null, myPlayerId = null, myGameRole = null;
+var pollInterval = null;
+var BAD_WORDS = ['احمق', 'خنگ', 'کثافت', 'حرومزاده', 'بی‌شعور', 'پدرسوخته', 'مادرقحبه', 'دیوث'];
+
+// ===== سیستم فیلتر کلمات =====
+function filterBadWords(text) {
+  let out = text;
+  BAD_WORDS.forEach(w => { out = out.replace(new RegExp(w, 'gi'), '***'); });
+  return out;
+}
+
+function genCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// ===== گرفتن اطلاعات کاربر =====
+supabaseClient.auth.getUser().then(res => {
+  if (!res.data.user) { window.location.href = 'login.html'; return; }
+  myUid = res.data.user.id;
+  
+  supabaseClient.from('profiles').select('username, role').eq('id', myUid).single().then(p => {
+    if (p.data) {
+      myName = p.data.username;
+      myRole = p.data.role;
+      document.querySelector('.user-name').textContent = myName;
+      document.querySelector('.avatar').textContent = myName.charAt(0);
+      
+      // نمایش دکمه ساخت اتاق فقط برای ادمین
+      if (myRole === 'admin' || myRole === 'superadmin') {
+        document.getElementById('createRoomBtn').style.display = 'block';
+      }
+    }
+  });
+});
+
+// ===== مودال راهنما =====
+document.getElementById('showTutorialBtn').addEventListener('click', function() {
+  document.getElementById('tutorialModal').classList.remove('hidden');
+});
+document.getElementById('closeTutorialBtn').addEventListener('click', function() {
+  document.getElementById('tutorialModal').classList.add('hidden');
+});
+
+// پخش راهنمای صوتی (کد آماده)
+document.getElementById('playAudioGuideBtn').addEventListener('click', function() {
+  var audio = document.getElementById('mafiaAudio');
+  
+  // ⬇️ اینجا لینک فایل صوتی خودت رو بذار ⬇️
+  // مثلا: audio.src = 'https://your-site.com/audio/mafia-guide.mp3';
+  if (!audio.src || audio.src === window.location.href) {
+    alert('فایل صوتی هنوز تنظیم نشده. (ادمین باید در کد لینک صوتی رو قرار بده)');
+    return;
+  }
+  
+  audio.play();
+  this.textContent = '🔊 در حال پخش...';
+  audio.onended = function() {
+    document.getElementById('playAudioGuideBtn').textContent = '🔊 پخش راهنمای صوتی';
+  };
+});
+
+// ===== ساخت اتاق (فقط ادمین) =====
+document.getElementById('createRoomBtn').addEventListener('click', () => {
+  const code = genCode();
+  supabaseClient.from('mafia_rooms').insert({
+    code: code, host_id: myUid, status: 'waiting', phase: 'day', day_count: 1
+  }).select().single().then(r => {
+    if (r.error) { alert('خطا: ' + r.error.message); return; }
+    joinRoom(r.data.id, code);
+  });
+});
+
+// ===== ورود به اتاق =====
+document.getElementById('joinRoomBtn').addEventListener('click', () => {
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if (!code) { alert('کد رو بزن'); return; }
+  supabaseClient.from('mafia_rooms').select('*').eq('code', code).single().then(r => {
+    if (r.error || !r.data) { alert('اتاق پیدا نشد'); return; }
+    if (r.data.status === 'ended') { alert('این بازی تموم شده'); return; }
+    joinRoom(r.data.id, code);
+  });
+});
+
+function joinRoom(roomId, code) {
+  myRoomId = roomId;
+  document.getElementById('roomCodeDisplay').textContent = code;
+  document.getElementById('lobbyView').classList.add('hidden');
+  document.getElementById('gameView').classList.remove('hidden');
+
+  supabaseClient.from('mafia_players').select('*').eq('room_id', roomId).eq('user_id', myUid).then(r => {
+    if (r.data && r.data.length > 0) {
+      myPlayerId = r.data[0].id;
+      myGameRole = r.data[0].role;
+    } else {
+      supabaseClient.from('mafia_players').insert({
+        room_id: roomId, user_id: myUid, username: myName, is_alive: true
+      }).select().single().then(ins => {
+        if (ins.data) { myPlayerId = ins.data.id; }
+      });
+    }
+  });
+
+  pollInterval = setInterval(pollGame, 2000);
+  pollGame();
+}
+
+document.getElementById('leaveRoomBtn').addEventListener('click', () => {
+  if (pollInterval) clearInterval(pollInterval);
+  myRoomId = null; myPlayerId = null; myGameRole = null;
+  document.getElementById('gameView').classList.add('hidden');
+  document.getElementById('lobbyView').classList.remove('hidden');
+});
+
+// ===== Polling (آپدیت زنده) =====
+function pollGame() {
+  if (!myRoomId) return;
+  supabaseClient.from('mafia_rooms').select('*').eq('id', myRoomId).single().then(r => {
+    if (!r.data) return;
+    const room = r.data;
+    updatePhase(room);
+    loadPlayers(room);
+    loadChat(room);
+    loadMyRole(room);
+  });
+}
+
+function updatePhase(room) {
+  const el = document.getElementById('phaseDisplay');
+  if (room.status === 'waiting') {
+    el.textContent = '⏳ در انتظار بازیکنان...';
+    el.className = 'mafia-phase';
+  } else if (room.status === 'playing') {
+    if (room.phase === 'day') {
+      el.textContent = '☀️ روز ' + room.day_count + ' - گفتگو';
+      el.className = 'mafia-phase day';
+    } else if (room.phase === 'night') {
+      el.textContent = '🌙 شب ' + room.day_count + ' - اقدام مخفی';
+      el.className = 'mafia-phase night';
+    } else if (room.phase === 'voting') {
+      el.textContent = '🗳️ رأی‌گیری روز ' + room.day_count;
+      el.className = 'mafia-phase voting';
+    }
+  } else {
+    el.textContent = '🏁 بازی تموم شد';
+    el.className = 'mafia-phase';
+  }
+}
+
+function loadPlayers(room) {
+  supabaseClient.from('mafia_players').select('*').eq('room_id', myRoomId).then(r => {
+    const players = r.data || [];
+    const list = document.getElementById('playersList');
+    list.innerHTML = '';
+    players.forEach(p => {
+      const span = document.createElement('span');
+      span.className = 'mafia-player' + (p.is_alive ? '' : ' dead') + (p.user_id === myUid ? ' self' : '');
+      span.textContent = p.username + (p.user_id === myUid ? ' (تو)' : '');
+      list.appendChild(span);
     });
 
-    function loadGames() {
-      supabaseClient.from('mafia_games')
-        .select('*')
-        .neq('status', 'finished')
-        .order('created_at', { ascending: false })
-        .then(function(res) {
-          var container = document.getElementById('gamesList');
-          var rows = res.data || [];
-
-          if (rows.length === 0) {
-            container.innerHTML = '<p class="lock-note">هنوز بازی‌ای ساخته نشده. تو اولین نفر باش!</p>';
-            return;
-          }
-
-          container.innerHTML = '';
-          rows.forEach(function(game) {
-            supabaseClient.from('mafia_players').select('*', { count: 'exact', head: true }).eq('game_id', game.id).then(function(cr) {
-              var count = cr.count || 0;
-              var isIn = false;
-              
-              supabaseClient.from('mafia_players').select('*').eq('game_id', game.id).eq('user_id', currentUser.id).then(function(myRes) {
-                isIn = myRes.data && myRes.data.length > 0;
-
-                var statusText = game.status === 'waiting' ? 'منتظر بازیکن' : 'در حال بازی';
-                var statusClass = game.status === 'waiting' ? 'waiting' : 'playing';
-
-                var btnHTML = '';
-                if (game.status === 'waiting' && !isIn) {
-                  btnHTML = '<button class="join-btn" onclick="joinGame(' + game.id + ')">عضویت در بازی</button>';
-                } else if (isIn) {
-                  btnHTML = '<a href="mafia-game.html?id=' + game.id + '" style="display:block; text-align:center; padding:10px; background:var(--blue); color:#fff; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:8px;">ورود به بازی</a>';
-                }
-
-                var div = document.createElement('div');
-                div.className = 'game-card ' + statusClass;
-                div.innerHTML = 
-                  '<div class="game-header">' +
-                    '<strong>بازی #' + game.id + '</strong>' +
-                    '<span class="game-status ' + statusClass + '">' + statusText + '</span>' +
-                  '</div>' +
-                  '<div class="players-count">👥 ' + count + ' بازیکن (حداقل ' + game.min_players + ')</div>' +
-                  btnHTML;
-                container.appendChild(div);
-              });
-            });
-          });
-        });
+    // دکمه شروع بازی (فقط برای ادمینی که اتاق رو ساخته)
+    if (room.status === 'waiting' && players.length >= 4 && room.host_id === myUid) {
+      if (!document.getElementById('startGameBtn')) {
+        const startBtn = document.createElement('button');
+        startBtn.id = 'startGameBtn';
+        startBtn.className = 'mafia-btn';
+        startBtn.textContent = '🎬 شروع بازی';
+        startBtn.onclick = startGame;
+        document.getElementById('playersList').parentElement.appendChild(startBtn);
+      }
     }
 
-    document.getElementById('createGameBtn').addEventListener('click', function() {
-      supabaseClient.from('mafia_games').insert({
-        host_id: currentUser.id,
-        status: 'waiting',
-        phase: 'lobby'
-      }).then(function(res) {
-        if (res.error) { alert('خطا: ' + res.error.message); return; }
-        window.location.href = 'mafia-game.html?id=' + res.data[0].id;
-      });
-    });
+    // اکشن شب
+    if (room.status === 'playing' && room.phase === 'night') {
+      showNightAction(players);
+    } else {
+      document.getElementById('actionCard').style.display = 'none';
+    }
 
-    window.joinGame = function(gameId) {
-      supabaseClient.from('mafia_players').insert({
-        game_id: gameId,
-        user_id: currentUser.id
-      }).then(function(res) {
-        if (res.error) { alert('خطا: ' + res.error.message); return; }
-        window.location.href = 'mafia-game.html?id=' + gameId;
+    // رأی‌گیری
+    if (room.status === 'playing' && room.phase === 'voting') {
+      showVoting(players);
+    } else {
+      document.getElementById('voteCard').style.display = 'none';
+    }
+  });
+}
+
+function loadMyRole(room) {
+  if (!myPlayerId) return;
+  supabaseClient.from('mafia_players').select('*').eq('id', myPlayerId).single().then(r => {
+    if (!r.data || !r.data.role) return;
+    myGameRole = r.data.role;
+    document.getElementById('roleCard').style.display = 'block';
+    const box = document.getElementById('myRoleBox');
+    const hint = document.getElementById('roleHint');
+    const roleNames = { mafia: '🕵️ مافیا', doctor: '💊 دکتر', detective: '🔍 کارآگاه', citizen: '👤 شهروند' };
+    box.textContent = roleNames[myGameRole] || myGameRole;
+    
+    if (myGameRole === 'mafia') hint.textContent = 'هر شب یک نفر رو می‌کشی. با مافیاهای دیگه همکاری کن.';
+    else if (myGameRole === 'doctor') hint.textContent = 'هر شب یک نفر رو از مرگ نجات بده.';
+    else if (myGameRole === 'detective') hint.textContent = 'هر شب نقش یک نفر رو استعلام کن.';
+    else hint.textContent = 'تو شهروندی. با بحث و رأی، مافیا رو پیدا کن.';
+  });
+}
+
+function loadChat(room) {
+  supabaseClient.from('mafia_messages').select('*').eq('room_id', myRoomId).order('created_at', { ascending: true }).then(r => {
+    const box = document.getElementById('chatBox');
+    box.innerHTML = '';
+    (r.data || []).forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'mafia-msg' + (m.is_night ? ' night' : '');
+      div.innerHTML = '<strong>' + m.username + ':</strong> ' + m.message;
+      box.appendChild(div);
+    });
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+document.getElementById('sendMsgBtn').addEventListener('click', sendMsg);
+document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendMsg(); });
+
+function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || !myRoomId) return;
+  input.value = '';
+  supabaseClient.from('mafia_messages').insert({
+    room_id: myRoomId, user_id: myUid, username: myName,
+    message: filterBadWords(text), is_night: false
+  });
+}
+
+// ===== شروع بازی =====
+function startGame() {
+  supabaseClient.from('mafia_players').select('*').eq('room_id', myRoomId).then(r => {
+    const players = r.data || [];
+    if (players.length < 4) { alert('حداقل ۴ نفر لازمه'); return; }
+    
+    const roles = [];
+    const mafiaCount = Math.max(1, Math.floor(players.length / 4));
+    for (let i = 0; i < mafiaCount; i++) roles.push('mafia');
+    roles.push('doctor');
+    if (players.length >= 5) roles.push('detective');
+    while (roles.length < players.length) roles.push('citizen');
+    
+    roles.sort(() => Math.random() - 0.5);
+    
+    const promises = players.map((p, i) => 
+      supabaseClient.from('mafia_players').update({ role: roles[i] }).eq('id', p.id)
+    );
+    
+    Promise.all(promises).then(() => {
+      supabaseClient.from('mafia_rooms').update({ status: 'playing', phase: 'day', day_count: 1 }).eq('id', myRoomId);
+      document.getElementById('startGameBtn') && document.getElementById('startGameBtn').remove();
+    });
+  });
+}
+
+// ===== اکشن شب =====
+function showNightAction(players) {
+  const card = document.getElementById('actionCard');
+  const title = document.getElementById('actionTitle');
+  const targets = document.getElementById('actionTargets');
+  
+  if (myGameRole === 'citizen') { card.style.display = 'none'; return; }
+  
+  card.style.display = 'block';
+  title.textContent = myGameRole === 'mafia' ? '🔪 یک نفر رو بکش:' : 
+                     myGameRole === 'doctor' ? '💊 یک نفر رو نجات بده:' : 
+                     '🔍 یک نفر رو استعلام کن:';
+  targets.innerHTML = '';
+  
+  players.filter(p => p.is_alive && p.user_id !== myUid).forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'mafia-btn';
+    btn.style.width = 'auto';
+    btn.style.margin = '4px';
+    btn.style.padding = '8px 16px';
+    btn.textContent = p.username;
+    btn.onclick = () => {
+      if (!confirm('مطمئنی ' + p.username + ' رو انتخاب می‌کنی؟')) return;
+      supabaseClient.from('mafia_actions').insert({
+        room_id: myRoomId, actor_id: myUid, target_id: p.user_id, action: myGameRole, day_count: 1
+      }).then(() => {
+        targets.innerHTML = '<p style="color:var(--green);">✅ ثبت شد.</p>';
       });
     };
-  </script>
+    targets.appendChild(btn);
+  });
+}
+
+// ===== رأی‌گیری =====
+function showVoting(players) {
+  const card = document.getElementById('voteCard');
+  const targets = document.getElementById('voteTargets');
+  card.style.display = 'block';
+  targets.innerHTML = '';
+  
+  players.filter(p => p.is_alive).forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'mafia-btn' + (p.user_id === myUid ? ' mafia-btn-danger' : '');
+    btn.style.width = 'auto';
+    btn.style.margin = '4px';
+    btn.style.padding = '8px 16px';
+    btn.textContent = p.username;
+    btn.onclick = () => {
+      supabaseClient.from('mafia_players').update({ voted_for: p.user_id }).eq('id', myPlayerId);
+      targets.innerHTML = '<p style="color:var(--green);">✅ رأی تو ثبت شد برای ' + p.username + '</p>';
+    };
+    targets.appendChild(btn);
+  });
+}
+</script>
 </body>
 </html>
