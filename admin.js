@@ -7,7 +7,6 @@ function toShamsi(dateStr) {
   return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
 }
 
-// ===== چک کردن دسترسی و شروع =====
 supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   currentUser = res.data.user;
@@ -31,10 +30,10 @@ supabaseClient.auth.getUser().then(function(res) {
     loadQuotes();
     loadInbox();
     loadBookClubUsers();
+    loadAdminNotices(); // لود کردن اعلان‌ها توی پنل ادمین
   });
 });
 
-// ===== تب‌های اصلی =====
 var adminTabs = document.querySelectorAll('[data-admin-tab]');
 var adminContents = document.querySelectorAll('.admin-tab-content');
 adminTabs.forEach(function(tab) {
@@ -47,7 +46,6 @@ adminTabs.forEach(function(tab) {
   });
 });
 
-// ===== منوی کشویی کتاب‌ها =====
 if (document.getElementById('toggleBooksBtn')) {
   var toggleBooksBtn = document.getElementById('toggleBooksBtn');
   var booksContainer = document.getElementById('booksContainer');
@@ -65,7 +63,7 @@ if (document.getElementById('toggleBooksBtn')) {
   });
 }
 
-// ===== اعلان جدید (با نمایش خطای دقیق) =====
+// ===== ثبت اعلان جدید =====
 if (document.getElementById('addNoticeBtn')) {
   document.getElementById('addNoticeBtn').addEventListener('click', function() {
     var text = document.getElementById('noticeText').value.trim();
@@ -83,24 +81,64 @@ if (document.getElementById('addNoticeBtn')) {
 
     supabaseClient.from('notices').insert({ text: text, type: type }).then(function(res) {
       if (res.error) { 
-        // ⬇️ حالا پیام دقیق خطا رو نشون می‌ده
-        msg.textContent = '❌ ' + res.error.message + ' (کد: ' + (res.error.code || '?') + ')';
+        msg.textContent = '❌ ' + res.error.message;
         msg.style.color = '#e74c3c';
-        console.error('NOTICE ERROR FULL:', res.error);
         return;
       }
       msg.textContent = '✅ ثبت شد'; 
       msg.style.color = '#2ecc71';
       document.getElementById('noticeText').value = '';
-    }).catch(function(err) {
-      msg.textContent = '❌ خطای شبکه: ' + err.message;
-      msg.style.color = '#e74c3c';
-      console.error('NOTICE NETWORK ERROR:', err);
+      loadAdminNotices(); // رفرش لیست اعلان‌ها
     });
   });
 }
 
-// ===== درخواست‌ها و کاربران =====
+// ===== لود لیست اعلان‌ها توی ادمین =====
+function loadAdminNotices() {
+  var list = document.getElementById('adminNoticesList');
+  if (!list) return;
+  
+  supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    var rows = res.data || [];
+    
+    if (rows.length === 0) { 
+      list.innerHTML = '<p class="lock-note">هیچ اعلانی ثبت نشده است.</p>'; 
+      return; 
+    }
+    
+    rows.forEach(function(n) {
+      var div = document.createElement('div');
+      div.style.display = 'flex';
+      div.style.justifyContent = 'space-between';
+      div.style.alignItems = 'center';
+      div.style.padding = '12px';
+      div.style.background = 'var(--bg-card)';
+      div.style.border = '1px solid var(--border)';
+      div.style.borderRadius = '10px';
+      
+      var typeStr = (n.type || '').toLowerCase();
+      var typeLabel = 'عادی';
+      if (typeStr.includes('فوری')) typeLabel = 'فوری';
+      else if (typeStr.includes('مهم')) typeLabel = 'مهم';
+      
+      div.innerHTML = '<div style="flex:1;"><strong>' + n.text + '</strong><br><span style="font-size:0.75rem; color:var(--text-dim);">نوع: ' + typeLabel + '</span></div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delAdminNotice(' + n.id + ')" style="color:#e74c3c; border-color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+
+// ===== حذف اعلان =====
+window.delAdminNotice = function(id) {
+  if (confirm('این اعلان حذف شود؟')) {
+    supabaseClient.from('notices').delete().eq('id', id).then(function(res) {
+      if (!res.error) loadAdminNotices(); // بعد از حذف، لیست رو رفرش کن
+    });
+  }
+}
+
+// ===== بقیه توابع (بدون تغییر) =====
 function loadRequests() {
   var box = document.getElementById('requestsList');
   if (!box) return;
@@ -142,7 +180,6 @@ function loadUsers() {
       
       var html = '<div style="width:100%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">';
       html += '<div><strong>' + statusLabel + ' ' + u.username + '</strong><span class="admin-sub">' + u.class_name + titleDisplay + '</span></div>';
-      
       if (canEdit && u.id !== currentUser.id) {
         html += '<select class="select role-select" data-uid="' + u.id + '" style="padding:6px;font-size:0.75rem;">' + options + '</select>';
       } else {
@@ -164,7 +201,6 @@ function loadUsers() {
   });
 }
 
-// ===== آزمون‌ها =====
 function loadExams() {
   var list = document.getElementById('examsList');
   if (!list) return;
@@ -191,7 +227,6 @@ if (document.getElementById('addExamBtn')) {
   });
 }
 
-// ===== جمله‌ها =====
 function loadQuotes() {
   var list = document.getElementById('quotesList');
   if (!list) return;
@@ -216,7 +251,6 @@ if (document.getElementById('addQuoteBtn')) {
   });
 }
 
-// ===== انتشار مستقیم =====
 if (document.getElementById('directUploadBtn')) {
   document.getElementById('directUploadBtn').addEventListener('click', function() {
     var file = document.getElementById('directFile').files[0];
@@ -235,7 +269,6 @@ if (document.getElementById('directUploadBtn')) {
   });
 }
 
-// ===== صندوق ورودی =====
 function loadInbox() {
   if (!document.getElementById('list-private')) return;
   var inboxTabs = document.querySelectorAll('[data-tab^="inbox-"]');
@@ -277,7 +310,6 @@ function loadInbox() {
 window.delInbox = function(id) { supabaseClient.from('admin_inbox').delete().eq('id', id).then(loadInbox); }
 window.approveInbox = function(id) { supabaseClient.from('admin_inbox').update({ status: 'approved' }).eq('id', id).then(loadInbox); }
 
-// ===== اعضای انجمن کتاب‌خوانی =====
 function loadBookClubUsers() {
   var listBox = document.getElementById('bookClubUsersList');
   if (!listBox) return;
