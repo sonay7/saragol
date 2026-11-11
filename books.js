@@ -1,3 +1,22 @@
+// ===== ذخیره‌ی جلسه‌ی مطالعه (اگر در صفحات دیگر هم نیاز بود) =====
+function saveStudySession(subject, minutes, questions) {
+  return supabaseClient.auth.getUser().then(function(res) {
+    if (!res.data.user) return;
+    var userId = res.data.user.id;
+    return supabaseClient.from('study_sessions').insert({
+      user_id: userId, subject: subject, minutes: minutes, questions: parseInt(questions) || 0
+    }).then(function(sessionRes) {
+      if (sessionRes.error) return;
+      return supabaseClient.from('profiles').select('total_minutes, xp').eq('id', userId).single().then(function(p) {
+        var newMinutes = (p.data.total_minutes || 0) + minutes;
+        var newXp = (p.data.xp || 0) + minutes * 2;
+        return supabaseClient.from('profiles').update({ total_minutes: newMinutes, xp: newXp }).eq('id', userId);
+      });
+    });
+  });
+}
+
+// ===== کدهای کتاب‌خوانی =====
 var currentUser = null;
 var currentLevel = 1;
 
@@ -42,8 +61,8 @@ supabaseClient.auth.getUser().then(function(res) {
     }
 
     if (currentLevel >= 2) {
-      shelfLocked.classList.add('hidden');
-      shelfUnlocked.classList.remove('hidden');
+      if(shelfLocked) shelfLocked.classList.add('hidden');
+      if(shelfUnlocked) shelfUnlocked.classList.remove('hidden');
       loadMyShelf();
     }
 
@@ -55,6 +74,7 @@ supabaseClient.auth.getUser().then(function(res) {
 
 // ===== چت =====
 function loadChat() {
+  if(!chatBox) return;
   supabaseClient.from('book_chat').select('*, profiles(username)').order('created_at', { ascending: true }).then(function(res) {
     chatBox.innerHTML = '';
     var rows = res.data || [];
@@ -71,46 +91,51 @@ function loadChat() {
   });
 }
 
-chatSendBtn.addEventListener('click', function() {
-  var text = chatInput.value.trim();
-  if (text.length < 1) return;
-  supabaseClient.from('banned_words').select('word').then(function(res) {
-    var banned = (res.data || []).map(function(w) { return w.word; });
-    var cleanedText = text.replace(/[\/\-\.\_\s]/g, '');
-    var hasBadWord = false;
-    banned.forEach(function(bw) { if (cleanedText.includes(bw)) hasBadWord = true; });
-    if (hasBadWord) { alert('پیامت حاوی کلمات نامناسب بود.'); return; }
-    
-    chatInput.value = '';
-    chatSendBtn.disabled = true;
-    supabaseClient.from('book_chat').insert({ user_id: currentUser.id, message: text }).then(function(res) {
-      chatSendBtn.disabled = false;
-      if (!res.error) loadChat();
+if(chatSendBtn) {
+  chatSendBtn.addEventListener('click', function() {
+    var text = chatInput.value.trim();
+    if (text.length < 1) return;
+    supabaseClient.from('banned_words').select('word').then(function(res) {
+      var banned = (res.data || []).map(function(w) { return w.word; });
+      var cleanedText = text.replace(/[\/\-\.\_\s]/g, '');
+      var hasBadWord = false;
+      banned.forEach(function(bw) { if (cleanedText.includes(bw)) hasBadWord = true; });
+      if (hasBadWord) { alert('پیامت حاوی کلمات نامناسب بود.'); return; }
+      
+      chatInput.value = '';
+      chatSendBtn.disabled = true;
+      supabaseClient.from('book_chat').insert({ user_id: currentUser.id, message: text }).then(function(res) {
+        chatSendBtn.disabled = false;
+        if (!res.error) loadChat();
+      });
     });
   });
-});
-chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') chatSendBtn.click(); });
+  chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') chatSendBtn.click(); });
+}
 
 // ===== ردیاب مطالعه =====
-document.getElementById('addProgressBtn').addEventListener('click', function() {
-  var title = document.getElementById('newBookTitle').value.trim();
-  var total = parseInt(document.getElementById('newBookTotalPages').value);
-  var perDay = parseInt(document.getElementById('newBookPagesPerDay').value);
+if(document.getElementById('addProgressBtn')) {
+  document.getElementById('addProgressBtn').addEventListener('click', function() {
+    var title = document.getElementById('newBookTitle').value.trim();
+    var total = parseInt(document.getElementById('newBookTotalPages').value);
+    var perDay = parseInt(document.getElementById('newBookPagesPerDay').value);
 
-  if (!title || !total || total < 1 || !perDay || perDay < 1) { alert('همه فیلدها رو پر کن'); return; }
+    if (!title || !total || total < 1 || !perDay || perDay < 1) { alert('همه فیلدها رو پر کن'); return; }
 
-  supabaseClient.from('book_progress').insert({
-    user_id: currentUser.id, title: title, total_pages: total, pages_per_day: perDay
-  }).then(function(res) {
-    if (res.error) { alert('خطا: ' + res.error.message); return; }
-    document.getElementById('newBookTitle').value = '';
-    document.getElementById('newBookTotalPages').value = '';
-    document.getElementById('newBookPagesPerDay').value = '';
-    loadProgress();
+    supabaseClient.from('book_progress').insert({
+      user_id: currentUser.id, title: title, total_pages: total, pages_per_day: perDay
+    }).then(function(res) {
+      if (res.error) { alert('خطا: ' + res.error.message); return; }
+      document.getElementById('newBookTitle').value = '';
+      document.getElementById('newBookTotalPages').value = '';
+      document.getElementById('newBookPagesPerDay').value = '';
+      loadProgress();
+    });
   });
-});
+}
 
 function loadProgress() {
+  if(!progressList) return;
   supabaseClient.from('book_progress').select('*').eq('user_id', currentUser.id).eq('status', 'reading').order('created_at', { ascending: false }).then(function(res) {
     progressList.innerHTML = '';
     var rows = res.data || [];
@@ -160,37 +185,40 @@ window.delProgress = function(id) {
 }
 
 // ===== قفسه کتاب =====
-document.getElementById('addBookBtn').addEventListener('click', function() {
-  var title = document.getElementById('bookTitle').value.trim();
-  var file = document.getElementById('bookImage').files[0];
-  var btn = document.getElementById('addBookBtn');
+if(document.getElementById('addBookBtn')) {
+  document.getElementById('addBookBtn').addEventListener('click', function() {
+    var title = document.getElementById('bookTitle').value.trim();
+    var file = document.getElementById('bookImage').files[0];
+    var btn = document.getElementById('addBookBtn');
 
-  if (!title || !file) { alert('اسم و عکس کتاب رو بزن'); return; }
-  if (file.size > 2 * 1024 * 1024) { alert('حجم عکس زیاده'); return; }
+    if (!title || !file) { alert('اسم و عکس کتاب رو بزن'); return; }
+    if (file.size > 2 * 1024 * 1024) { alert('حجم عکس زیاده'); return; }
 
-  btn.disabled = true; btn.textContent = 'در حال ثبت...';
-  var safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '');
-  var fileName = 'book_' + Date.now() + '_' + safeName;
+    btn.disabled = true; btn.textContent = 'در حال ثبت...';
+    var safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '');
+    var fileName = 'book_' + Date.now() + '_' + safeName;
 
-  supabaseClient.storage.from('videos').upload(fileName, file).then(function(uploadRes) {
-    if (uploadRes.error) { alert('خطا'); btn.disabled = false; btn.textContent = 'افزودن به قفسه'; return; }
-    var publicUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
+    supabaseClient.storage.from('videos').upload(fileName, file).then(function(uploadRes) {
+      if (uploadRes.error) { alert('خطا'); btn.disabled = false; btn.textContent = 'افزودن به قفسه'; return; }
+      var publicUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
 
-    supabaseClient.from('book_shelf').insert({ user_id: currentUser.id, title: title, image_url: publicUrl }).then(function(insertRes) {
-      btn.disabled = false; btn.textContent = 'افزودن به قفسه';
-      if (insertRes.error) { alert('خطا'); return; }
-      btn.textContent = '✅ اضافه شد!';
-      setTimeout(function() {
-        document.getElementById('bookTitle').value = '';
-        document.getElementById('bookImage').value = '';
-        loadMyShelf();
-        btn.textContent = 'افزودن به قفسه';
-      }, 1000);
+      supabaseClient.from('book_shelf').insert({ user_id: currentUser.id, title: title, image_url: publicUrl }).then(function(insertRes) {
+        btn.disabled = false; btn.textContent = 'افزودن به قفسه';
+        if (insertRes.error) { alert('خطا'); return; }
+        btn.textContent = '✅ اضافه شد!';
+        setTimeout(function() {
+          document.getElementById('bookTitle').value = '';
+          document.getElementById('bookImage').value = '';
+          loadMyShelf();
+          btn.textContent = 'افزودن به قفسه';
+        }, 1000);
+      });
     });
   });
-});
+}
 
 function loadMyShelf() {
+  if(!myShelfList) return;
   supabaseClient.from('book_shelf').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: true }).then(function(res) {
     myShelfList.innerHTML = '';
     var rows = res.data || [];
@@ -210,17 +238,20 @@ function loadMyShelf() {
 window.deleteBook = function(id) { if(confirm('حذف بشه؟')) supabaseClient.from('book_shelf').delete().eq('id', id).then(loadMyShelf); }
 
 // ===== امانت =====
-document.getElementById('addLoanBtn').addEventListener('click', function() {
-  var title = document.getElementById('loanTitle').value.trim();
-  if (!title) return;
-  supabaseClient.from('book_loan').insert({ owner_id: currentUser.id, title: title, status: 'available' }).then(function(res) {
-    if (res.error) { alert('خطا'); return; }
-    document.getElementById('loanTitle').value = '';
-    loadLoans();
+if(document.getElementById('addLoanBtn')) {
+  document.getElementById('addLoanBtn').addEventListener('click', function() {
+    var title = document.getElementById('loanTitle').value.trim();
+    if (!title) return;
+    supabaseClient.from('book_loan').insert({ owner_id: currentUser.id, title: title, status: 'available' }).then(function(res) {
+      if (res.error) { alert('خطا'); return; }
+      document.getElementById('loanTitle').value = '';
+      loadLoans();
+    });
   });
-});
+}
 
 function loadLoans() {
+  if(!loanList) return;
   supabaseClient.from('book_loan').select('*, profiles(username)').order('created_at', { ascending: false }).then(function(res) {
     loanList.innerHTML = '';
     var rows = res.data || [];
