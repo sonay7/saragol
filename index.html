@@ -14,7 +14,7 @@
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* ===== انجمن‌ها (ترفند استفاده از Flexbox و اجبار به دو ستونه) ===== */
+    /* ===== انجمن‌ها (با آی‌دی جدید برای فرار از دست اسکریپت‌ها) ===== */
     .forum-grid { 
       display: flex !important; 
       flex-wrap: wrap !important;
@@ -25,7 +25,6 @@
     .forum-card { 
       flex: 1 1 calc(50% - 12px) !important;
       max-width: calc(50% - 12px) !important;
-      min-width: 140px !important;
       background: var(--bg-card) !important; 
       border: 1px solid var(--border) !important; 
       border-radius: 16px !important; 
@@ -47,7 +46,7 @@
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
 
-    /* ===== دسترسی سریع (وسط‌چین کردن ۵ تا دکمه) ===== */
+    /* ===== دسترسی سریع (وسط چین کردن دقیق) ===== */
     .quick-links-grid { 
       display: flex !important; 
       flex-wrap: wrap !important; 
@@ -56,9 +55,7 @@
       margin-top: 12px; 
     }
     .quick-link { 
-      flex: 1 1 calc(33.333% - 10px); 
-      max-width: calc(33.333% - 10px);
-      min-width: 80px;
+      flex: 0 0 calc(33.333% - 10px); 
       background: var(--bg); 
       border: 1px solid var(--border); 
       border-radius: 12px; 
@@ -75,10 +72,13 @@
     }
     .quick-link:hover { border-color: var(--blue); color: var(--blue); }
 
-    .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-    .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; }
-    .welcome-content h2 { color: var(--green); margin-bottom: 16px; }
-    .welcome-content button { margin-top: 20px; }
+    /* ===== مودال خوش‌آمدگویی ===== */
+    .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
+    .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
+    .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
+    .welcome-content p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
+    .welcome-content button { margin-top: 24px; }
+    .welcome-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
 
     /* ===== استایل اعلان‌ها ===== */
     .notice {
@@ -131,13 +131,9 @@
 
     <section style="margin-bottom: 20px;">
       <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
-      
-      <!-- ⬇️ این ترفند مخفی رو اضافه کردم. اسکریپت‌ها این رو مخفی می‌کنن، نه کارت اصلی رو! -->
-      <span id="bookClubCard" style="display: none !important;"></span>
-
       <div class="forum-grid">
-        <!-- کارت اصلی که همیشه باید دیده بشه -->
-        <a href="books.html" class="forum-card">
+        <!-- آی‌دی کارت رو عوض کردم تا اسکریپت‌های دیگه نتونن پیداش کنن و مخفیش کنن -->
+        <a href="books.html" class="forum-card" id="permanent-book-club">
           <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
         <a href="#" class="forum-card">
@@ -166,11 +162,13 @@
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
+  <!-- مودال خوش‌آمدگویی قشنگ -->
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
+      <span class="welcome-emoji">🌸</span>
       <h2>سلام! به ساراگل خوش اومدی 👋</h2>
-      <p>اینجا می‌تونی درس بخونی، رقابت کنی، بازی کنی و رفیق پیدا کنی!</p>
-      <button id="closeWelcomeBtn" class="btn btn-green btn-full">متوجه شدم!</button>
+      <p>اینجا قراره با هم درس بخونیم، رقابت کنیم، بازی کنیم و پیشرفت کنیم. آماده‌ای که بهترین نسخه‌ی خودت بشی؟ 🚀</p>
+      <button id="closeWelcomeBtn" class="btn btn-green btn-full">بزن بریم! 🚀</button>
     </div>
   </div>
 
@@ -182,6 +180,7 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // نمایش مودال خوش‌آمدگویی (فقط بار اول)
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
       }
