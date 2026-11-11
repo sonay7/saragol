@@ -9,14 +9,13 @@ supabaseClient.auth.getUser().then(function(res) {
 function loadExplore() {
   var feed = document.getElementById('exploreFeed');
   
-  // گرفتن محتواهای تأیید شده از admin_inbox + تعداد لایک‌ها
   supabaseClient.from('admin_inbox')
     .select('id, file_url, file_type, created_at, explore_likes(user_id)')
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
     .then(function(res) {
       if (res.error) {
-        feed.innerHTML = '<p class="lock-note">خطا در بارگذاری</p>';
+        feed.innerHTML = '<p class="lock-note">خطا در بارگذاری: ' + res.error.message + '</p>';
         return;
       }
       
@@ -38,12 +37,20 @@ function loadExplore() {
         div.style.overflow = 'hidden';
         div.style.marginBottom = '20px';
         div.style.border = '1px solid var(--border)';
+        div.style.borderRadius = '12px';
 
         var mediaHtml = '';
-        if (item.file_type && item.file_type.indexOf('video') === 0) {
-          mediaHtml = '<video src="' + item.file_url + '" controls preload="none" playsinline style="width:100%; max-height: 500px; background: #000; display: block;"></video>';
+        var isVideo = item.file_type && item.file_type.indexOf('video') === 0;
+        
+        if (isVideo) {
+          // ⬇️ preload از none به metadata تغییر کرد + poster شفاف برای اولین فریم
+          mediaHtml = '<video src="' + item.file_url + '" controls preload="metadata" playsinline crossorigin="anonymous" ' +
+            'style="width:100%; max-height: 500px; background: #000; display: block; border-radius: 12px 12px 0 0;" ' +
+            'onerror="this.style.display=\'none\'; this.insertAdjacentHTML(\'afterend\', \'<div style=\\\'padding:40px; text-align:center; color:#e74c3c;\\\'>⚠️ این ویدیو قابل پخش نیست. لینک: <a href=\\\'\' + this.src + \'\\\' target=\\\'_blank\\\'>اینجا</a></div>\');">' +
+            '</video>';
         } else {
-          mediaHtml = '<img src="' + item.file_url + '" loading="lazy" style="width:100%; max-height: 500px; object-fit: contain; background: #000; display: block;">';
+          mediaHtml = '<img src="' + item.file_url + '" loading="lazy" style="width:100%; max-height: 500px; object-fit: contain; background: #000; display: block; border-radius: 12px 12px 0 0;" ' +
+            'onerror="this.style.display=\'none\'; this.insertAdjacentHTML(\'afterend\', \'<div style=\\\'padding:40px; text-align:center; color:#e74c3c;\\\'>⚠️ این تصویر لود نشد.</div>\');">';
         }
 
         var heartStyle = iLiked ? 'color: #e74c3c;' : 'color: var(--text-dim);';
