@@ -6,20 +6,25 @@
   <title>ساراگل | مدرسه‌ی ما</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 10px; }
+    .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
     .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
 
-    .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; }
+    .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; margin-bottom: 20px; }
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
-    .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* آیکون‌ها */
-    .forum-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    /* کارت‌های انجمن */
+    .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
-    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); }
-    .forum-icon { font-size: 2rem; }
-    .forum-name { font-size: 0.85rem; font-weight: 600; }
+    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .forum-icon { font-size: 2.5rem; }
+    .forum-name { font-size: 0.9rem; font-weight: 600; }
+
+    /* لینک‌های دسترسی سریع (قبلی‌ها) */
+    .quick-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .quick-link { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 8px; text-align: center; text-decoration: none; color: var(--text); font-size: 0.8rem; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .quick-link:hover { border-color: var(--blue); color: var(--blue); }
 
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; }
@@ -51,26 +56,36 @@
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <section class="forums">
-      <h2>دسترسی سریع</h2>
-      <div class="forum-list">
+    <section style="margin-bottom: 20px;">
+      <h2 style="margin-bottom: 12px;">💬 انجمن‌ها</h2>
+      <div class="forum-grid">
         <a href="books.html" class="forum-card">
           <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
-        <a href="counselor.html" class="forum-card">
-          <span class="forum-icon">💬</span><span class="forum-name">مشاوره</span>
+        <!-- هنری رو طبق عکست گذاشتم، اگه لینکش رو داری توی href بذار -->
+        <a href="#" class="forum-card">
+          <span class="forum-icon">🎨</span><span class="forum-name">هنری</span>
         </a>
-        <a href="contact.html" class="forum-card">
-          <span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span>
+      </div>
+    </section>
+
+    <section class="big-league-card">
+      <h2 style="margin-bottom: 12px;">🔗 دسترسی سریع</h2>
+      <div class="quick-links-grid">
+        <a href="counselor.html" class="quick-link">
+          <span>💬</span><span>مشاوره</span>
         </a>
-        <a href="games.html" class="forum-card">
-          <span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span>
+        <a href="contact.html" class="quick-link">
+          <span>🚨</span><span>ارتباط با ادمین</span>
         </a>
-        <a href="mafia.html" class="forum-card">
-          <span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span>
+        <a href="games.html" class="quick-link">
+          <span>🎮</span><span>بازی و معما</span>
         </a>
-        <a href="explore.html" class="forum-card">
-          <span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span>
+        <a href="mafia.html" class="quick-link">
+          <span>🕵️</span><span>مافیا</span>
+        </a>
+        <a href="explore.html" class="quick-link">
+          <span>🎬</span><span>اکسپلور</span>
         </a>
       </div>
     </section>
