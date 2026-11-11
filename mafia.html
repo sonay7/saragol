@@ -5,30 +5,146 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مافیا | ساراگل</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .game-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .game-card.waiting { border-color: var(--green); }
+    .game-card.playing { border-color: var(--blue); }
+    .game-card.finished { opacity: 0.6; }
+    .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .game-status { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; }
+    .game-status.waiting { background: rgba(46,204,113,0.15); color: var(--green); }
+    .game-status.playing { background: rgba(52,152,219,0.15); color: var(--blue); }
+    .game-status.finished { background: rgba(150,150,150,0.15); color: var(--text-dim); }
+    .players-count { font-size: 0.8rem; color: var(--text-dim); }
+    .join-btn { width: 100%; padding: 10px; border: none; border-radius: 10px; background: var(--green); color: #fff; font-weight: bold; cursor: pointer; font-family: inherit; margin-top: 8px; }
+    .create-box { background: var(--bg-card); border: 1px dashed var(--border); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
+  </style>
 </head>
 <body>
+
   <header class="header">
     <div class="logo">ساراگل</div>
-    <div class="user-area"><span class="user-name">—</span><div class="avatar">—</div></div>
-  </header>
-  <main class="container">
-    <h2>🕵️ بازی مافیا</h2>
-    <div class="profile-card" style="text-align:center; margin-top: 20px;">
-      <div style="font-size: 3rem; margin-bottom: 15px;">🕵️</div>
-      <h3>به زودی...</h3>
-      <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 10px;">
-        بازی مافیا به صورت زنده و زمان‌بندی شده به زودی در این بخش فعال می‌شود.<br>
-        منتظر اعلان باشید!
-      </p>
+    <div class="user-area">
+      <span class="user-name">—</span>
+      <div class="avatar">—</div>
     </div>
+  </header>
+
+  <main class="container">
+
+    <section>
+      <h2>🎭 مافیا</h2>
+      <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6;">
+        یه بازی گروهی مرموز! هر کی یه نقش داره، باید همدیگه رو بشناسید و مافیا رو پیدا کنید.
+      </p>
+    </section>
+
+    <section class="create-box">
+      <p style="font-size: 0.9rem; margin-bottom: 12px;">تو می‌تونی یه بازی جدید بسازی و بقیه رو دعوت کنی!</p>
+      <button id="createGameBtn" class="btn btn-green btn-full">➕ ساخت بازی جدید</button>
+    </section>
+
+    <section>
+      <h2>🎮 بازی‌های فعال</h2>
+      <div id="gamesList">
+        <p class="lock-note">در حال بارگذاری...</p>
+      </div>
+    </section>
+
   </main>
+
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
+  <script src="theme.js"></script>
+  <script>
+    var currentUser = null;
+
+    supabaseClient.auth.getUser().then(function(res) {
+      if (!res.data.user) { window.location.href = 'login.html'; return; }
+      currentUser = res.data.user;
+      loadGames();
+
+      // آپدیت خودکار
+      setInterval(loadGames, 3000);
+    });
+
+    function loadGames() {
+      supabaseClient.from('mafia_games')
+        .select('*')
+        .neq('status', 'finished')
+        .order('created_at', { ascending: false })
+        .then(function(res) {
+          var container = document.getElementById('gamesList');
+          var rows = res.data || [];
+
+          if (rows.length === 0) {
+            container.innerHTML = '<p class="lock-note">هنوز بازی‌ای ساخته نشده. تو اولین نفر باش!</p>';
+            return;
+          }
+
+          container.innerHTML = '';
+          rows.forEach(function(game) {
+            supabaseClient.from('mafia_players').select('*', { count: 'exact', head: true }).eq('game_id', game.id).then(function(cr) {
+              var count = cr.count || 0;
+              var isIn = false;
+              
+              supabaseClient.from('mafia_players').select('*').eq('game_id', game.id).eq('user_id', currentUser.id).then(function(myRes) {
+                isIn = myRes.data && myRes.data.length > 0;
+
+                var statusText = game.status === 'waiting' ? 'منتظر بازیکن' : 'در حال بازی';
+                var statusClass = game.status === 'waiting' ? 'waiting' : 'playing';
+
+                var btnHTML = '';
+                if (game.status === 'waiting' && !isIn) {
+                  btnHTML = '<button class="join-btn" onclick="joinGame(' + game.id + ')">عضویت در بازی</button>';
+                } else if (isIn) {
+                  btnHTML = '<a href="mafia-game.html?id=' + game.id + '" style="display:block; text-align:center; padding:10px; background:var(--blue); color:#fff; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:8px;">ورود به بازی</a>';
+                }
+
+                var div = document.createElement('div');
+                div.className = 'game-card ' + statusClass;
+                div.innerHTML = 
+                  '<div class="game-header">' +
+                    '<strong>بازی #' + game.id + '</strong>' +
+                    '<span class="game-status ' + statusClass + '">' + statusText + '</span>' +
+                  '</div>' +
+                  '<div class="players-count">👥 ' + count + ' بازیکن (حداقل ' + game.min_players + ')</div>' +
+                  btnHTML;
+                container.appendChild(div);
+              });
+            });
+          });
+        });
+    }
+
+    document.getElementById('createGameBtn').addEventListener('click', function() {
+      supabaseClient.from('mafia_games').insert({
+        host_id: currentUser.id,
+        status: 'waiting',
+        phase: 'lobby'
+      }).then(function(res) {
+        if (res.error) { alert('خطا: ' + res.error.message); return; }
+        window.location.href = 'mafia-game.html?id=' + res.data[0].id;
+      });
+    });
+
+    window.joinGame = function(gameId) {
+      supabaseClient.from('mafia_players').insert({
+        game_id: gameId,
+        user_id: currentUser.id
+      }).then(function(res) {
+        if (res.error) { alert('خطا: ' + res.error.message); return; }
+        window.location.href = 'mafia-game.html?id=' + gameId;
+      });
+    };
+  </script>
 </body>
 </html>
