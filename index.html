@@ -16,12 +16,13 @@
     
     /* کارت‌های انجمن (مطابق عکس) */
     .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    /* استفاده از !important برای جلوگیری از مخفی شدن توسط اسکریپت‌های دیگه */
+    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
 
-    /* لینک‌های دسترسی سریع (قبلی‌ها) */
+    /* لینک‌های دسترسی سریع */
     .quick-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
     .quick-link { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 8px; text-align: center; text-decoration: none; color: var(--text); font-size: 0.8rem; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .quick-link:hover { border-color: var(--blue); color: var(--blue); }
@@ -30,6 +31,15 @@
     .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; }
     .welcome-content h2 { color: var(--green); margin-bottom: 16px; }
     .welcome-content button { margin-top: 20px; }
+
+    /* استایل اعلان‌ها */
+    .notice-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 10px 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .notice-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; }
+    .badge-urgent { background: #ffebee; color: #e74c3c; }
+    .badge-important { background: #fff3e0; color: #e67e22; }
+    .badge-normal { background: #e3f2fd; color: #3498db; }
+    .delete-notice-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #e74c3c; padding: 4px; transition: 0.2s; }
+    .delete-notice-btn:hover { transform: scale(1.2); }
   </style>
 </head>
 <body>
@@ -46,7 +56,7 @@
 
     <a href="study.html" class="quick-start-btn"><span>🚀</span> شروع سریع مطالعه</a>
 
-    <!-- تابلو اعلانات (داینامیک) -->
+    <!-- تابلو اعلانات -->
     <section class="notice-board">
       <h2>📌 تابلو اعلانات</h2>
       <div id="noticesList">
@@ -60,11 +70,11 @@
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <!-- انجمن‌ها (کتاب‌خوانی و هنری) -->
+    <!-- انجمن‌ها -->
     <section style="margin-bottom: 20px;">
       <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
       <div class="forum-grid">
-        <a href="books.html" class="forum-card">
+        <a href="books.html" class="forum-card" id="bookClubCard">
           <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
         <a href="#" class="forum-card">
@@ -73,7 +83,7 @@
       </div>
     </section>
 
-    <!-- دسترسی سریع (لینک‌های قبلی) -->
+    <!-- دسترسی سریع -->
     <section class="big-league-card">
       <h2 style="margin-bottom: 12px; font-size: 1.1rem;">🔗 دسترسی سریع</h2>
       <div class="quick-links-grid">
@@ -120,6 +130,8 @@
   <script src="script.js"></script>
   
   <script>
+    var currentUserRole = 'student';
+
     document.addEventListener('DOMContentLoaded', function() {
       
       // ===== ۱. مودال خوش‌آمدگویی =====
@@ -131,24 +143,16 @@
         localStorage.setItem('hasSeenWelcome', 'true');
       });
 
-      // ===== ۲. لود کردن اعلان‌ها =====
-      supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
-        var container = document.getElementById('noticesList');
-        if (res.error || !res.data || res.data.length === 0) {
-          // اگه هیچ اعلانی نبود، یه پیام پیش‌فرض نشون بده
-          container.innerHTML = '<div class="notice"><span class="notice-badge">خبر</span> به سایت ساراگل خوش آمدید!</div>';
-          return;
+      // ===== ۲. چک کردن نقش کاربر (برای حذف اعلان) =====
+      supabaseClient.auth.getUser().then(function(res) {
+        if (res.data.user) {
+          supabaseClient.from('profiles').select('role').eq('id', res.data.user.id).single().then(function(p) {
+            if (p.data) currentUserRole = p.data.role;
+            loadNotices(); // بعد از گرفتن نقش، اعلان‌ها رو لود کن
+          });
+        } else {
+          loadNotices(); // اگه لاگین نبود، اعلان‌ها رو عادی لود کن
         }
-        
-        container.innerHTML = '';
-        res.data.forEach(function(n) {
-          var div = document.createElement('div');
-          div.className = 'notice';
-          // تشخیص نوع اعلان (فوری یا عادی)
-          var badgeText = n.type === 'urgent' ? 'فوری' : 'خبر';
-          div.innerHTML = '<span class="notice-badge">' + badgeText + '</span> ' + n.text;
-          container.appendChild(div);
-        });
       });
 
       // ===== ۳. لود کردن لیگ =====
@@ -171,6 +175,55 @@
       });
       
     });
+
+    // ===== ۴. تابع لود اعلان‌ها =====
+    function loadNotices() {
+      supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
+        var container = document.getElementById('noticesList');
+        if (res.error || !res.data || res.data.length === 0) {
+          container.innerHTML = '<div class="notice-item"><div><span class="notice-badge badge-normal">عادی</span> به سایت ساراگل خوش آمدید!</div></div>';
+          return;
+        }
+        
+        container.innerHTML = '';
+        res.data.forEach(function(n) {
+          // تعیین متن بج بر اساس نوع
+          var typeStr = n.type ? n.type.toLowerCase() : 'normal';
+          var badgeText = 'عادی';
+          var badgeClass = 'badge-normal';
+          
+          if (typeStr === 'urgent' || typeStr === 'فوری') {
+            badgeText = 'فوری'; badgeClass = 'badge-urgent';
+          } else if (typeStr === 'important' || typeStr === 'مهم') {
+            badgeText = 'مهم'; badgeClass = 'badge-important';
+          }
+          
+          var deleteBtn = '';
+          // اگه ادمین بود، دکمه حذف رو نشون بده
+          if (currentUserRole === 'admin' || currentUserRole === 'superadmin') {
+            deleteBtn = '<button class="delete-notice-btn" onclick="deleteNotice(\'' + n.id + '\')" title="حذف اعلان">🗑️</button>';
+          }
+          
+          var div = document.createElement('div');
+          div.className = 'notice-item';
+          div.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><span class="notice-badge ' + badgeClass + '">' + badgeText + '</span> <span>' + n.text + '</span></div>' + deleteBtn;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    // ===== ۵. تابع حذف اعلان =====
+    window.deleteNotice = function(id) {
+      if (confirm('این اعلان حذف شود؟')) {
+        supabaseClient.from('notices').delete().eq('id', id).then(function(res) {
+          if (res.error) {
+            alert('خطا در حذف: ' + res.error.message);
+          } else {
+            loadNotices(); // لیست رو دوباره لود کن
+          }
+        });
+      }
+    };
   </script>
 </body>
 </html>
