@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ساراگل | مدرسه‌ی ما</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* استایل اختصاصی برای دسترسی سریع تا دقیقاً وسط‌چین بشه */
+    .quick-access-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    .quick-access-wrapper .forum-card {
+      width: calc(33.333% - 12px);
+      min-width: 90px;
+    }
+    @media (max-width: 480px) {
+      .quick-access-wrapper .forum-card {
+        width: calc(50% - 12px); /* توی موبایل دو ستونه بشه */
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -18,10 +36,12 @@
 
   <main class="container">
 
+    <!-- دکمه شروع سریع -->
     <a href="study.html" class="btn btn-green btn-full" style="padding: 20px; font-size: 1.2rem; border-radius: 16px; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 10px;">
       <span>🚀</span> شروع سریع مطالعه
     </a>
 
+    <!-- تابلو اعلانات -->
     <section>
       <h2>📌 تابلو اعلانات</h2>
       <div id="noticesList">
@@ -29,15 +49,16 @@
       </div>
     </section>
 
+    <!-- لیگ -->
     <section class="big-league-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px;">
-      <h2 style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <span>🏆 لیگ این هفته</span>
         <a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a>
       </h2>
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <!-- بخش انجمن‌ها (استفاده از کلاس‌های خودت در style.css) -->
+    <!-- انجمن‌ها -->
     <section>
       <h2>💬 انجمن‌ها</h2>
       <div class="forum-list">
@@ -50,10 +71,10 @@
       </div>
     </section>
 
-    <!-- بخش دسترسی سریع (دقیقاً با همون کلاس‌های انجمن‌ها تا ۳ ستونه و منظم بشه) -->
+    <!-- دسترسی سریع (با استایل اختصاصی برای مرتب شدن) -->
     <section>
       <h2>🔗 دسترسی سریع</h2>
-      <div class="forum-list">
+      <div class="quick-access-wrapper">
         <a href="counselor.html" class="forum-card">
           <span class="forum-icon">💬</span><span class="forum-name">مشاوره</span>
         </a>
@@ -82,7 +103,7 @@
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
-  <!-- متن خوش‌آمدگویی (با کلاس‌های خودت) -->
+  <!-- متن خوش‌آمدگویی -->
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
       <h2>🌸 سلام! به ساراگل خوش اومدی 👋</h2>
@@ -99,6 +120,7 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // نمایش متن خوش‌آمدگویی
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
       }
@@ -107,8 +129,10 @@
         localStorage.setItem('hasSeenWelcome', 'true');
       });
 
+      // لود اعلان‌ها
       loadNotices();
 
+      // لود لیگ
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
         var container = document.getElementById('homeLeaderboard');
         if (res.error || !res.data || res.data.length === 0) {
