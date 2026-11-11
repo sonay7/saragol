@@ -8,34 +8,52 @@
   <style>
     .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
     .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
+
     .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; margin-bottom: 20px; }
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
+    
     .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
+
     .quick-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
     .quick-link { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 8px; text-align: center; text-decoration: none; color: var(--text); font-size: 0.8rem; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .quick-link:hover { border-color: var(--blue); color: var(--blue); }
+
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .welcome-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 400px; text-align: center; }
     .welcome-content h2 { color: var(--green); margin-bottom: 16px; }
     .welcome-content button { margin-top: 20px; }
-    
-    /* استایل اعلان‌ها */
-    .notice-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); }
-    .notice-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; margin-left: 8px; white-space: nowrap; }
-    .badge-urgent { background: #ffebee; color: #e74c3c; }
-    .badge-important { background: #fff3e0; color: #e67e22; }
-    .badge-normal { background: #e3f2fd; color: #3498db; }
-    .delete-notice-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #e74c3c; padding: 4px; transition: 0.2s; }
-    .delete-notice-btn:hover { transform: scale(1.2); }
+
+    /* ===== استایل اعلان‌ها (دقیقاً مثل عکس خودت) ===== */
+    .notice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-card);
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+    .notice-badge {
+      background: var(--green);
+      color: #fff;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
+
   <header class="header">
     <div class="logo">ساراگل</div>
     <div class="user-area">
@@ -45,11 +63,14 @@
   </header>
 
   <main class="container">
+
     <a href="study.html" class="quick-start-btn"><span>🚀</span> شروع سریع مطالعه</a>
 
     <section class="notice-board">
       <h2>📌 تابلو اعلانات</h2>
-      <div id="noticesList"><p class="lock-note">در حال بارگذاری اعلانات...</p></div>
+      <div id="noticesList">
+        <p class="lock-note">در حال بارگذاری...</p>
+      </div>
     </section>
 
     <section class="big-league-card">
@@ -104,8 +125,6 @@
   <script src="script.js"></script>
   
   <script>
-    var currentUserRole = 'student';
-
     document.addEventListener('DOMContentLoaded', function() {
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
@@ -115,19 +134,7 @@
         localStorage.setItem('hasSeenWelcome', 'true');
       });
 
-      // گرفتن نقش کاربر با متد مطمئن‌تر (maybeSingle)
-      supabaseClient.auth.getUser().then(function(res) {
-        if (res.data.user) {
-          supabaseClient.from('profiles').select('role').eq('id', res.data.user.id).maybeSingle().then(function(p) {
-            if (p.data && p.data.role) {
-              currentUserRole = p.data.role;
-            }
-            loadNotices();
-          });
-        } else {
-          loadNotices();
-        }
-      });
+      loadNotices();
 
       // لود لیگ
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
@@ -153,49 +160,28 @@
       supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
         var container = document.getElementById('noticesList');
         if (res.error || !res.data || res.data.length === 0) {
-          container.innerHTML = '<div class="notice-item"><div><span class="notice-badge badge-normal">خبر</span> به سایت ساراگل خوش آمدید!</div></div>';
+          container.innerHTML = '<div class="notice"><span class="notice-badge">فوری</span> به سایت ساراگل خوش آمدید!</div>';
           return;
         }
         
         container.innerHTML = '';
         res.data.forEach(function(n) {
           var typeStr = (n.type || '').toLowerCase();
-          var badgeText = 'خبر';
-          var badgeClass = 'badge-normal';
+          var badgeText = 'عادی';
           
-          // تشخیص نوع پیام از دیتابیس
           if (typeStr.includes('فوری') || typeStr === 'urgent') {
-            badgeText = 'فوری'; badgeClass = 'badge-urgent';
+            badgeText = 'فوری';
           } else if (typeStr.includes('مهم') || typeStr === 'important') {
-            badgeText = 'مهم'; badgeClass = 'badge-important';
-          } else if (typeStr === 'info' || typeStr === 'عادی') {
-            badgeText = 'عادی'; badgeClass = 'badge-normal';
-          } else {
-             badgeText = n.type || 'خبر';
-          }
-          
-          var deleteBtn = '';
-          // چک کردن ادمین بودن
-          if (currentUserRole === 'admin' || currentUserRole === 'superadmin') {
-            deleteBtn = '<button class="delete-notice-btn" onclick="deleteNotice(\'' + n.id + '\')" title="حذف">🗑️</button>';
+            badgeText = 'مهم';
           }
           
           var div = document.createElement('div');
-          div.className = 'notice-item';
-          div.innerHTML = '<div style="display:flex; align-items:center;"><span class="notice-badge ' + badgeClass + '">' + badgeText + '</span> <span>' + n.text + '</span></div>' + deleteBtn;
+          div.className = 'notice';
+          div.innerHTML = '<span class="notice-badge">' + badgeText + '</span> <span>' + n.text + '</span>';
           container.appendChild(div);
         });
       });
     }
-
-    window.deleteNotice = function(id) {
-      if (confirm('حذف بشه؟')) {
-        supabaseClient.from('notices').delete().eq('id', id).then(function(res) {
-          if (res.error) alert('خطا: ' + res.error.message);
-          else loadNotices();
-        });
-      }
-    };
   </script>
 </body>
 </html>
