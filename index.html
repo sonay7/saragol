@@ -14,12 +14,12 @@
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* کارت‌های انجمن */
+    /* کارت‌های انجمن (مطابق عکس) */
     .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
+    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    .forum-icon { font-size: 2.5rem; }
-    .forum-name { font-size: 0.9rem; font-weight: 600; }
+    .forum-icon { font-size: 3rem; }
+    .forum-name { font-size: 1rem; font-weight: 600; }
 
     /* لینک‌های دسترسی سریع (قبلی‌ها) */
     .quick-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
@@ -46,31 +46,36 @@
 
     <a href="study.html" class="quick-start-btn"><span>🚀</span> شروع سریع مطالعه</a>
 
+    <!-- تابلو اعلانات (داینامیک) -->
     <section class="notice-board">
       <h2>📌 تابلو اعلانات</h2>
-      <div class="notice"><span class="notice-badge">فوری</span> به سایت ساراگل خوش آمدید!</div>
+      <div id="noticesList">
+        <p class="lock-note">در حال بارگذاری اعلانات...</p>
+      </div>
     </section>
 
+    <!-- لیگ -->
     <section class="big-league-card">
       <h2><span>🏆 لیگ این هفته</span><a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a></h2>
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
+    <!-- انجمن‌ها (کتاب‌خوانی و هنری) -->
     <section style="margin-bottom: 20px;">
-      <h2 style="margin-bottom: 12px;">💬 انجمن‌ها</h2>
+      <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
       <div class="forum-grid">
         <a href="books.html" class="forum-card">
           <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
-        <!-- هنری رو طبق عکست گذاشتم، اگه لینکش رو داری توی href بذار -->
         <a href="#" class="forum-card">
           <span class="forum-icon">🎨</span><span class="forum-name">هنری</span>
         </a>
       </div>
     </section>
 
+    <!-- دسترسی سریع (لینک‌های قبلی) -->
     <section class="big-league-card">
-      <h2 style="margin-bottom: 12px;">🔗 دسترسی سریع</h2>
+      <h2 style="margin-bottom: 12px; font-size: 1.1rem;">🔗 دسترسی سریع</h2>
       <div class="quick-links-grid">
         <a href="counselor.html" class="quick-link">
           <span>💬</span><span>مشاوره</span>
@@ -116,6 +121,8 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      
+      // ===== ۱. مودال خوش‌آمدگویی =====
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
       }
@@ -124,7 +131,27 @@
         localStorage.setItem('hasSeenWelcome', 'true');
       });
 
-      // لیگ
+      // ===== ۲. لود کردن اعلان‌ها =====
+      supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
+        var container = document.getElementById('noticesList');
+        if (res.error || !res.data || res.data.length === 0) {
+          // اگه هیچ اعلانی نبود، یه پیام پیش‌فرض نشون بده
+          container.innerHTML = '<div class="notice"><span class="notice-badge">خبر</span> به سایت ساراگل خوش آمدید!</div>';
+          return;
+        }
+        
+        container.innerHTML = '';
+        res.data.forEach(function(n) {
+          var div = document.createElement('div');
+          div.className = 'notice';
+          // تشخیص نوع اعلان (فوری یا عادی)
+          var badgeText = n.type === 'urgent' ? 'فوری' : 'خبر';
+          div.innerHTML = '<span class="notice-badge">' + badgeText + '</span> ' + n.text;
+          container.appendChild(div);
+        });
+      });
+
+      // ===== ۳. لود کردن لیگ =====
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
         var container = document.getElementById('homeLeaderboard');
         if (res.error || !res.data || res.data.length === 0) {
@@ -142,6 +169,7 @@
           container.appendChild(div);
         });
       });
+      
     });
   </script>
 </body>
