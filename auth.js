@@ -26,8 +26,11 @@ supabaseClient.auth.getUser().then(function(res) {
     if (profile.role === 'counselor') {
       document.querySelectorAll('a[href="admin.html"]').forEach(function(el) { el.remove(); });
     }
-    if (!profile.is_book_club_member) {
-      document.querySelectorAll('a[href="books.html"]').forEach(function(el) { el.remove(); });
-    }
+    
+    // ====== این بخش کلاً حذف شد تا کارت کتاب‌خوانی هیچوقت غیب نشه ======
+    // if (!profile.is_book_club_member) {
+    //   document.querySelectorAll('a[href="books.html"]').forEach(function(el) { el.remove(); });
+    // }
+    
   });
 });
