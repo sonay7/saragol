@@ -14,14 +14,18 @@
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* ===== انجمن‌ها (اجبار به دو ستونه موندن) ===== */
+    /* ===== انجمن‌ها (ترفند استفاده از Flexbox و اجبار به دو ستونه) ===== */
     .forum-grid { 
-      display: grid !important; 
-      grid-template-columns: 1fr 1fr !important; 
+      display: flex !important; 
+      flex-wrap: wrap !important;
+      justify-content: space-between !important; 
       gap: 12px !important; 
       width: 100%;
     }
     .forum-card { 
+      flex: 1 1 calc(50% - 12px) !important;
+      max-width: calc(50% - 12px) !important;
+      min-width: 140px !important;
       background: var(--bg-card) !important; 
       border: 1px solid var(--border) !important; 
       border-radius: 16px !important; 
@@ -32,6 +36,7 @@
       display: flex !important; 
       flex-direction: column !important; 
       align-items: center !important; 
+      justify-content: center !important;
       gap: 12px !important; 
       transition: 0.2s !important; 
       box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important; 
@@ -42,8 +47,32 @@
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
 
-    .quick-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-    .quick-link { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 8px; text-align: center; text-decoration: none; color: var(--text); font-size: 0.8rem; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    /* ===== دسترسی سریع (وسط‌چین کردن ۵ تا دکمه) ===== */
+    .quick-links-grid { 
+      display: flex !important; 
+      flex-wrap: wrap !important; 
+      justify-content: center !important; 
+      gap: 10px !important; 
+      margin-top: 12px; 
+    }
+    .quick-link { 
+      flex: 1 1 calc(33.333% - 10px); 
+      max-width: calc(33.333% - 10px);
+      min-width: 80px;
+      background: var(--bg); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 12px 8px; 
+      text-align: center; 
+      text-decoration: none; 
+      color: var(--text); 
+      font-size: 0.8rem; 
+      transition: 0.2s; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 4px; 
+    }
     .quick-link:hover { border-color: var(--blue); color: var(--blue); }
 
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
@@ -51,7 +80,7 @@
     .welcome-content h2 { color: var(--green); margin-bottom: 16px; }
     .welcome-content button { margin-top: 20px; }
 
-    /* ===== استایل اعلان‌ها (دقیقاً مثل عکس خودت) ===== */
+    /* ===== استایل اعلان‌ها ===== */
     .notice {
       display: flex;
       align-items: center;
@@ -102,8 +131,12 @@
 
     <section style="margin-bottom: 20px;">
       <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
+      
+      <!-- ⬇️ این ترفند مخفی رو اضافه کردم. اسکریپت‌ها این رو مخفی می‌کنن، نه کارت اصلی رو! -->
+      <span id="bookClubCard" style="display: none !important;"></span>
+
       <div class="forum-grid">
-        <!-- آیدی bookClubCard رو عمدا حذف کردم تا اسکریپت‌های دیگه نتونن مخفیش کنن -->
+        <!-- کارت اصلی که همیشه باید دیده بشه -->
         <a href="books.html" class="forum-card">
           <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
