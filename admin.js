@@ -30,7 +30,7 @@ supabaseClient.auth.getUser().then(function(res) {
     loadExams();
     loadQuotes();
     loadInbox();
-    loadBookClubUsers(); // لود اعضای کتاب‌خوانی
+    loadBookClubUsers();
   });
 });
 
@@ -57,7 +57,7 @@ if (document.getElementById('toggleBooksBtn')) {
     if (booksContainer.classList.contains('hidden')) {
       booksContainer.classList.remove('hidden');
       booksArrow.style.transform = 'rotate(180deg)';
-      loadBookClubUsers(); // وقتی باز شد، دوباره لود کن
+      loadBookClubUsers();
     } else {
       booksContainer.classList.add('hidden');
       booksArrow.style.transform = 'rotate(0deg)';
@@ -65,17 +65,37 @@ if (document.getElementById('toggleBooksBtn')) {
   });
 }
 
-// ===== اعلان جدید =====
+// ===== اعلان جدید (با نمایش خطای دقیق) =====
 if (document.getElementById('addNoticeBtn')) {
   document.getElementById('addNoticeBtn').addEventListener('click', function() {
     var text = document.getElementById('noticeText').value.trim();
     var type = document.getElementById('noticeType').value;
     var msg = document.getElementById('noticeMsg');
-    if (text.length < 3) { msg.textContent = 'متن کوتاهه'; msg.style.color = '#e74c3c'; return; }
+
+    if (text.length < 3) { 
+      msg.textContent = 'متن کوتاهه'; 
+      msg.style.color = '#e74c3c'; 
+      return; 
+    }
+
+    msg.textContent = '⏳ در حال ثبت...'; 
+    msg.style.color = 'var(--text-dim)';
+
     supabaseClient.from('notices').insert({ text: text, type: type }).then(function(res) {
-      if (res.error) { msg.textContent = 'خطا'; msg.style.color = '#e74c3c'; return; }
-      msg.textContent = '✅ ثبت شد'; msg.style.color = '#2ecc71';
+      if (res.error) { 
+        // ⬇️ حالا پیام دقیق خطا رو نشون می‌ده
+        msg.textContent = '❌ ' + res.error.message + ' (کد: ' + (res.error.code || '?') + ')';
+        msg.style.color = '#e74c3c';
+        console.error('NOTICE ERROR FULL:', res.error);
+        return;
+      }
+      msg.textContent = '✅ ثبت شد'; 
+      msg.style.color = '#2ecc71';
       document.getElementById('noticeText').value = '';
+    }).catch(function(err) {
+      msg.textContent = '❌ خطای شبکه: ' + err.message;
+      msg.style.color = '#e74c3c';
+      console.error('NOTICE NETWORK ERROR:', err);
     });
   });
 }
@@ -204,10 +224,10 @@ if (document.getElementById('directUploadBtn')) {
     var btn = document.getElementById('directUploadBtn');
     btn.disabled = true; btn.textContent = 'در حال آپلود...';
     var fileName = 'direct_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
-    supabaseClient.storage.from('videos').upload(fileName, file).then(function(uploadRes) {
-      if (uploadRes.error) return alert(uploadRes.error.message);
+    supabaseClient.storage.from('videos').upload(fileName, file, { contentType: file.type || 'video/mp4' }).then(function(uploadRes) {
+      if (uploadRes.error) { alert(uploadRes.error.message); btn.disabled = false; btn.textContent = 'آپلود و انتشار'; return; }
       var publicUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
-      supabaseClient.from('admin_inbox').insert({ user_id: currentUser.id, file_url: publicUrl, file_type: file.type, status: 'approved' }).then(function() {
+      supabaseClient.from('admin_inbox').insert({ user_id: currentUser.id, file_url: publicUrl, file_type: file.type || 'video/mp4', status: 'approved' }).then(function() {
         btn.disabled = false; btn.textContent = 'آپلود و انتشار';
         document.getElementById('directMsg').textContent = '✅ منتشر شد';
       });
@@ -256,7 +276,6 @@ function loadInbox() {
 }
 window.delInbox = function(id) { supabaseClient.from('admin_inbox').delete().eq('id', id).then(loadInbox); }
 window.approveInbox = function(id) { supabaseClient.from('admin_inbox').update({ status: 'approved' }).eq('id', id).then(loadInbox); }
-
 
 // ===== اعضای انجمن کتاب‌خوانی =====
 function loadBookClubUsers() {
