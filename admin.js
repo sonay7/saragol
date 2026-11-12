@@ -381,3 +381,34 @@ window.delAdminBook = function(id) {
 window.delAdminLoan = function(id) {
   if(confirm('این امانت حذف بشه؟')) supabaseClient.from('book_loan').delete().eq('id', id).then(loadBookClubUsers);
 }
+// ===== تابع اهدای نشان ویژه =====
+window.giveBadge = function() {
+  var username = document.getElementById('badgeUsername').value.trim();
+  var badgeName = document.getElementById('badgeName').value;
+  var badgeIcon = badgeName === 'اولین ستاره' ? '🌟' : '🏅';
+  
+  if (!username) { alert('نام کاربری رو وارد کن'); return; }
+
+  // پیدا کردن کاربر با این نام کاربری
+  supabaseClient.from('profiles').select('id, username').ilike('username', username).then(function(userRes) {
+    if (userRes.error || !userRes.data || userRes.data.length === 0) {
+      alert('کاربری با این نام پیدا نشد!');
+      return;
+    }
+    
+    var user = userRes.data[0];
+    
+    if (!confirm('نشان «' + badgeName + '» رو به ' + user.username + ' می‌دی؟')) return;
+
+    // ثبت نشان توی دیتابیس
+    supabaseClient.from('user_badges').insert({
+      user_id: user.id,
+      badge_name: badgeName,
+      badge_icon: badgeIcon
+    }).then(function(res) {
+      if (res.error) { alert('خطا: ' + res.error.message); return; }
+      alert('🌟 نشان با موفقیت به ' + user.username + ' اهدا شد!');
+      document.getElementById('badgeUsername').value = '';
+    });
+  });
+};
