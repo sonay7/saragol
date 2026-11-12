@@ -112,9 +112,11 @@
   </div>
 </div>
 
+<!-- منوی پایین با اضافه شدن دکمه هدیه -->
 <nav class="bottom-nav">
   <a href="index.html" class="nav-item">🏠 خانه</a>
   <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="gift.html" class="nav-item">🎁 هدیه</a>
   <a href="shop.html" class="nav-item active">🛒 فروشگاه</a>
   <a href="profile.html" class="nav-item">👤 پروفایل</a>
 </nav>
@@ -158,17 +160,13 @@
     });
   });
 
-  // ===== تابع اصلی لود تب (اینبار خیلی مطمئن!) =====
   function loadTab(category) {
     var grid = document.getElementById('itemsGrid');
     grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">در حال بارگذاری...</p>';
     
-    // اول می‌ریم چک می‌کنیم کاربر دقیقاً چی خریده
     supabaseClient.from('user_inventory').select('item_id').eq('user_id', currentUser.id).then(invRes => {
-      // آرایه‌ای از آیدی آیتم‌هایی که کاربر خریده
       var boughtIds = (invRes.data || []).map(i => String(i.item_id));
       
-      // حالا آیتم‌های فروشگاه رو می‌گیریم
       supabaseClient.from('shop_items').select('*').eq('category', category).eq('is_active', true).then(res => {
         grid.innerHTML = '';
         if (!res.data || res.data.length === 0) {
@@ -177,22 +175,17 @@
         }
         
         res.data.forEach(item => {
-          // چک کردن اینکه این آیتم توی لیست خریدهای کاربر هست یا نه
           var isBought = boughtIds.includes(String(item.id));
           var canAfford = myXp >= item.price;
           
           var btnHtml = '';
           
           if (isBought) {
-            // اگر خریده بود، دکمه خاکستری
             btnHtml = `<button class="buy-btn btn-bought" disabled>خریداری شده</button>`;
-            
-            // اگر تم یا فونت بود، دکمه استفاده رو هم اضافه کن
             if (category === 'theme' || category === 'font') {
               btnHtml += `<button class="equip-btn" onclick="applyItem('${category}', '${item.effect_value}')">✨ استفاده</button>`;
             }
           } else {
-            // اگر نخریده بود، دکمه سبز
             var btnDisabled = canAfford ? '' : 'disabled';
             btnHtml = `<button class="buy-btn" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">خرید</button>`;
           }
@@ -228,15 +221,11 @@
     });
   }
 
-  // ===== تابع خرید (با محافظت کامل) =====
   window.buyItem = function(itemId, price, type, name) {
     if (isBuying) return;
-    
     isBuying = true;
 
-    // ⬇️ اول از همه چک می‌کنیم ببینیم قبلاً خریدیم یا نه (تا XP کم نشه)
     supabaseClient.from('user_inventory').select('id').eq('user_id', currentUser.id).eq('item_id', itemId).then(checkRes => {
-      
       if (checkRes.data && checkRes.data.length > 0) {
         alert('شما قبلاً این آیتم را خریده‌اید! صفحه بروزرسانی می‌شود.');
         isBuying = false;
@@ -247,11 +236,9 @@
       if (myXp < price) { alert('XP کافی نداری!'); isBuying = false; return; }
       if (!confirm('آیا ' + price + ' XP برای خرید ' + name + ' پرداخت می‌کنی؟')) { isBuying = false; return; }
 
-      // مرحله ۱: کم کردن XP
       supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(updateRes => {
         if (updateRes.error) { alert('خطا در کم کردن XP'); isBuying = false; return; }
         
-        // مرحله ۲: اضافه کردن به اینونتوری
         supabaseClient.from('user_inventory').insert({
           user_id: currentUser.id, item_type: type, item_id: itemId
         }).then(insertRes => {
@@ -259,13 +246,12 @@
           
           if (insertRes.error) {
             alert('خطا در ثبت خرید: ' + insertRes.error.message);
-            // برگردوندن XP
             supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
             return;
           }
           
           alert('🎉 خرید با موفقیت انجام شد!');
-          location.reload(); // رفرش برای آپدیت دکمه‌ها
+          location.reload();
         });
       });
     });
