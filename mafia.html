@@ -28,12 +28,13 @@
     .mafia-timer { font-size: 0.9rem; color: var(--text-dim); text-align: center; }
     .mafia-log { font-size: 0.8rem; color: var(--text-dim); margin-top: 8px; }
     
-    /* استایل مودال راهنما */
     .tutorial-box { max-height: 80vh; overflow-y: auto; text-align: right; }
     .tutorial-box h3 { margin-top: 16px; color: var(--green); font-size: 1rem; }
     .tutorial-box ul { padding-right: 20px; font-size: 0.85rem; line-height: 1.8; color: var(--text); margin-top: 8px; }
     .tutorial-box li { margin-bottom: 6px; }
     .tutorial-audio-btn { background: var(--blue); color: #fff; width: 100%; padding: 12px; border-radius: 10px; border: none; margin-top: 20px; cursor: pointer; font-family: inherit; font-size: 1rem; }
+    
+    .sticker-btn { background: transparent !important; color: var(--text) !important; font-size: 1.5rem !important; width: auto !important; height: auto !important; padding: 0 8px !important; margin-top: 0 !important; }
   </style>
 </head>
 <body>
@@ -47,7 +48,6 @@
 </header>
 
 <main class="container">
-  <!-- نمای لابی -->
   <div id="lobbyView">
     <div class="mafia-card">
       <h2 style="display: flex; justify-content: space-between; align-items: center;">
@@ -56,7 +56,6 @@
       </h2>
       <p style="font-size:0.85rem; color:var(--text-dim); margin-top:8px;">حداقل ۴ نفر برای شروع لازمه.</p>
       
-      <!-- دکمه ساخت اتاق فقط با جاوااسکریپت برای ادمین نمایش داده میشه -->
       <button class="mafia-btn" id="createRoomBtn" style="display: none;">➕ ساخت اتاق جدید (فقط ادمین)</button>
       
       <input class="mafia-input" id="joinCode" placeholder="کد اتاق رو وارد کن" maxlength="6">
@@ -64,7 +63,6 @@
     </div>
   </div>
 
-  <!-- نمای بازی -->
   <div id="gameView" class="hidden">
     <div class="mafia-card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -99,8 +97,11 @@
     <div class="mafia-card" id="chatCard">
       <h3>💬 گفتگو</h3>
       <div class="mafia-chat" id="chatBox"></div>
-      <input class="mafia-input" id="chatInput" placeholder="پیامت رو بنویس..." maxlength="200">
-      <button class="mafia-btn" id="sendMsgBtn">ارسال</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button type="button" class="sticker-btn" onclick="openStickerPicker('mafia_messages', 'chatInput', 'sendMsgBtn')">😀</button>
+        <input class="mafia-input" id="chatInput" placeholder="پیامت رو بنویس..." maxlength="200" style="margin-top:0;">
+        <button class="mafia-btn" id="sendMsgBtn" style="width:auto; margin-top:0;">ارسال</button>
+      </div>
     </div>
 
     <div class="mafia-card">
@@ -109,7 +110,6 @@
   </div>
 </main>
 
-<!-- مودال راهنمای بازی -->
 <div id="tutorialModal" class="modal hidden">
   <div class="modal-box tutorial-box">
     <h2 style="color:var(--green); text-align:center;">📖 راهنمای بازی مافیا</h2>
@@ -132,8 +132,6 @@
     <p style="font-size:0.85rem; line-height:1.7;">در پایان روز، همه به یک نفر رأی می‌دهند. کسی که بیشترین رأی را بیاورد از بازی خارج می‌شود.</p>
 
     <button class="tutorial-audio-btn" id="playAudioGuideBtn">🔊 پخش راهنمای صوتی</button>
-    
-    <!-- فایل صوتی اینجا قرار می‌گیره -->
     <audio id="mafiaAudio" src="" style="display:none;"></audio>
 
     <button id="closeTutorialBtn" class="btn btn-dim btn-full" style="margin-top: 20px;">متوجه شدم، بستن</button>
@@ -151,13 +149,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
+<script src="theme.js"></script>
+<script src="stickers.js"></script>
 
 <script>
 var myUid = null, myName = '', myRole = 'student', myRoomId = null, myPlayerId = null, myGameRole = null;
 var pollInterval = null;
 var BAD_WORDS = ['احمق', 'خنگ', 'کثافت', 'حرومزاده', 'بی‌شعور', 'پدرسوخته', 'مادرقحبه', 'دیوث'];
 
-// ===== سیستم فیلتر کلمات =====
 function filterBadWords(text) {
   let out = text;
   BAD_WORDS.forEach(w => { out = out.replace(new RegExp(w, 'gi'), '***'); });
@@ -168,7 +167,6 @@ function genCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-// ===== گرفتن اطلاعات کاربر =====
 supabaseClient.auth.getUser().then(res => {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   myUid = res.data.user.id;
@@ -180,7 +178,6 @@ supabaseClient.auth.getUser().then(res => {
       document.querySelector('.user-name').textContent = myName;
       document.querySelector('.avatar').textContent = myName.charAt(0);
       
-      // نمایش دکمه ساخت اتاق فقط برای ادمین
       if (myRole === 'admin' || myRole === 'superadmin') {
         document.getElementById('createRoomBtn').style.display = 'block';
       }
@@ -188,7 +185,6 @@ supabaseClient.auth.getUser().then(res => {
   });
 });
 
-// ===== مودال راهنما =====
 document.getElementById('showTutorialBtn').addEventListener('click', function() {
   document.getElementById('tutorialModal').classList.remove('hidden');
 });
@@ -196,17 +192,12 @@ document.getElementById('closeTutorialBtn').addEventListener('click', function()
   document.getElementById('tutorialModal').classList.add('hidden');
 });
 
-// پخش راهنمای صوتی (کد آماده)
 document.getElementById('playAudioGuideBtn').addEventListener('click', function() {
   var audio = document.getElementById('mafiaAudio');
-  
-  // ⬇️ اینجا لینک فایل صوتی خودت رو بذار ⬇️
-  // مثلا: audio.src = 'https://your-site.com/audio/mafia-guide.mp3';
   if (!audio.src || audio.src === window.location.href) {
     alert('فایل صوتی هنوز تنظیم نشده. (ادمین باید در کد لینک صوتی رو قرار بده)');
     return;
   }
-  
   audio.play();
   this.textContent = '🔊 در حال پخش...';
   audio.onended = function() {
@@ -214,7 +205,6 @@ document.getElementById('playAudioGuideBtn').addEventListener('click', function(
   };
 });
 
-// ===== ساخت اتاق (فقط ادمین) =====
 document.getElementById('createRoomBtn').addEventListener('click', () => {
   const code = genCode();
   supabaseClient.from('mafia_rooms').insert({
@@ -225,7 +215,6 @@ document.getElementById('createRoomBtn').addEventListener('click', () => {
   });
 });
 
-// ===== ورود به اتاق =====
 document.getElementById('joinRoomBtn').addEventListener('click', () => {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   if (!code) { alert('کد رو بزن'); return; }
@@ -266,7 +255,6 @@ document.getElementById('leaveRoomBtn').addEventListener('click', () => {
   document.getElementById('lobbyView').classList.remove('hidden');
 });
 
-// ===== Polling (آپدیت زنده) =====
 function pollGame() {
   if (!myRoomId) return;
   supabaseClient.from('mafia_rooms').select('*').eq('id', myRoomId).single().then(r => {
@@ -313,7 +301,6 @@ function loadPlayers(room) {
       list.appendChild(span);
     });
 
-    // دکمه شروع بازی (فقط برای ادمینی که اتاق رو ساخته)
     if (room.status === 'waiting' && players.length >= 4 && room.host_id === myUid) {
       if (!document.getElementById('startGameBtn')) {
         const startBtn = document.createElement('button');
@@ -325,14 +312,12 @@ function loadPlayers(room) {
       }
     }
 
-    // اکشن شب
     if (room.status === 'playing' && room.phase === 'night') {
       showNightAction(players);
     } else {
       document.getElementById('actionCard').style.display = 'none';
     }
 
-    // رأی‌گیری
     if (room.status === 'playing' && room.phase === 'voting') {
       showVoting(players);
     } else {
@@ -366,7 +351,14 @@ function loadChat(room) {
     (r.data || []).forEach(m => {
       const div = document.createElement('div');
       div.className = 'mafia-msg' + (m.is_night ? ' night' : '');
-      div.innerHTML = '<strong>' + m.username + ':</strong> ' + m.message;
+      
+      var stickerHtml = renderStickerInChat(m.message);
+      if (stickerHtml) {
+        div.innerHTML = '<strong>' + m.username + ':</strong> ' + stickerHtml;
+      } else {
+        div.innerHTML = '<strong>' + m.username + ':</strong> ' + m.message;
+      }
+      
       box.appendChild(div);
     });
     box.scrollTop = box.scrollHeight;
@@ -380,6 +372,15 @@ function sendMsg() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text || !myRoomId) return;
+  
+  if (text.startsWith('[STICKER]')) {
+    input.value = '';
+    supabaseClient.from('mafia_messages').insert({
+      room_id: myRoomId, user_id: myUid, username: myName, message: text, is_night: false
+    });
+    return;
+  }
+
   input.value = '';
   supabaseClient.from('mafia_messages').insert({
     room_id: myRoomId, user_id: myUid, username: myName,
@@ -387,7 +388,6 @@ function sendMsg() {
   });
 }
 
-// ===== شروع بازی =====
 function startGame() {
   supabaseClient.from('mafia_players').select('*').eq('room_id', myRoomId).then(r => {
     const players = r.data || [];
@@ -413,7 +413,6 @@ function startGame() {
   });
 }
 
-// ===== اکشن شب =====
 function showNightAction(players) {
   const card = document.getElementById('actionCard');
   const title = document.getElementById('actionTitle');
@@ -446,7 +445,6 @@ function showNightAction(players) {
   });
 }
 
-// ===== رأی‌گیری =====
 function showVoting(players) {
   const card = document.getElementById('voteCard');
   const targets = document.getElementById('voteTargets');
