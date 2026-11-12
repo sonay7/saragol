@@ -84,6 +84,16 @@
   <!-- لیست اعلان‌های فعلی و دکمه حذف -->
   <h3 style="font-size: 1rem; margin-bottom: 12px;">اعلان‌های فعلی:</h3>
   <div id="adminNoticesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      <div class="admin-card" style="margin-top:20px; background:var(--bg-card); padding:16px; border-radius:12px;">
+  <h3>🌟 اهدای نشان ویژه</h3>
+  <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:10px;">نشان «اولین ستاره» رو به کی می‌خوای بدی؟</p>
+  <input id="badgeUsername" class="input" placeholder="نام کاربری فرد (مثلاً sara)" style="margin-bottom:8px;">
+  <select id="badgeName" class="input" style="margin-bottom:8px;">
+    <option value="اولین ستاره">🌟 اولین ستاره</option>
+    <!-- می‌تونی نشان‌های دیگه رو هم اینجا اضافه کنی -->
+  </select>
+  <button onclick="giveBadge()" class="btn btn-green btn-full">اهدا نشان</button>
+</div>
 </section>
         <h2>📅 افزودن آزمون رسمی</h2>
         <input id="examSubject" type="text" class="input" placeholder="نام درس">
