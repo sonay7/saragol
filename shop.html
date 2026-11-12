@@ -11,7 +11,13 @@
     .shop-tab.active { background: var(--green); color: #fff; border-color: var(--green); font-weight: bold; }
     
     .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 80px; }
-    .shop-card { position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+    
+    /* استایل کارت‌ها (ساده و تمیز) */
+    .shop-card { 
+      position: relative; background: var(--bg-card); border: 1px solid var(--border); 
+      border-radius: 16px; padding: 12px; text-align: center; 
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+    }
     
     .shop-icon { font-size: 3rem; margin-bottom: 10px; }
     .shop-img { width: 100%; height: 100px; border-radius: 10px; object-fit: cover; margin-bottom: 10px; border: 1px solid var(--border); }
@@ -21,13 +27,14 @@
     
     .buy-btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .buy-btn:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; }
-    .buy-btn.bought { background: #27ae60; color: #fff; }
-    .equip-btn { background: var(--blue); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 4px; }
+    
+    /* دکمه استفاده (برای تم و فونت) */
+    .equip-btn { background: var(--blue); color: #fff; border: none; padding: 8px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 6px; font-size: 0.8rem; }
 
     /* دکمه‌های ادمین */
     .admin-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; z-index: 10; }
     .edit-btn, .delete-btn { background: #e74c3c; color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-    .edit-btn { background: #f39c12; } /* رنگ نارنجی برای ویرایش */
+    .edit-btn { background: #f39c12; }
     
     .admin-fab { position: fixed; bottom: 90px; left: 20px; width: 60px; height: 60px; background: var(--green); color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; border: none; }
     .admin-fab:hover { transform: scale(1.1); }
@@ -78,7 +85,11 @@
     </select>
     
     <input id="addPrice" type="number" class="input" placeholder="قیمت (XP) - الزامی" style="margin-bottom: 8px;">
-    <input id="addEffectValue" class="input" placeholder="مقدار افکت (مثلاً sakura برای تم)" style="margin-bottom: 8px;">
+    
+    <div style="background: rgba(52, 152, 219, 0.1); padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--blue);">
+      <p style="font-size: 0.8rem; margin-bottom: 6px; color: var(--blue); font-weight: bold;">فقط برای تم و فونت:</p>
+      <input id="addEffectValue" class="input" placeholder="مقدار افکت (مثلاً sakura یا Tahoma)" style="margin-bottom: 0;">
+    </div>
 
     <div style="background: var(--bg); padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 1px dashed var(--border);">
       <p style="font-size: 0.8rem; margin-bottom: 6px; color: var(--text-dim);">انتخاب تصویر (اختیاری):</p>
@@ -118,7 +129,8 @@
   var myInventory = [];
   var isAdmin = false;
   var currentCategory = 'avatar';
-  var editingItemId = null; // برای تشخیص اینکه تو حالت ویرایش هستیم یا نه
+  var editingItemId = null;
+  var isBuying = false; // جلوگیری از کلیک سریع دوباره
 
   supabaseClient.auth.getUser().then(res => {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -133,19 +145,23 @@
         document.getElementById('adminFab').classList.remove('hidden');
       }
       
-      supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
-        myInventory = inv.data || [];
-        loadTab('avatar');
-      });
+      loadInventoryAndTab('avatar');
     });
   });
+
+  function loadInventoryAndTab(cat) {
+    supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
+      myInventory = inv.data || [];
+      loadTab(cat);
+    });
+  }
 
   document.querySelectorAll('.shop-tab').forEach(tab => {
     tab.addEventListener('click', function() {
       document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
       currentCategory = this.getAttribute('data-cat');
-      loadTab(currentCategory);
+      loadInventoryAndTab(currentCategory);
     });
   });
 
@@ -164,22 +180,25 @@
         var isBought = myInventory.some(i => i.item_id === item.id);
         var canAfford = myXp >= item.price;
         
+        // ===== منطق دکمه‌ها =====
         var btnHtml = '';
         if (isBought) {
+          // اگر خریده بود: دکمه خریداری شده
+          btnHtml = `<button class="buy-btn" disabled>خریداری شده</button>`;
+          
+          // اگر تم یا فونت بود، دکمه استفاده رو هم زیرش اضافه کن
           if (category === 'theme' || category === 'font') {
-            btnHtml = `<button class="equip-btn" onclick="applyItem('${category}', '${item.effect_value}')">✨ استفاده</button>`;
-          } else {
-            btnHtml = `<button class="buy-btn bought" disabled>✓ خریداری شده</button>`;
+            btnHtml += `<button class="equip-btn" onclick="applyItem('${category}', '${item.effect_value}')">✨ استفاده</button>`;
           }
         } else {
+          // اگر نخریده بود: دکمه خرید
           var btnDisabled = canAfford ? '' : 'disabled';
-          btnHtml = `<button class="buy-btn" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">خرید</button>`;
+          btnHtml = `<button class="buy-btn" id="buyBtn_${item.id}" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">خرید</button>`;
         }
 
-        // دکمه‌های ادمین (ویرایش و حذف)
         var adminBtns = isAdmin ? `
           <div class="admin-actions">
-            <button class="edit-btn" onclick='openEditModal(${JSON.stringify(item)})'>✏️</button>
+            <button class="edit-btn" onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>✏️</button>
             <button class="delete-btn" onclick="deleteItem('${item.id}')">×</button>
           </div>
         ` : '';
@@ -208,30 +227,44 @@
   }
 
   window.buyItem = function(itemId, price, type, name) {
+    if (isBuying) return; // جلوگیری از کلیک سریع
     if (myXp < price) { alert('XP کافی نداری!'); return; }
     if (!confirm('آیا ' + price + ' XP برای خرید ' + name + ' پرداخت می‌کنی؟')) return;
 
+    isBuying = true;
+    var btn = document.getElementById('buyBtn_' + itemId);
+    if (btn) { btn.disabled = true; btn.textContent = 'در حال خرید...'; }
+
     var newXp = myXp - price;
     supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentUser.id).then(res => {
-      if (res.error) { alert('خطا در خرید'); return; }
+      if (res.error) { alert('خطا در خرید'); isBuying = false; return; }
       
       supabaseClient.from('user_inventory').insert({
         user_id: currentUser.id, item_type: type, item_id: itemId
-      }).then(() => {
+      }).then(insertRes => {
+        isBuying = false;
+        if (insertRes.error) {
+          alert('شما قبلاً این آیتم را خریده‌اید!');
+          myXp += price; // برگرداندن XP
+          supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
+          loadTab(type);
+          return;
+        }
+        
         myXp = newXp;
         document.getElementById('myXp').textContent = myXp + ' XP';
-        
-        supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
-          myInventory = inv.data || [];
-          loadTab(type);
-          alert('🎉 خرید با موفقیت انجام شد!');
-        });
+        alert('🎉 خرید با موفقیت انجام شد!');
+        loadInventoryAndTab(type);
       });
     });
   };
 
   window.applyItem = function(type, effectValue) {
-    if (!effectValue) { alert('این آیتم تنظیمات ظاهری نداره!'); return; }
+    if (!effectValue || effectValue.trim() === '') { 
+      alert('❌ این آیتم مقدار افکت ندارد! ادمین باید مقدار را تنظیم کند.'); 
+      return; 
+    }
+    
     if (type === 'theme') {
       document.documentElement.setAttribute('data-theme', effectValue);
       localStorage.setItem('site-theme', effectValue);
@@ -303,7 +336,6 @@
       imageUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
     }
 
-    // داده‌هایی که قراره ذخیره بشن
     var itemData = {
       name: name,
       category: cat,
@@ -313,15 +345,12 @@
       effect_value: effectVal || null
     };
 
-    // اگه عکس جدید آپلود شده بود، لینکش رو هم اضافه کن
     if (imageUrl) itemData.image_url = imageUrl;
 
     var query;
     if (editingItemId) {
-      // حالت ویرایش
       query = supabaseClient.from('shop_items').update(itemData).eq('id', editingItemId);
     } else {
-      // حالت اضافه کردن
       if (!file && !emoji) { alert('یا یه عکس انتخاب کن یا یه ایموجی بنویس!'); btn.disabled = false; btn.textContent = 'ذخیره'; return; }
       query = supabaseClient.from('shop_items').insert(itemData);
     }
