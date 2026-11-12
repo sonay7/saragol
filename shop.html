@@ -24,7 +24,6 @@
     .shop-desc { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px; min-height: 30px; }
     .shop-price { color: #f1c40f; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
     
-    /* دکمه خرید (سبز) */
     .buy-btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s; }
     
     /* دکمه خریداری شده (خاکستری) */
@@ -153,6 +152,10 @@
 
   function loadInventoryAndTab(cat) {
     supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
+      // لاگ برای دیباگ در کنسول
+      console.log("دیتای اینونتوری:", inv.data);
+      console.log("خطای اینونتوری:", inv.error);
+      
       myInventory = inv.data || [];
       loadTab(cat);
     });
@@ -179,9 +182,11 @@
       }
       
       res.data.forEach(item => {
-        // چک میکنیم آیا کاربر این آیتم رو داره یا نه
-        var isBought = myInventory.some(i => i.item_id === item.id);
+        // استفاده از String برای اطمینان از مقایسه درست UUID ها
+        var isBought = myInventory.some(i => String(i.item_id) === String(item.id));
         var canAfford = myXp >= item.price;
+        
+        console.log("آیتم:", item.name, "| خریداری شده:", isBought);
         
         var btnHtml = '';
         
@@ -236,27 +241,24 @@
 
     isBuying = true;
 
-    // کم کردن XP
     supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(res => {
       if (res.error) { alert('خطا در خرید'); isBuying = false; return; }
       
-      // اضافه کردن به اینونتوری
       supabaseClient.from('user_inventory').insert({
         user_id: currentUser.id, item_type: type, item_id: itemId
       }).then(insertRes => {
         isBuying = false;
         
         if (insertRes.error) {
-          alert('شما قبلاً این آیتم را خریده‌اید!');
-          // برگردوندن XP (چون خطا داد)
+          // اینجا دقیقاً خطای دیتابیس رو نشون می‌دیم که بفهمیم چرا ارور داد
+          alert('خطا در ثبت خرید: ' + insertRes.error.message);
+          // XP رو برمی‌گردونیم
           supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
-          location.reload(); // رفرش صفحه
           return;
         }
         
         alert('🎉 خرید با موفقیت انجام شد!');
-        // ⬇️ این خط مهم‌ترین بخشه: صفحه رو کامل رفرش می‌کنه تا دکمه خریداری شده بیاد
-        location.reload(); 
+        location.reload(); // رفرش صفحه برای اعمال تغییرات
       });
     });
   };
