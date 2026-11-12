@@ -1,4 +1,3 @@
-// ===== ذخیره‌ی جلسه‌ی مطالعه (اگر در صفحات دیگر هم نیاز بود) =====
 function saveStudySession(subject, minutes, questions) {
   return supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
@@ -16,7 +15,6 @@ function saveStudySession(subject, minutes, questions) {
   });
 }
 
-// ===== کدهای کتاب‌خوانی =====
 var currentUser = null;
 var currentLevel = 1;
 
@@ -29,7 +27,6 @@ var myShelfList = document.getElementById('myShelfList');
 var loanList = document.getElementById('loanList');
 var progressList = document.getElementById('progressList');
 
-// ===== تب‌ها =====
 var bookTabs = document.querySelectorAll('[data-book-tab]');
 var bookContents = document.querySelectorAll('.tab-content');
 bookTabs.forEach(function(tab) {
@@ -45,7 +42,6 @@ bookTabs.forEach(function(tab) {
   });
 });
 
-// ===== شروع =====
 supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   currentUser = res.data.user;
@@ -72,7 +68,7 @@ supabaseClient.auth.getUser().then(function(res) {
   });
 });
 
-// ===== چت =====
+// ===== چت (با پشتیبانی از استیکر) =====
 function loadChat() {
   if(!chatBox) return;
   supabaseClient.from('book_chat').select('*, profiles(username)').order('created_at', { ascending: true }).then(function(res) {
@@ -84,7 +80,14 @@ function loadChat() {
       var div = document.createElement('div');
       div.className = 'chat-msg ' + (isMe ? 'me' : 'other');
       var senderName = isMe ? 'شما' : msg.profiles.username;
-      div.innerHTML = '<span class="sender">' + senderName + '</span>' + msg.message;
+      
+      var stickerHtml = renderStickerInChat(msg.message);
+      if (stickerHtml) {
+        div.innerHTML = '<span class="sender">' + senderName + '</span>' + stickerHtml;
+      } else {
+        div.innerHTML = '<span class="sender">' + senderName + '</span>' + msg.message;
+      }
+      
       chatBox.appendChild(div);
     });
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -95,6 +98,15 @@ if(chatSendBtn) {
   chatSendBtn.addEventListener('click', function() {
     var text = chatInput.value.trim();
     if (text.length < 1) return;
+    
+    if (text.startsWith('[STICKER]')) {
+       chatInput.value = '';
+       supabaseClient.from('book_chat').insert({ user_id: currentUser.id, message: text }).then(function(res) {
+         if (!res.error) loadChat();
+       });
+       return;
+    }
+
     supabaseClient.from('banned_words').select('word').then(function(res) {
       var banned = (res.data || []).map(function(w) { return w.word; });
       var cleanedText = text.replace(/[\/\-\.\_\s]/g, '');
