@@ -6,7 +6,6 @@
   <title>پنل ادمین | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* استایل کشوها (Accordion) */
     details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
     details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
@@ -16,18 +15,11 @@
     .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* استایل عمومی فرم‌ها و لیست‌ها */
     .admin-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }
     .admin-sub { font-size: 0.78rem; color: var(--text-dim); display: block; margin-top: 4px; }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-dim); }
     
     .tab-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-family: inherit; color: var(--text); margin-bottom: 10px; font-size: 0.9rem; }
     .tab-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
-
-    /* استایل استیکرها */
-    .sticker-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .sticker-img { width: 50px; height: 50px; object-fit: contain; background: #fff; border-radius: 8px; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
@@ -42,7 +34,6 @@
 
   <main class="container">
 
-    <!-- بخش مدیریت اعلانات -->
     <details class="accordion">
       <summary class="accordion-header">📌 مدیریت اعلانات</summary>
       <div class="accordion-content">
@@ -61,7 +52,6 @@
       </div>
     </details>
 
-    <!-- بخش اهدای نشان -->
     <details class="accordion">
       <summary class="accordion-header">🌟 اهدای نشان ویژه</summary>
       <div class="accordion-content">
@@ -75,7 +65,6 @@
       </div>
     </details>
 
-    <!-- بخش مدیریت سینما -->
     <details class="accordion">
       <summary class="accordion-header">🎬 مدیریت سینما</summary>
       <div class="accordion-content">
@@ -88,45 +77,58 @@
       </div>
     </details>
 
-    <!-- بخش مدیریت استیکرها (جدید) -->
     <details class="accordion">
       <summary class="accordion-header">🎨 مدیریت پک‌های استیکر</summary>
       <div class="accordion-content">
-        <!-- فرم ساخت پک جدید -->
         <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
           <h4 style="font-size: 0.9rem; margin-bottom: 8px;">ساخت پک جدید:</h4>
-          <input id="newPackName" class="input" placeholder="اسم پک (مثلاً گربه‌ها)" style="margin-bottom: 8px;">
+          <input id="newPackName" class="input" placeholder="اسم پک" style="margin-bottom: 8px;">
           <div style="display: flex; gap: 8px;">
             <input id="newPackPrice" type="number" class="input" placeholder="قیمت (XP)" style="flex: 1;">
-            <input id="newPackIcon" class="input" placeholder="ایموجی (🐱)" style="width: 80px;">
+            <input id="newPackIcon" class="input" placeholder="ایموجی" style="width: 80px;">
           </div>
           <button onclick="createStickerPack()" class="btn btn-green btn-full" style="margin-top: 8px;">➕ ساخت پک</button>
         </div>
-        
-        <!-- لیست پک‌ها -->
         <h4 style="font-size: 0.9rem; margin-bottom: 8px;">پک‌های موجود:</h4>
         <div id="adminPacksList"></div>
       </div>
     </details>
 
-    <!-- بخش درخواست‌ها و کاربران -->
+    <details class="accordion">
+      <summary class="accordion-header">🎡 مدیریت گردونه شانس</summary>
+      <div class="accordion-content">
+        <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem; margin-bottom: 8px;">افزودن خونه جدید:</h4>
+          <input id="wheelLabel" class="input" placeholder="متن روی گردونه (مثلاً ۱۰ XP)" style="margin-bottom: 8px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input id="wheelColor" type="color" class="input" style="height: 45px; padding: 4px; width: 60px;" value="#f44336">
+            <select id="wheelType" class="input" style="flex: 1;">
+              <option value="xp">جایزه XP</option>
+              <option value="item">آیتم</option>
+              <option value="none">بدون جایزه</option>
+            </select>
+            <input id="wheelValue" type="number" class="input" placeholder="مقدار" style="width: 80px;">
+          </div>
+          <button onclick="addWheelSlice()" class="btn btn-green btn-full">➕ افزودن به گردونه</button>
+        </div>
+        <div id="wheelSlicesList"></div>
+      </div>
+    </details>
+
     <details class="accordion">
       <summary class="accordion-header">👥 کاربران و درخواست‌ها</summary>
       <div class="accordion-content">
         <h4 style="font-size: 0.9rem; margin-bottom: 8px;">درخواست‌های عضویت:</h4>
         <div id="requestsList"></div>
-        
         <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">لیست کاربران:</h4>
         <div id="usersList"></div>
       </div>
     </details>
 
-    <!-- بخش آزمون‌ها -->
     <details class="accordion">
       <summary class="accordion-header">📝 مدیریت آزمون‌ها</summary>
       <div class="accordion-content">
         <div id="examsList" style="margin-bottom: 12px;"></div>
-        
         <div style="background: var(--bg); padding: 12px; border-radius: 10px;">
           <input id="examSubject" class="input" placeholder="نام درس" style="margin-bottom: 8px;">
           <input id="examDate" type="date" class="input" style="margin-bottom: 8px;">
@@ -141,7 +143,6 @@
       </div>
     </details>
 
-    <!-- بخش جمله‌ها -->
     <details class="accordion">
       <summary class="accordion-header">💬 مدیریت جمله‌ها</summary>
       <div class="accordion-content">
@@ -153,7 +154,6 @@
       </div>
     </details>
 
-    <!-- بخش صندوق ورودی و انتشار مستقیم -->
     <details class="accordion">
       <summary class="accordion-header">📥 صندوق ورودی و آپلود</summary>
       <div class="accordion-content">
@@ -174,7 +174,6 @@
       </div>
     </details>
 
-    <!-- بخش انجمن کتاب‌خوانی -->
     <details class="accordion">
       <summary class="accordion-header">📚 مدیریت کتاب‌خوانی</summary>
       <div class="accordion-content">
