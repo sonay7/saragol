@@ -7,6 +7,7 @@ function toShamsi(dateStr) {
   return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
 }
 
+// ===== چک کردن دسترسی و شروع =====
 supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   currentUser = res.data.user;
@@ -24,16 +25,18 @@ supabaseClient.auth.getUser().then(function(res) {
     document.querySelector('.user-name').textContent = p.data.username;
     document.querySelector('.avatar').textContent = p.data.username.charAt(0);
 
+    // لود کردن همه بخش‌ها
     loadRequests();
     loadUsers();
     loadExams();
     loadQuotes();
     loadInbox();
     loadBookClubUsers();
-    loadAdminNotices(); // لود کردن اعلان‌ها توی پنل ادمین
+    loadAdminNotices();
   });
 });
 
+// ===== تب‌های اصلی =====
 var adminTabs = document.querySelectorAll('[data-admin-tab]');
 var adminContents = document.querySelectorAll('.admin-tab-content');
 adminTabs.forEach(function(tab) {
@@ -46,6 +49,7 @@ adminTabs.forEach(function(tab) {
   });
 });
 
+// ===== منوی کشویی کتاب‌ها =====
 if (document.getElementById('toggleBooksBtn')) {
   var toggleBooksBtn = document.getElementById('toggleBooksBtn');
   var booksContainer = document.getElementById('booksContainer');
@@ -63,7 +67,7 @@ if (document.getElementById('toggleBooksBtn')) {
   });
 }
 
-// ===== ثبت اعلان جدید =====
+// ===== اعلان جدید (با نمایش خطای دقیق) =====
 if (document.getElementById('addNoticeBtn')) {
   document.getElementById('addNoticeBtn').addEventListener('click', function() {
     var text = document.getElementById('noticeText').value.trim();
@@ -83,12 +87,17 @@ if (document.getElementById('addNoticeBtn')) {
       if (res.error) { 
         msg.textContent = '❌ ' + res.error.message;
         msg.style.color = '#e74c3c';
+        console.error('NOTICE ERROR FULL:', res.error);
         return;
       }
       msg.textContent = '✅ ثبت شد'; 
       msg.style.color = '#2ecc71';
       document.getElementById('noticeText').value = '';
-      loadAdminNotices(); // رفرش لیست اعلان‌ها
+      loadAdminNotices(); // رفرش لیست
+    }).catch(function(err) {
+      msg.textContent = '❌ خطای شبکه: ' + err.message;
+      msg.style.color = '#e74c3c';
+      console.error('NOTICE NETWORK ERROR:', err);
     });
   });
 }
@@ -133,12 +142,12 @@ function loadAdminNotices() {
 window.delAdminNotice = function(id) {
   if (confirm('این اعلان حذف شود؟')) {
     supabaseClient.from('notices').delete().eq('id', id).then(function(res) {
-      if (!res.error) loadAdminNotices(); // بعد از حذف، لیست رو رفرش کن
+      if (!res.error) loadAdminNotices();
     });
   }
 }
 
-// ===== بقیه توابع (بدون تغییر) =====
+// ===== درخواست‌ها و کاربران =====
 function loadRequests() {
   var box = document.getElementById('requestsList');
   if (!box) return;
@@ -180,6 +189,7 @@ function loadUsers() {
       
       var html = '<div style="width:100%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">';
       html += '<div><strong>' + statusLabel + ' ' + u.username + '</strong><span class="admin-sub">' + u.class_name + titleDisplay + '</span></div>';
+      
       if (canEdit && u.id !== currentUser.id) {
         html += '<select class="select role-select" data-uid="' + u.id + '" style="padding:6px;font-size:0.75rem;">' + options + '</select>';
       } else {
@@ -201,6 +211,7 @@ function loadUsers() {
   });
 }
 
+// ===== آزمون‌ها =====
 function loadExams() {
   var list = document.getElementById('examsList');
   if (!list) return;
@@ -227,6 +238,7 @@ if (document.getElementById('addExamBtn')) {
   });
 }
 
+// ===== جمله‌ها =====
 function loadQuotes() {
   var list = document.getElementById('quotesList');
   if (!list) return;
@@ -251,6 +263,7 @@ if (document.getElementById('addQuoteBtn')) {
   });
 }
 
+// ===== انتشار مستقیم =====
 if (document.getElementById('directUploadBtn')) {
   document.getElementById('directUploadBtn').addEventListener('click', function() {
     var file = document.getElementById('directFile').files[0];
@@ -269,6 +282,7 @@ if (document.getElementById('directUploadBtn')) {
   });
 }
 
+// ===== صندوق ورودی =====
 function loadInbox() {
   if (!document.getElementById('list-private')) return;
   var inboxTabs = document.querySelectorAll('[data-tab^="inbox-"]');
@@ -310,6 +324,7 @@ function loadInbox() {
 window.delInbox = function(id) { supabaseClient.from('admin_inbox').delete().eq('id', id).then(loadInbox); }
 window.approveInbox = function(id) { supabaseClient.from('admin_inbox').update({ status: 'approved' }).eq('id', id).then(loadInbox); }
 
+// ===== اعضای انجمن کتاب‌خوانی =====
 function loadBookClubUsers() {
   var listBox = document.getElementById('bookClubUsersList');
   if (!listBox) return;
@@ -381,7 +396,8 @@ window.delAdminBook = function(id) {
 window.delAdminLoan = function(id) {
   if(confirm('این امانت حذف بشه؟')) supabaseClient.from('book_loan').delete().eq('id', id).then(loadBookClubUsers);
 }
-// ===== تابع اهدای نشان ویژه =====
+
+// ===== اهدای نشان ویژه (🌟 بخش جدید) =====
 window.giveBadge = function() {
   var username = document.getElementById('badgeUsername').value.trim();
   var badgeName = document.getElementById('badgeName').value;
@@ -390,8 +406,12 @@ window.giveBadge = function() {
   if (!username) { alert('نام کاربری رو وارد کن'); return; }
 
   // پیدا کردن کاربر با این نام کاربری
-  supabaseClient.from('profiles').select('id, username').ilike('username', username).then(function(userRes) {
-    if (userRes.error || !userRes.data || userRes.data.length === 0) {
+  supabaseClient.from('profiles').select('id, username').ilike('username', '%' + username + '%').then(function(userRes) {
+    if (userRes.error) { 
+      alert('خطا در جستجوی کاربر: ' + userRes.error.message); 
+      return; 
+    }
+    if (!userRes.data || userRes.data.length === 0) {
       alert('کاربری با این نام پیدا نشد!');
       return;
     }
@@ -406,7 +426,11 @@ window.giveBadge = function() {
       badge_name: badgeName,
       badge_icon: badgeIcon
     }).then(function(res) {
-      if (res.error) { alert('خطا: ' + res.error.message); return; }
+      if (res.error) { 
+        alert('خطای دقیق: ' + res.error.message + '\nکد: ' + (res.error.code || '?'));
+        console.error('BADGE ERROR:', res.error);
+        return; 
+      }
       alert('🌟 نشان با موفقیت به ' + user.username + ' اهدا شد!');
       document.getElementById('badgeUsername').value = '';
     });
