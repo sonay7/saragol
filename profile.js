@@ -10,7 +10,7 @@ var currentStreak = 0;
 var totalQuestions = 0;
 var hasMorningStudy = false;
 
-// ===== شروع: لود اطلاعات پروفایل =====
+// ===== لود اولیه پروفایل =====
 supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   var uid = res.data.user.id;
@@ -28,7 +28,13 @@ supabaseClient.auth.getUser().then(function(res) {
     var uNameEl = document.querySelector('.user-name'); if(uNameEl) uNameEl.textContent = profile.username;
     var avatarEl = document.querySelector('.avatar'); if(avatarEl) avatarEl.textContent = profile.username.charAt(0);
 
-    // ⬇️ بخش تاریخ تولد: اگر قبلاً ثبت شده بود، توی باکس نشون بده ⬇️
+    // ⬇️ کد دعوت ⬇️
+    var inviteInput = document.getElementById('myInviteCode');
+    if (inviteInput && profile.invite_code) {
+      inviteInput.value = profile.invite_code;
+    }
+
+    // تاریخ تولد (اگر قبلاً ثبت شده بود)
     if (profile.birthday) {
       var bdayInput = document.getElementById('userBirthday');
       if (bdayInput) bdayInput.value = profile.birthday;
@@ -105,10 +111,27 @@ supabaseClient.auth.getUser().then(function(res) {
 
     loadExams();
     loadGenres(uid);
+    
+    // لود نشان‌های ویژه
+    loadSpecialBadges(uid);
   });
 });
 
-// ===== تابع ذخیره تاریخ تولد (این بخش جدیده) =====
+// ===== کپی کردن لینک دعوت =====
+window.copyInviteLink = function() {
+  var code = document.getElementById('myInviteCode').value;
+  if (!code) { alert('کد دعوت شما در حال ساخته شدنه، یه بار صفحه رو رفرش کن.'); return; }
+  
+  var link = 'https://sonay7.github.io/saragol/signup.html?ref=' + code;
+  
+  navigator.clipboard.writeText(link).then(function() {
+    alert('✅ لینک دعوت کپی شد! برای دوستت بفرست.');
+  }).catch(function() {
+    prompt('لینک دعوت رو کپی کن:', link);
+  });
+};
+
+// ===== ذخیره تاریخ تولد =====
 window.saveBirthday = function() {
   var bday = document.getElementById('userBirthday').value;
   var msg = document.getElementById('birthdayMsg');
@@ -133,7 +156,30 @@ window.saveBirthday = function() {
   });
 };
 
-// ===== بقیه توابع (بدون تغییر) =====
+// ===== لود نشان‌های ویژه =====
+function loadSpecialBadges(uid) {
+  supabaseClient.from('user_badges').select('*').eq('user_id', uid).then(function(badgeRes) {
+    var list = document.getElementById('specialBadgesList');
+    if (!list) return;
+    
+    var badges = badgeRes.data || [];
+    list.innerHTML = '';
+    
+    if (badges.length === 0) {
+      list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim);">هنوز نشان ویژه‌ای نداری.</p>';
+      return;
+    }
+    
+    badges.forEach(function(b) {
+      var span = document.createElement('span');
+      span.style.cssText = 'background: linear-gradient(135deg, #f39c12, #f1c40f); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);';
+      span.textContent = (b.badge_icon || '🏅') + ' ' + b.badge_name;
+      list.appendChild(span);
+    });
+  });
+}
+
+// ===== بقیه توابع (سطح، لیگ، ویجت، آزمون، ژانر، تم) =====
 function renderLevelPath(currentLevel) {
   var list = document.getElementById('levelPathList');
   if (!list) return;
@@ -225,7 +271,6 @@ function loadCupLogic(uid) {
         selectedOption = btnData.id;
         currentTarget = btnData.val;
         localStorage.setItem('cup_choice_' + todayStr, selectedOption);
-        
         window.location.href = 'study.html?goal=' + currentTarget;
       };
       btnContainer.appendChild(btn);
@@ -439,27 +484,3 @@ if (document.getElementById('logoutBtn')) {
     }
   });
 }
-
-// ===== لود کردن نشان‌های ویژه =====
-supabaseClient.auth.getUser().then(function(res) {
-  if (!res.data.user) return;
-  supabaseClient.from('user_badges').select('*').eq('user_id', res.data.user.id).then(function(badgeRes) {
-    var list = document.getElementById('specialBadgesList');
-    if (!list) return;
-    
-    var badges = badgeRes.data || [];
-    list.innerHTML = '';
-    
-    if (badges.length === 0) {
-      list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim);">هنوز نشان ویژه‌ای نداری.</p>';
-      return;
-    }
-    
-    badges.forEach(function(b) {
-      var span = document.createElement('span');
-      span.style.cssText = 'background: linear-gradient(135deg, #f39c12, #f1c40f); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);';
-      span.textContent = (b.badge_icon || '🏅') + ' ' + b.badge_name;
-      list.appendChild(span);
-    });
-  });
-});
