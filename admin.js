@@ -436,3 +436,43 @@ window.giveBadge = function() {
     });
   });
 };
+
+// ===== افزودن فیلم به سینما =====
+window.addCinemaVideo = function() {
+  var title = document.getElementById('cinemaTitle').value.trim();
+  var desc = document.getElementById('cinemaDesc').value.trim();
+  var url = document.getElementById('cinemaUrl').value.trim();
+  var price = parseInt(document.getElementById('cinemaPrice').value);
+  var msg = document.getElementById('cinemaMsg');
+
+  if (!title || !url || !price || price < 1) {
+    msg.textContent = 'عنوان، لینک و قیمت الزامی هستند.';
+    msg.style.color = '#e74c3c';
+    return;
+  }
+
+  msg.textContent = 'در حال ذخیره...';
+  msg.style.color = 'var(--text-dim)';
+
+  supabaseClient.from('cinema_videos').insert({
+    title: title,
+    description: desc,
+    video_url: url,
+    price: price
+  }).then(function(res) {
+    if (res.error) {
+      msg.textContent = 'خطا: ' + res.error.message;
+      msg.style.color = '#e74c3c';
+      return;
+    }
+    
+    msg.textContent = '✅ فیلم با موفقیت به سینما اضافه شد!';
+    msg.style.color = 'var(--green)';
+    
+    // خالی کردن فرم
+    document.getElementById('cinemaTitle').value = '';
+    document.getElementById('cinemaDesc').value = '';
+    document.getElementById('cinemaUrl').value = '';
+    document.getElementById('cinemaPrice').value = '';
+  });
+};
