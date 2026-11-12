@@ -62,26 +62,21 @@ if (document.getElementById('timer')) {
   function updateWidget() {
     var percent = Math.min(Math.round((todayDoneMinutes / targetMinutes) * 100), 100);
     
-    // فنجون
     var cupLiquid = document.getElementById('cupLiquid');
     if(cupLiquid) cupLiquid.style.height = percent + '%';
 
-    // سیاره
     var galaxyLiquid = document.getElementById('galaxyLiquid');
     if(galaxyLiquid) galaxyLiquid.style.height = percent + '%';
 
-    // نوار ساده
     var simpleBar = document.getElementById('simpleBarFill');
     if(simpleBar) simpleBar.style.width = percent + '%';
 
-    // شکوفه‌ها
     document.querySelectorAll('.blossom').forEach(function(b) {
       var val = parseInt(b.getAttribute('data-val'));
       if (percent >= val) { b.style.opacity = '1'; b.style.transform = 'scale(1)'; } 
       else { b.style.opacity = '0'; b.style.transform = 'scale(0)'; }
     });
 
-    // تبدیل واحد (ساعت و دقیقه)
     var hours = Math.floor(todayDoneMinutes / 60);
     var mins = todayDoneMinutes % 60;
     var text = '';
@@ -90,9 +85,9 @@ if (document.getElementById('timer')) {
     
     if (percent >= 100) {
       text = '🎉 آفرین! هدف امروزت رو پر کردی.';
-      widgetStatus.style.color = 'var(--green)';
+      if(widgetStatus) widgetStatus.style.color = 'var(--green)';
     } else {
-      widgetStatus.style.color = 'var(--text)';
+      if(widgetStatus) widgetStatus.style.color = 'var(--text)';
     }
     if(widgetStatus) widgetStatus.textContent = text;
   }
@@ -154,44 +149,50 @@ if (document.getElementById('timer')) {
     updateTimer();
   }
 
-  startBtn.addEventListener('click', startTimer);
-  pauseBtn.addEventListener('click', pauseTimer);
-  resetBtn.addEventListener('click', resetTimer);
+  if(startBtn) startBtn.addEventListener('click', startTimer);
+  if(pauseBtn) pauseBtn.addEventListener('click', pauseTimer);
+  if(resetBtn) resetBtn.addEventListener('click', resetTimer);
 
   function hideAllTabs() {
-    pomodoroSection.classList.add('hidden');
-    freeSection.classList.add('hidden');
-    panicSection.classList.add('hidden');
-    timerBox.classList.add('hidden');
-    finishSection.classList.add('hidden');
-    tabPomodoro.classList.remove('active');
-    tabFree.classList.remove('active');
-    tabPanic.classList.remove('active');
+    if(pomodoroSection) pomodoroSection.classList.add('hidden');
+    if(freeSection) freeSection.classList.add('hidden');
+    if(panicSection) panicSection.classList.add('hidden');
+    if(timerBox) timerBox.classList.add('hidden');
+    if(finishSection) finishSection.classList.add('hidden');
+    if(tabPomodoro) tabPomodoro.classList.remove('active');
+    if(tabFree) tabFree.classList.remove('active');
+    if(tabPanic) tabPanic.classList.remove('active');
   }
 
-  tabPomodoro.addEventListener('click', function() {
-    mode = 'pomodoro'; hideAllTabs();
-    tabPomodoro.classList.add('active');
-    pomodoroSection.classList.remove('hidden');
-    timerBox.classList.remove('hidden'); finishSection.classList.remove('hidden');
-    resetTimer();
-  });
+  if(tabPomodoro) {
+    tabPomodoro.addEventListener('click', function() {
+      mode = 'pomodoro'; hideAllTabs();
+      tabPomodoro.classList.add('active');
+      pomodoroSection.classList.remove('hidden');
+      timerBox.classList.remove('hidden'); finishSection.classList.remove('hidden');
+      resetTimer();
+    });
+  }
 
-  tabFree.addEventListener('click', function() {
-    mode = 'free'; hideAllTabs();
-    tabFree.classList.add('active');
-    freeSection.classList.remove('hidden');
-    timerBox.classList.remove('hidden'); finishSection.classList.remove('hidden');
-    resetTimer();
-  });
+  if(tabFree) {
+    tabFree.addEventListener('click', function() {
+      mode = 'free'; hideAllTabs();
+      tabFree.classList.add('active');
+      freeSection.classList.remove('hidden');
+      timerBox.classList.remove('hidden'); finishSection.classList.remove('hidden');
+      resetTimer();
+    });
+  }
 
-  tabPanic.addEventListener('click', function() {
-    mode = 'panic'; hideAllTabs();
-    tabPanic.classList.add('active');
-    panicSection.classList.remove('hidden');
-    pauseTimer();
-    loadPanicNotes();
-  });
+  if(tabPanic) {
+    tabPanic.addEventListener('click', function() {
+      mode = 'panic'; hideAllTabs();
+      tabPanic.classList.add('active');
+      panicSection.classList.remove('hidden');
+      pauseTimer();
+      loadPanicNotes();
+    });
+  }
 
   document.querySelectorAll('.preset').forEach(function(btn) {
     btn.addEventListener('click', function() {
@@ -200,74 +201,98 @@ if (document.getElementById('timer')) {
     });
   });
 
-  document.getElementById('setCustomBtn').addEventListener('click', function() {
-    var min = parseInt(document.getElementById('customMinutes').value);
-    if (isNaN(min) || min < 1 || min > 180) { alert('عدد بین ۱ تا ۱۸۰ بزن'); return; }
-    totalSeconds = min * 60;
-    resetTimer();
-  });
+  if(document.getElementById('setCustomBtn')) {
+    document.getElementById('setCustomBtn').addEventListener('click', function() {
+      var min = parseInt(document.getElementById('customMinutes').value);
+      if (isNaN(min) || min < 1 || min > 180) { alert('عدد بین ۱ تا ۱۸۰ بزن'); return; }
+      totalSeconds = min * 60;
+      resetTimer();
+    });
+  }
 
-  finishBtn.addEventListener('click', function() {
-    pauseTimer();
-    var studiedMinutes, subject;
-    if (mode === 'pomodoro') {
-      studiedMinutes = Math.floor((totalSeconds - remaining) / 60);
-      subject = subjectEl.value;
-    } else if (mode === 'free') {
-      studiedMinutes = Math.floor(elapsedSeconds / 60);
-      subject = freeSubjectEl.value;
-    } else { return; }
-    var questions = questionsEl.value || '۰';
-    if (studiedMinutes < 1) { alert('اول یه‌کم مطالعه کن بعد ثبت کن'); return; }
+  if(finishBtn) {
+    finishBtn.addEventListener('click', function() {
+      pauseTimer();
+      var studiedMinutes, subject;
+      if (mode === 'pomodoro') {
+        studiedMinutes = Math.floor((totalSeconds - remaining) / 60);
+        subject = subjectEl.value;
+      } else if (mode === 'free') {
+        studiedMinutes = Math.floor(elapsedSeconds / 60);
+        subject = freeSubjectEl.value;
+      } else { return; }
+      
+      var questions = questionsEl.value || '۰';
+      if (studiedMinutes < 1) { alert('اول یه‌کم مطالعه کن بعد ثبت کن'); return; }
 
-    resultEl.classList.remove('hidden');
-    resultText.textContent = 'درس: ' + subject + ' | ' + toPersian(studiedMinutes) + ' دقیقه مطالعه | ' + toPersian(questions) + ' سؤال حل‌شده';
-    resultEl.scrollIntoView({ behavior: 'smooth' });
+      resultEl.classList.remove('hidden');
+      resultText.textContent = 'درس: ' + subject + ' | ' + toPersian(studiedMinutes) + ' دقیقه مطالعه | ' + toPersian(questions) + ' سؤال حل‌شده';
+      resultEl.scrollIntoView({ behavior: 'smooth' });
 
-    saveStudySession(subject, studiedMinutes, questions);
+      saveStudySession(subject, studiedMinutes, questions);
 
-    // آپدیت فنجون
-    todayDoneMinutes += studiedMinutes;
-    updateWidget();
+      todayDoneMinutes += studiedMinutes;
+      updateWidget();
 
-    setTimeout(function() {
-      if (mode === 'pomodoro') remaining = totalSeconds;
-      else { elapsedSeconds = 0; freeElapsedBase = 0; }
-      updateTimer();
-    }, 2000);
-  });
+      setTimeout(function() {
+        if (mode === 'pomodoro') remaining = totalSeconds;
+        else { elapsedSeconds = 0; freeElapsedBase = 0; }
+        updateTimer();
+      }, 2000);
+    });
+  }
 
   updateTimer();
 }
 
+// ===== ذخیره جلسه مطالعه (با قابلیت بوستر ۱.۵ برابر) =====
 function saveStudySession(subject, minutes, questions) {
   return supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var userId = res.data.user.id;
+    
+    // ثبت جلسه
     return supabaseClient.from('study_sessions').insert({
       user_id: userId, subject: subject, minutes: minutes, questions: parseInt(questions) || 0
     }).then(function(sessionRes) {
       if (sessionRes.error) return;
+      
+      // محاسبه XP
       return supabaseClient.from('profiles').select('total_minutes, xp').eq('id', userId).single().then(function(p) {
         var newMinutes = (p.data.total_minutes || 0) + minutes;
-        var newXp = (p.data.xp || 0) + minutes * 2;
-        return supabaseClient.from('profiles').update({ total_minutes: newMinutes, xp: newXp }).eq('id', userId);
+        var baseXp = minutes * 2; 
+        
+        // چک کردن بوستر
+        return supabaseClient.from('user_inventory')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('effect_value', 'بوستر XP ⚡')
+          .then(function(boosterRes) {
+            var finalXp = baseXp;
+            
+            if (boosterRes.data && boosterRes.data.length > 0) {
+              finalXp = Math.floor(baseXp * 1.5);
+              supabaseClient.from('user_inventory').delete().eq('id', boosterRes.data[0].id);
+            }
+            
+            var newXp = (p.data.xp || 0) + finalXp;
+            return supabaseClient.from('profiles').update({ total_minutes: newMinutes, xp: newXp }).eq('id', userId);
+          });
       });
     });
   });
 }
 
-// ===== سیستم شب امتحان (با فیلتر) =====
+// ===== سیستم شب امتحان =====
 function loadPanicNotes() {
   var listEl = document.getElementById('panicList');
-  var filterSub = document.getElementById('filterSubject').value;
-  var filterChap = document.getElementById('filterChapter').value;
+  var filterSub = document.getElementById('filterSubject') ? document.getElementById('filterSubject').value : '';
+  var filterChap = document.getElementById('filterChapter') ? document.getElementById('filterChapter').value : '';
   if (!listEl) return;
 
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     
-    // گرفتن پایه کاربر
     supabaseClient.from('profiles').select('class_name').eq('id', res.data.user.id).single().then(function(pRes) {
       var userGrade = pRes.data ? pRes.data.class_name.replace(/[0-9 ]/g, '') : '';
       
@@ -280,7 +305,6 @@ function loadPanicNotes() {
         listEl.innerHTML = '';
         var rows = res.data || [];
         
-        // فیلتر پایه توی سمت کاربر (چون ممکنه "همه" باشه)
         rows = rows.filter(function(n) {
           return n.grade === 'همه' || n.grade === userGrade || !n.grade;
         });
@@ -338,7 +362,6 @@ window.delPanicNote = function(id) {
   }
 };
 
-// شنونده فیلترها
 if (document.getElementById('filterSubject')) {
   document.getElementById('filterSubject').addEventListener('change', loadPanicNotes);
   document.getElementById('filterChapter').addEventListener('input', loadPanicNotes);
