@@ -1,3 +1,4 @@
+// ===== ذخیره‌ی جلسه‌ی مطالعه =====
 function saveStudySession(subject, minutes, questions) {
   return supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
@@ -27,6 +28,7 @@ var myShelfList = document.getElementById('myShelfList');
 var loanList = document.getElementById('loanList');
 var progressList = document.getElementById('progressList');
 
+// ===== تب‌ها =====
 var bookTabs = document.querySelectorAll('[data-book-tab]');
 var bookContents = document.querySelectorAll('.tab-content');
 bookTabs.forEach(function(tab) {
@@ -42,6 +44,7 @@ bookTabs.forEach(function(tab) {
   });
 });
 
+// ===== شروع =====
 supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   currentUser = res.data.user;
@@ -68,24 +71,32 @@ supabaseClient.auth.getUser().then(function(res) {
   });
 });
 
-// ===== چت (با پشتیبانی از استیکر) =====
+// ===== چت (با پشتیبانی از رنگ و استیکر) =====
 function loadChat() {
   if(!chatBox) return;
-  supabaseClient.from('book_chat').select('*, profiles(username)').order('created_at', { ascending: true }).then(function(res) {
+  // گرفتن chat_color از پروفایل کاربران
+  supabaseClient.from('book_chat').select('*, profiles(username, chat_color)').order('created_at', { ascending: true }).then(function(res) {
     chatBox.innerHTML = '';
     var rows = res.data || [];
     if (rows.length === 0) { chatBox.innerHTML = '<p class="lock-note" style="text-align: center; margin-top: 20px;">هنوز پیامی نیست.</p>'; return; }
+    
     rows.forEach(function(msg) {
       var isMe = msg.user_id === currentUser.id;
       var div = document.createElement('div');
       div.className = 'chat-msg ' + (isMe ? 'me' : 'other');
-      var senderName = isMe ? 'شما' : msg.profiles.username;
+      var senderName = isMe ? 'شما' : (msg.profiles ? msg.profiles.username : 'ناشناس');
+      
+      // اعمال رنگ اختصاصی
+      var bubbleStyle = '';
+      if (isMe && msg.profiles && msg.profiles.chat_color) {
+        bubbleStyle = 'background: ' + msg.profiles.chat_color + '; color: #fff;';
+      }
       
       var stickerHtml = renderStickerInChat(msg.message);
       if (stickerHtml) {
-        div.innerHTML = '<span class="sender">' + senderName + '</span>' + stickerHtml;
+        div.innerHTML = '<span class="sender">' + senderName + '</span><span style="' + bubbleStyle + '">' + stickerHtml + '</span>';
       } else {
-        div.innerHTML = '<span class="sender">' + senderName + '</span>' + msg.message;
+        div.innerHTML = '<span class="sender">' + senderName + '</span><span style="' + bubbleStyle + '">' + msg.message + '</span>';
       }
       
       chatBox.appendChild(div);
@@ -99,6 +110,7 @@ if(chatSendBtn) {
     var text = chatInput.value.trim();
     if (text.length < 1) return;
     
+    // اگر استیکر بود، مستقیم بفرست
     if (text.startsWith('[STICKER]')) {
        chatInput.value = '';
        supabaseClient.from('book_chat').insert({ user_id: currentUser.id, message: text }).then(function(res) {
@@ -107,6 +119,7 @@ if(chatSendBtn) {
        return;
     }
 
+    // فیلتر کلمات رکیک
     supabaseClient.from('banned_words').select('word').then(function(res) {
       var banned = (res.data || []).map(function(w) { return w.word; });
       var cleanedText = text.replace(/[\/\-\.\_\s]/g, '');
@@ -276,7 +289,7 @@ function loadLoans() {
       var statusText = loan.status === 'available' ? '🟢 موجود' : (loan.status === 'requested' ? '🟡 درخواست' : '🔴 امانت داده شده');
       var actionBtn = !isMine && loan.status === 'available' ? '<button class="btn btn-blue btn-sm" onclick="requestLoan(' + loan.id + ')">درخواست امانت</button>' : 
                       (isMine ? '<button class="btn btn-dim btn-sm" onclick="deleteLoan(' + loan.id + ')">حذف</button>' : '');
-      div.innerHTML = '<div style="width:100%; display:flex; justify-content:space-between; align-items:center;"><div><strong>' + loan.title + '</strong><p style="font-size:0.75rem; color:var(--text-dim);">صاحب: ' + loan.profiles.username + '</p></div><span style="font-size:0.8rem;">' + statusText + '</span></div>' + actionBtn;
+      div.innerHTML = '<div style="width:100%; display:flex; justify-content:space-between; align-items:center;"><div><strong>' + loan.title + '</strong><p style="font-size:0.75rem; color:var(--text-dim);">صاحب: ' + (loan.profiles ? loan.profiles.username : 'ناشناس') + '</p></div><span style="font-size:0.8rem;">' + statusText + '</span></div>' + actionBtn;
       loanList.appendChild(div);
     });
   });
