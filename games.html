@@ -7,23 +7,45 @@
   <link rel="stylesheet" href="style.css">
   <style>
     .game-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; }
-    .chest-grid { display: flex; justify-content: space-around; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-    .chest { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; padding: 12px; border-radius: 12px; }
-    .chest:hover { transform: scale(1.08); background: rgba(255,255,255,0.05); }
-    .chest-icon { font-size: 3rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-    .chest-name { font-size: 0.85rem; font-weight: 600; }
-    .chest-prize { font-size: 0.72rem; color: var(--text-dim); }
-    .chest-cooldown { font-size: 0.7rem; color: #e74c3c; }
+    
+    /* استایل گردونه */
+    .wheel-wrapper { position: relative; width: 300px; height: 300px; margin: 30px auto; }
+    .wheel-outer { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #d3d3d3, #9e9e9e); box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 0 10px rgba(0,0,0,0.5); padding: 15px; position: relative; }
+    
+    .wheel-lights { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
+    .light-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 5px #fff; }
+    .light-dot:nth-child(even) { background: #fdd835; box-shadow: 0 0 5px #fdd835; }
 
-    .wheel-container { position: relative; width: 240px; height: 240px; margin: 20px auto; }
     .wheel {
       width: 100%; height: 100%; border-radius: 50%;
-      border: 6px solid var(--border);
+      position: relative; overflow: hidden;
       transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
-    .wheel-pointer { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 2.5rem; color: #e74c3c; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
-    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; background: var(--bg-card); border-radius: 50%; z-index: 5; border: 3px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+
+    .wheel-text {
+      position: absolute; top: 20%; left: 50%;
+      transform-origin: 0% 130%;
+      font-weight: bold; font-size: 0.85rem; color: #fff;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; border-radius: 50%; background: radial-gradient(circle, #fff, #fdd835); border: 4px solid #9e9e9e; z-index: 10; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    .wheel-center::after { content: ''; width: 18px; height: 18px; background: #333; border-radius: 50%; }
+
+    .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 30px solid #fdd835; z-index: 20; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); }
+
+    /* دکمه و نتیجه */
+    .spin-btn-new { background: #fdd835; color: #000; border: none; padding: 16px 40px; border-radius: 16px; font-size: 1.3rem; font-weight: bold; font-family: inherit; cursor: pointer; box-shadow: 0 5px 15px rgba(253, 216, 53, 0.4); transition: 0.2s; margin-top: 10px; }
+    .spin-btn-new:hover { transform: scale(1.05); }
+    .spin-btn-new:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+    .result-box-new { background: #fdd835; color: #000; border-radius: 16px; padding: 20px; margin-top: 20px; font-weight: bold; text-align: center; box-shadow: 0 5px 15px rgba(253, 216, 53, 0.4); display: none; }
+    .result-box-new h4 { margin-bottom: 10px; font-size: 0.9rem; opacity: 0.8; }
+    .result-box-new p { font-size: 1.2rem; }
+
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .modal.hidden { display: none; }
+    .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; text-align: center; }
   </style>
 </head>
 <body>
@@ -37,8 +59,9 @@
   </header>
 
   <main class="container">
-    <h2>🎮 بازی و سرگرمی</h2>
+    <h2 style="text-align:center; margin-bottom:20px;">🎮 بازی و سرگرمی</h2>
 
+    <!-- معما -->
     <div class="game-card">
       <h3>🧠 معمای روز</h3>
       <p id="riddleQuestion" style="margin: 10px 0; font-size: 0.95rem;">در حال بارگذاری...</p>
@@ -47,49 +70,47 @@
       <p id="riddleMsg" style="margin-top: 10px; font-size: 0.85rem;"></p>
     </div>
 
-    <div class="game-card">
-      <h3>🎁 صندوقچه‌ها</h3>
-      <p style="font-size: 0.85rem; color: var(--text-dim);">بچرخون و XP ببر! هر صندوقچه یک‌بار در روز.</p>
-      
-      <div class="chest-grid">
-        <div class="chest" id="chest-bronze" onclick="openChestModal('bronze')">
-          <div class="chest-icon">📦</div>
-          <div class="chest-name">برنزی</div>
-          <div class="chest-prize">۱۰ تا ۲۵ XP</div>
-        </div>
-        <div class="chest" id="chest-silver" onclick="openChestModal('silver')">
-          <div class="chest-icon">🥈</div>
-          <div class="chest-name">نقره‌ای</div>
-          <div class="chest-prize">۲۰ تا ۵۰ XP</div>
-        </div>
-        <div class="chest" id="chest-gold" onclick="openChestModal('gold')">
-          <div class="chest-icon">🥇</div>
-          <div class="chest-name">طلایی</div>
-          <div class="chest-prize">۳۰ تا ۱۰۰ XP</div>
-        </div>
+    <!-- دکمه باز کردن گردونه -->
+    <div class="game-card" style="background: transparent; border: none; padding: 0;">
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
+        <button class="btn btn-green" onclick="openChestModal(10)" style="flex:1; padding: 15px; font-size:1.1rem;">🎡 چرخش شانس (۱۰ XP)</button>
       </div>
+      <p style="text-align:center; font-size: 0.9rem; margin-bottom:10px;">XP تو: <span id="myXpDisplay" style="color:#f1c40f; font-weight:bold;">0</span></p>
     </div>
 
   </main>
 
-  <!-- مودال چرخنده -->
+  <!-- مودال گردونه -->
   <div id="chestModal" class="modal hidden">
-    <div class="modal-box" style="text-align:center;">
-      <h2 id="chestTitle">🎁 صندوقچه</h2>
-      <div class="wheel-container">
-        <div class="wheel-pointer">▼</div>
-        <div class="wheel" id="wheel"></div>
-        <div class="wheel-center" id="wheelCenter">🎁</div>
+    <div class="modal-box" style="background: transparent; border: none; box-shadow: none; max-width: 350px;">
+      
+      <div class="wheel-wrapper">
+        <div class="wheel-pointer"></div>
+        <div class="wheel-outer">
+          <div class="wheel-lights" id="wheelLights"></div>
+          <div class="wheel" id="wheel">
+            <!-- متن‌ها با JS اضافه میشن -->
+          </div>
+          <div class="wheel-center"></div>
+        </div>
       </div>
-      <p id="spinResult" style="font-size:1.1rem; font-weight:bold; margin-top:16px; min-height:30px;"></p>
-      <button id="spinBtn" class="btn btn-green btn-full">🎡 بچرخون!</button>
-      <button id="closeChestBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button>
+
+      <button id="spinBtn" class="spin-btn-new">بچرخان!</button>
+
+      <div id="resultBox" class="result-box-new">
+        <h4>نتیجه:</h4>
+        <p id="spinResult"></p>
+        <button id="closeChestBtn" class="btn btn-dim btn-sm" style="margin-top:10px;">بستن</button>
+      </div>
+
     </div>
   </div>
 
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="games.html" class="nav-item active">🎮 بازی</a>
+    <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
@@ -98,28 +119,49 @@
   <script src="auth.js"></script>
   <script src="theme.js"></script>
   <script>
-    // ===== اطلاعات کاربر =====
-    var myUid = null, myName = '';
+    var myUid = null, myName = '', myXp = 0;
+    var spinning = false;
+    var currentRiddle = null;
+    var wheelSlices = [];
+
+    // ساخت لامپ‌ها
+    function createLights() {
+      var lightsContainer = document.getElementById('wheelLights');
+      for (var i = 0; i < 16; i++) {
+        var angle = (i * 360) / 16;
+        var dot = document.createElement('div');
+        dot.className = 'light-dot';
+        var rad = angle * (Math.PI / 180);
+        var r = 150;
+        var x = r + (r - 10) * Math.sin(rad) - 4;
+        var y = r - (r - 10) * Math.cos(rad) - 4;
+        dot.style.left = x + 'px';
+        dot.style.top = y + 'px';
+        lightsContainer.appendChild(dot);
+      }
+    }
+    createLights();
+
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
       myUid = res.data.user.id;
       supabaseClient.from('profiles').select('username, xp').eq('id', myUid).single().then(function(p) {
         if (p.data) {
           myName = p.data.username;
+          myXp = p.data.xp || 0;
+          document.getElementById('myXpDisplay').textContent = myXp;
           document.querySelector('.user-name').textContent = myName;
           document.querySelector('.avatar').textContent = myName.charAt(0);
         }
       });
     });
 
-    // ===== معمای روز =====
-    var currentRiddle = null;
-
+    // ===== معما =====
     function loadRiddle() {
       supabaseClient.from('riddles').select('*').eq('is_active', true).then(function(res) {
         var riddles = res.data || [];
         if (riddles.length === 0) {
-          document.getElementById('riddleQuestion').textContent = 'هنوز معمایی ثبت نشده. ادمین باید معما اضافه کنه.';
+          document.getElementById('riddleQuestion').textContent = 'هنوز معمایی ثبت نشده.';
           return;
         }
         var today = new Date();
@@ -128,12 +170,10 @@
         currentRiddle = riddles[idx];
         document.getElementById('riddleQuestion').textContent = currentRiddle.question;
 
-        // چک کن امروز جواب داده یا نه
         if (localStorage.getItem('riddle_solved_' + seed)) {
           document.getElementById('riddleMsg').textContent = '✅ امروز جواب دادی. فردا بیا!';
           document.getElementById('riddleMsg').style.color = 'var(--green)';
           document.getElementById('riddleAnswer').disabled = true;
-          document.querySelector('#riddleAnswer + button') && (document.querySelector('#riddleAnswer + button').disabled = true);
         }
       });
     }
@@ -144,7 +184,6 @@
       var msg = document.getElementById('riddleMsg');
       if (!answer) { msg.textContent = 'جوابت رو بنویس'; msg.style.color = '#e74c3c'; return; }
 
-      // نرمال‌سازی (ی، ک، فاصله)
       var normalize = function(s) {
         return s.replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/\s+/g, ' ').trim();
       };
@@ -161,12 +200,13 @@
         msg.style.color = 'var(--green)';
         localStorage.setItem('riddle_solved_' + seed, 'true');
 
-        // اضافه کردن ۱ XP به دیتابیس
         supabaseClient.from('profiles').select('xp').eq('id', myUid).single().then(function(p) {
           var newXp = ((p.data && p.data.xp) || 0) + 1;
-          supabaseClient.from('profiles').update({ xp: newXp }).eq('id', myUid);
+          supabaseClient.from('profiles').update({ xp: newXp }).eq('id', myUid).then(function() {
+             myXp = newXp;
+             document.getElementById('myXpDisplay').textContent = myXp;
+          });
         });
-
         document.getElementById('riddleAnswer').disabled = true;
       } else {
         msg.textContent = '❌ اشتباهه، دوباره تلاش کن.';
@@ -174,87 +214,106 @@
       }
     }
 
-    // ===== صندوقچه‌ها =====
-    var CHEST_CONFIG = {
-      bronze: {
-        title: '🎁 صندوقچه برنزی',
-        prizes: [10, 15, 20, 15, 10, 25],
-        colors: ['#cd7f32', '#e6a55c', '#cd7f32', '#e6a55c', '#cd7f32', '#f0c674']
-      },
-      silver: {
-        title: '🥈 صندوقچه نقره‌ای',
-        prizes: [20, 30, 40, 30, 20, 50],
-        colors: ['#c0c0c0', '#e8e8e8', '#c0c0c0', '#e8e8e8', '#c0c0c0', '#ffffff']
-      },
-      gold: {
-        title: '🥇 صندوقچه طلایی',
-        prizes: [30, 50, 70, 50, 30, 100],
-        colors: ['#ffd700', '#ffe44d', '#ffd700', '#ffe44d', '#ffd700', '#fff5b3']
-      }
-    };
+    // ===== گردونه =====
+    function openChestModal(cost) {
+      if (myXp < cost) { alert('XP کافی نداری!'); return; }
+      
+      supabaseClient.from('wheel_config').select('*').eq('is_active', true).then(function(res) {
+        if (!res.data || res.data.length === 0) {
+          alert('گردونه هنوز تنظیم نشده! ادمین باید خونه‌ها رو اضافه کنه.');
+          return;
+        }
 
-    var currentChest = null, spinning = false;
+        wheelSlices = res.data;
+        drawWheel();
 
-    function makeWheelGradient(colors) {
-      return 'conic-gradient(' + colors.map(function(c, i) {
-        return c + ' ' + (i * 60) + 'deg ' + ((i + 1) * 60) + 'deg';
-      }).join(', ') + ')';
+        document.getElementById('resultBox').style.display = 'none';
+        var spinBtn = document.getElementById('spinBtn');
+        spinBtn.disabled = false;
+        spinBtn.textContent = 'بچرخان!';
+        
+        document.getElementById('wheel').style.transform = 'rotate(0deg)';
+        document.getElementById('chestModal').classList.remove('hidden');
+      });
     }
 
-    function openChestModal(type) {
-      var cfg = CHEST_CONFIG[type];
-      var today = new Date().toDateString();
-
-      if (localStorage.getItem('chest_' + type + '_' + today)) {
-        alert('این صندوقچه رو امروز باز کردی. فردا بیا! ⏰');
-        return;
-      }
-
-      currentChest = type;
-      document.getElementById('chestTitle').textContent = cfg.title;
-      document.getElementById('spinResult').textContent = '';
-      var spinBtn = document.getElementById('spinBtn');
-      spinBtn.disabled = false;
-      spinBtn.textContent = '🎡 بچرخون!';
+    function drawWheel() {
       var wheel = document.getElementById('wheel');
-      wheel.style.transform = 'rotate(0deg)';
-      wheel.style.background = makeWheelGradient(cfg.colors);
-      document.getElementById('chestModal').classList.remove('hidden');
+      var count = wheelSlices.length;
+      var anglePerSlice = 360 / count;
+      
+      var gradientStr = wheelSlices.map(function(s, i) {
+        var start = i * anglePerSlice;
+        var end = (i + 1) * anglePerSlice;
+        return s.color + ' ' + start + 'deg ' + end + 'deg';
+      }).join(', ');
+      
+      wheel.style.background = 'conic-gradient(' + gradientStr + ')';
+
+      var oldTexts = wheel.querySelectorAll('.wheel-text');
+      oldTexts.forEach(function(t) { t.remove(); });
+
+      wheelSlices.forEach(function(s, i) {
+        var span = document.createElement('span');
+        span.className = 'wheel-text';
+        var rotateAngle = (i * anglePerSlice) + (anglePerSlice / 2);
+        span.style.transform = 'translateX(-50%) rotate(' + rotateAngle + 'deg)';
+        span.textContent = s.label;
+        wheel.appendChild(span);
+      });
     }
 
     document.getElementById('spinBtn').addEventListener('click', function() {
       if (spinning) return;
       spinning = true;
       this.disabled = true;
+      this.textContent = '...';
 
-      var cfg = CHEST_CONFIG[currentChest];
-      var N = Math.floor(Math.random() * 6);
-      var prize = cfg.prizes[N];
-      var spins = 5;
-      var finalDeg = spins * 360 + (330 - N * 60);
-      document.getElementById('wheel').style.transform = 'rotate(' + finalDeg + 'deg)';
+      var cost = 10;
+      var newXp = myXp - cost;
+      supabaseClient.from('profiles').update({ xp: newXp }).eq('id', myUid).then(function(res) {
+        if (res.error) { alert('خطا'); spinning = false; return; }
+        myXp = newXp;
+        document.getElementById('myXpDisplay').textContent = myXp;
 
-      setTimeout(function() {
-        document.getElementById('spinResult').textContent = '🎉 برنده شدی: ' + prize + ' XP';
-        document.getElementById('spinResult').style.color = 'var(--green)';
+        var winnerIndex = Math.floor(Math.random() * wheelSlices.length);
+        var prize = wheelSlices[winnerIndex];
+        
+        var anglePerSlice = 360 / wheelSlices.length;
+        var deg = (5 * 360) + (360 - (winnerIndex * anglePerSlice)) - (anglePerSlice / 2);
+        
+        document.getElementById('wheel').style.transform = 'rotate(' + deg + 'deg)';
 
-        // اضافه کردن XP به دیتابیس
-        supabaseClient.from('profiles').select('xp').eq('id', myUid).single().then(function(p) {
-          var newXp = ((p.data && p.data.xp) || 0) + prize;
-          supabaseClient.from('profiles').update({ xp: newXp }).eq('id', myUid);
-        });
-
-        localStorage.setItem('chest_' + currentChest + '_' + new Date().toDateString(), 'true');
-        spinning = false;
-        document.getElementById('spinBtn').textContent = '✅ دریافت شد';
-      }, 4100);
+        setTimeout(function() {
+          document.getElementById('resultBox').style.display = 'block';
+          document.getElementById('spinResult').textContent = prize.label;
+          
+          if (prize.prize_type === 'xp' && prize.prize_value > 0) {
+            supabaseClient.from('profiles').update({ xp: myXp + prize.prize_value }).eq('id', myUid).then(function() {
+               myXp += prize.prize_value;
+               document.getElementById('myXpDisplay').textContent = myXp;
+               spinning = false;
+               document.getElementById('spinBtn').textContent = '✅ دریافت شد';
+            });
+          } else if (prize.prize_type === 'item') {
+            supabaseClient.from('user_inventory').insert({
+              user_id: myUid, item_type: 'buff', item_id: null, effect_value: prize.label
+            }).then(function() {
+               spinning = false;
+               document.getElementById('spinBtn').textContent = '✅ دریافت شد';
+            });
+          } else {
+            spinning = false;
+            document.getElementById('spinBtn').textContent = '✅ دریافت شد';
+          }
+        }, 4100);
+      });
     });
 
     document.getElementById('closeChestBtn').addEventListener('click', function() {
       document.getElementById('chestModal').classList.add('hidden');
     });
 
-    // شروع
     loadRiddle();
   </script>
 </body>
