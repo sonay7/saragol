@@ -6,35 +6,27 @@
   <title>ساراگل | مدرسه‌ی ما</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* ===== استایل دکمه شروع سریع ===== */
     .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
     .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
-
-    /* ===== استایل کارت‌های بزرگ (لیگ و دسترسی سریع) ===== */
+    
     .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; margin-bottom: 20px; }
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* ===== استایل انجمن‌ها (۲ ستونه) ===== */
     .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
 
-    /* ===== استایل دسترسی سریع (۳ ستونه) ===== */
     .quick-access-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
     .quick-access-wrapper .forum-card { padding: 14px 8px; }
-    @media (max-width: 480px) {
-      .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width: 480px) { .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); } }
 
-    /* ===== استایل اعلان‌ها ===== */
     .notice { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 0.95rem; }
     .notice-badge { background: var(--green); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
 
-    /* ===== استایل مودال خوش‌آمدگویی ===== */
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
     .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
     .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
@@ -42,17 +34,14 @@
     .welcome-content button { margin-top: 24px; }
     .welcome-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
 
-    /* ===== استایل جشن تولد (بادکنک و کانفتی) ===== */
     .birthday-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; backdrop-filter: blur(5px); }
     .birthday-modal.hidden { display: none; }
     .birthday-box { background: var(--bg-card); border: 2px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(46, 204, 113, 0.3); position: relative; z-index: 2001; }
     .birthday-box h2 { color: var(--green); margin-bottom: 12px; font-size: 1.5rem; }
     .birthday-box p { color: var(--text); line-height: 1.6; font-size: 1rem; }
-
     .balloon { position: fixed; bottom: -100px; width: 40px; height: 50px; border-radius: 50%; z-index: 1999; pointer-events: none; animation: floatUp 4s linear forwards; }
     .balloon::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(0,0,0,0.3); }
     @keyframes floatUp { to { transform: translateY(-120vh) rotate(10deg); } }
-    
     .confetti { position: fixed; top: -10px; width: 10px; height: 10px; z-index: 1999; pointer-events: none; animation: fall 3s linear forwards; }
     @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
   </style>
@@ -76,25 +65,34 @@
       <div id="noticesList"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
+    <!-- ماموریت گروهی و دعوت (جدید) -->
+    <section class="big-league-card" id="missionSection" style="display:none;">
+      <h2><span>🎯 مأموریت سایت</span></h2>
+      <p style="font-size:0.9rem; line-height:1.6; margin-bottom:12px;">
+        ما داریم بزرگ می‌شیم! تا رسیدن به ۱۰ عضو، فقط <strong id="remainingUsers" style="color:var(--green);">...</strong> نفر مونده.
+        وقتی به ۱۰ نفر برسیم، به همه کاربران فعال <strong>۱۰ XP + نشان پیشگام</strong> هدیه داده می‌شه!
+      </p>
+      <div style="background: var(--border); border-radius: 10px; height: 12px; margin-bottom: 16px; overflow: hidden;">
+        <div id="missionProgressBar" style="background: linear-gradient(90deg, var(--green), var(--blue)); height: 100%; width: 0%; transition: width 0.5s;"></div>
+      </div>
+      <button onclick="copyInviteLinkFromHome()" class="btn btn-green btn-full" style="padding: 14px; font-size: 1rem;">
+        🎁 دعوت از دوستان (کپی لینک)
+      </button>
+    </section>
+
     <section class="big-league-card">
       <h2><span>🏆 لیگ این هفته</span><a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a></h2>
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <!-- انجمن‌ها -->
     <section style="margin-bottom: 20px;">
       <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
       <div class="forum-grid">
-        <a href="books.html" class="forum-card">
-          <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
-        </a>
-        <a href="#" class="forum-card">
-          <span class="forum-icon">🎨</span><span class="forum-name">هنری</span>
-        </a>
+        <a href="books.html" class="forum-card"><span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span></a>
+        <a href="#" class="forum-card"><span class="forum-icon">🎨</span><span class="forum-name">هنری</span></a>
       </div>
     </section>
 
-    <!-- دسترسی سریع (۳ ستونه) -->
     <section class="big-league-card">
       <h2 style="margin-bottom: 12px; font-size: 1.1rem;">🔗 دسترسی سریع</h2>
       <div class="quick-access-wrapper">
@@ -117,7 +115,6 @@
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
-  <!-- مودال خوش‌آمدگویی -->
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
       <span class="welcome-emoji">🌸</span>
@@ -127,7 +124,6 @@
     </div>
   </div>
 
-  <!-- مودال جشن تولد -->
   <div id="birthdayModal" class="birthday-modal hidden">
     <div class="birthday-box">
       <div style="font-size: 4rem; margin-bottom: 10px;">🎂</div>
@@ -137,7 +133,6 @@
     </div>
   </div>
 
-  <!-- مودال دریافت کادوها -->
   <div id="giftsModal" class="birthday-modal hidden">
     <div class="birthday-box" style="max-width: 450px;">
       <div style="font-size: 4rem; margin-bottom: 10px;">🎁</div>
@@ -156,8 +151,6 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      
-      // ===== مودال خوش‌آمدگویی =====
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
       }
@@ -168,8 +161,8 @@
 
       loadNotices();
       loadLeaderboard();
+      loadMissionData(); // لود ماموریت گروهی
 
-      // ===== چک کردن تولد و هدایا =====
       supabaseClient.auth.getUser().then(function(res) {
         if (!res.data.user) return;
         var uid = res.data.user.id;
@@ -181,9 +174,7 @@
           if (profile.birthday) {
             var today = new Date();
             var bday = new Date(profile.birthday);
-            
             var isTodayBirthday = (today.getMonth() === bday.getMonth() && today.getDate() === bday.getDate());
-            
             var yesterday = new Date();
             yesterday.setDate(today.getDate() - 1);
             var wasYesterdayBirthday = (yesterday.getMonth() === bday.getMonth() && yesterday.getDate() === bday.getDate());
@@ -199,13 +190,52 @@
         });
       });
       
-      // دکمه بستن مودال تولد
       document.getElementById('closeBirthdayBtn').addEventListener('click', function() {
         document.getElementById('birthdayModal').classList.add('hidden');
       });
     });
 
-    // ===== چک کردن کادوهای دریافتی (برای روز بعد تولد) =====
+    // ===== ماموریت گروهی و دعوت =====
+    function loadMissionData() {
+      supabaseClient.rpc('get_total_users_count').then(function(res) {
+        if (res.error) return;
+        var count = res.data || 0;
+        var target = 10;
+        
+        if (count >= target) {
+          // ماموریت انجام شده
+          document.getElementById('missionSection').style.display = 'block';
+          document.getElementById('remainingUsers').textContent = '0';
+          document.getElementById('missionProgressBar').style.width = '100%';
+          document.querySelector('#missionSection h2 span').textContent = '🎉 ماموریت انجام شد!';
+          document.getElementById('missionSection').querySelector('p').innerHTML = 'ما به ۱۰ عضو رسیدیم! به زودی نشان پیشگام به همه کاربران فعال داده می‌شه.';
+        } else {
+          document.getElementById('missionSection').style.display = 'block';
+          var remaining = target - count;
+          document.getElementById('remainingUsers').textContent = remaining;
+          var percent = (count / target) * 100;
+          document.getElementById('missionProgressBar').style.width = percent + '%';
+        }
+      });
+    }
+
+    window.copyInviteLinkFromHome = function() {
+      supabaseClient.auth.getUser().then(function(res) {
+        if (!res.data.user) return;
+        supabaseClient.from('profiles').select('invite_code').eq('id', res.data.user.id).single().then(function(p) {
+          if (!p.data || !p.data.invite_code) { alert('کد دعوت شما در حال ساخته شدنه، یه بار رفرش کن.'); return; }
+          
+          var link = 'https://sonay7.github.io/saragol/signup.html?ref=' + p.data.invite_code;
+          navigator.clipboard.writeText(link).then(function() {
+            alert('✅ لینک دعوت کپی شد! برای دوستت بفرست.');
+          }).catch(function() {
+            prompt('لینک دعوت رو کپی کن:', link);
+          });
+        });
+      });
+    };
+
+    // ===== بقیه توابع =====
     function checkForGifts(uid) {
       supabaseClient.from('gifts').select('*, sender:sender_id(username)').eq('receiver_id', uid).eq('is_claimed', false).then(function(res) {
         var gifts = res.data || [];
@@ -239,11 +269,8 @@
       });
     }
 
-    // ===== انیمیشن بادکنک و کانفتی =====
     function playCelebration() {
       var colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
-      
-      // بادکنک‌ها
       for (var i = 0; i < 20; i++) {
         var balloon = document.createElement('div');
         balloon.className = 'balloon';
@@ -254,8 +281,6 @@
         document.body.appendChild(balloon);
         setTimeout(function(b) { return function() { b.remove(); } }(balloon), 6000);
       }
-
-      // کانفتی
       for (var j = 0; j < 50; j++) {
         var confetti = document.createElement('div');
         confetti.className = 'confetti';
@@ -268,7 +293,6 @@
       }
     }
 
-    // ===== لود اعلان‌ها =====
     function loadNotices() {
       supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
         var container = document.getElementById('noticesList');
@@ -282,7 +306,6 @@
           var badgeText = 'عادی';
           if (typeStr.includes('فوری') || typeStr === 'urgent') { badgeText = 'فوری'; } 
           else if (typeStr.includes('مهم') || typeStr === 'important') { badgeText = 'مهم'; }
-          
           var div = document.createElement('div');
           div.className = 'notice';
           div.innerHTML = '<span class="notice-badge">' + badgeText + '</span> <span>' + n.text + '</span>';
@@ -291,7 +314,6 @@
       });
     }
 
-    // ===== لود لیگ =====
     function loadLeaderboard() {
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
         var container = document.getElementById('homeLeaderboard');
