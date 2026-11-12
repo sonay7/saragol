@@ -6,6 +6,7 @@
   <title>پروفایل | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* ===== استایل کشوها ===== */
     details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
     details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
@@ -15,6 +16,7 @@
     .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* ===== بقیه استایل‌ها ===== */
     .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
     .level-progress { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-top: 12px; overflow: hidden; }
     .level-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.6s ease; }
@@ -24,29 +26,37 @@
     .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
     .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
 
+    /* ===== مخفی کردن ویجت‌ها ===== */
     .w-cup, .w-tree, .w-planet { display: none; }
+    
     [data-theme="cafe"] .w-cup { display: block; }
     [data-theme="cafe"] .w-bar { display: none; }
+    
     [data-theme="sakura"] .w-tree { display: block; }
     [data-theme="sakura"] .w-bar { display: none; }
+    
     [data-theme="galaxy"] .w-planet { display: block; }
     [data-theme="galaxy"] .w-bar { display: none; }
 
+    /* ۱. فنجون قهوه */
     .cup-container { position: relative; width: 100px; height: 130px; margin: 20px auto; margin-top: 40px; }
     .cup-body { width: 100%; height: 100%; border: 5px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
     .cup-handle { position: absolute; right: -22px; top: 30px; width: 25px; height: 50px; border: 5px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
     .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s ease; border-radius: 0 0 45px 45px; }
 
+    /* ۲. درخت ساکورا */
     .tree-container { position: relative; width: 140px; height: 160px; margin: 20px auto; margin-top: 30px; }
     .tree-svg { width: 100%; height: 100%; }
     .blossom { position: absolute; width: 18px; height: 18px; background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%); border-radius: 50%; opacity: 0; transform: scale(0); transition: all 0.5s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 3; }
     .b1 { top: 15%; left: 25%; } .b2 { top: 10%; left: 55%; } .b3 { top: 25%; left: 15%; } .b4 { top: 30%; left: 75%; } .b5 { top: 40%; left: 35%; } .b6 { top: 35%; left: 60%; } .b7 { top: 55%; left: 20%; } .b8 { top: 50%; left: 80%; } .b9 { top: 60%; left: 45%; } .b10 { top: 25%; left: 45%; } .b11 { top: 45%; left: 55%; } .b12 { top: 70%; left: 65%; }
 
+    /* ۳. سیاره کهکشانی */
     .planet-container { position: relative; width: 120px; height: 120px; margin: 20px auto; margin-top: 30px; }
     .planet-body { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #8e44ad, #2c3e50); position: relative; overflow: hidden; box-shadow: inset -15px -15px 30px rgba(0,0,0,0.6); }
     .planet-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #00d2ff, #3a7bd5); transition: height 1s ease; mix-blend-mode: screen; opacity: 0.8; }
     .planet-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); width: 160px; height: 40px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 2; pointer-events: none; }
 
+    /* ۴. نوار پیشرفت ساده */
     .simple-bar-container { margin: 40px auto; width: 80%; }
     .simple-bar-bg { width: 100%; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
     .simple-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 1s ease; border-radius: 10px; }
@@ -92,6 +102,8 @@
         </div>
 
         <div class="widget-container" style="text-align: center; padding: 10px;">
+          
+          <!-- فنجون -->
           <div class="w-cup">
             <div class="cup-container">
               <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
@@ -99,6 +111,7 @@
             </div>
           </div>
 
+          <!-- درخت ساکورا -->
           <div class="w-tree">
             <div class="tree-container">
               <svg class="tree-svg" viewBox="0 0 100 120">
@@ -119,6 +132,7 @@
             </div>
           </div>
 
+          <!-- سیاره -->
           <div class="w-planet">
             <div class="planet-container">
               <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
@@ -126,6 +140,7 @@
             </div>
           </div>
 
+          <!-- نوار ساده -->
           <div class="w-bar">
             <div class="simple-bar-container">
               <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
@@ -192,21 +207,22 @@
       </div>
     </details>
 
+    <!-- کشوی تنظیمات (با قابلیت تاریخ تولد) -->
     <details class="accordion">
       <summary class="accordion-header">⚙️ تنظیمات و راهنما</summary>
       <div class="accordion-content">
-               <div class="guide-box" style="margin-top: 10px;">
-          <p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، توی برنامه <strong>شاد</strong> بهم پیام بده:</p>
-          <p style="text-align: center; margin-top: 10px; font-size: 1.1rem; color: var(--blue); font-weight: bold;">
-            📱 آیدی شاد: [aizadi94]
-          </p>
-          <p style="font-size:0.75rem; color:var(--text-dim); text-align:center; margin-top:5px;">(کافیه توی شاد این آیدی رو سرچ کنی)</p>
-                 <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 15px;">
-  <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎂 تاریخ تولدت رو ثبت کن:</p>
-  <input type="date" id="userBirthday" class="input" style="margin-bottom: 8px;">
-  <button onclick="saveBirthday()" class="btn btn-green btn-full">ذخیره تاریخ تولد</button>
-  <p id="birthdayMsg" style="font-size: 0.8rem; margin-top: 8px;"></p>
-</div>
+        
+        <!-- تاریخ تولد -->
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 15px; margin-top: 10px;">
+          <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎂 تاریخ تولدت رو ثبت کن:</p>
+          <input type="date" id="userBirthday" class="input" style="margin-bottom: 8px;">
+          <button onclick="saveBirthday()" class="btn btn-green btn-full">ذخیره تاریخ تولد</button>
+          <p id="birthdayMsg" style="font-size: 0.8rem; margin-top: 8px;"></p>
+        </div>
+
+        <div class="guide-box">
+          <p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، به آیدی زیر پیام بدی:</p>
+          <p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 <a href="https://t.me/Aysonaizadi" target="_blank" style="color:var(--blue);">@Aysonaizadi</a></p>
         </div>
         <button id="changeThemeBtn" class="btn btn-blue btn-full" style="margin-top: 15px;">🎨 تغییر سبک سایت</button>
         <button id="logoutBtn" class="btn btn-dim btn-full" style="margin-top: 10px; color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
@@ -222,17 +238,10 @@
       </div>
     </div>
 
-    <!-- مودال ژانر (با تیک نمایش) -->
     <div id="genreModal" class="modal hidden">
       <div class="modal-box">
         <h2>ژانرهای مورد علاقه‌ت</h2>
         <div id="genreOptions" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;"></div>
-        
-        <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.85rem; margin-bottom:16px; cursor:pointer; color:var(--text);">
-          <input type="checkbox" id="showGenreToggle" checked style="width:18px; height:18px; accent-color: var(--green);">
-          نمایش لقب برای بقیه
-        </label>
-
         <button id="saveGenreBtn" class="btn btn-green btn-full">ذخیره</button>
         <button id="closeGenreBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button>
       </div>
@@ -251,89 +260,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
+  <script src="theme.js"></script>
+  <script src="themes.js?v=2"></script>
   
   <script>
-    // ================= تمام کدهای جاوااسکریپت یکجا اینجاست =================
-
-    // --- کدهای مربوط به تم رنگی سایت (از theme.js) ---
-    (function () {
-      var savedTheme = localStorage.getItem('site-theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    })();
-
-    window.createThemeSwitcher = function () {
-      if (document.getElementById('themeSwitcherBtn')) return;
-      var userArea = document.querySelector('.user-area');
-      if (!userArea) return;
-      var btn = document.createElement('button');
-      btn.id = 'themeSwitcherBtn';
-      btn.className = 'theme-btn';
-      btn.innerHTML = '🎨';
-      btn.title = 'تغییر تم سایت';
-      userArea.insertBefore(btn, userArea.firstChild);
-
-      btn.addEventListener('click', function () {
-        var themes = ['dark', 'light', 'sakura', 'cafe', 'galaxy', 'ocean', 'lavender', 'peach', 'forest'];
-        var current = localStorage.getItem('site-theme') || 'dark';
-        var currentIndex = themes.indexOf(current);
-        var nextIndex = (currentIndex + 1) % themes.length;
-        var newTheme = themes[nextIndex];
-        var msgMap = {
-          'dark': 'شب 🌙', 'light': 'روز ☀️', 'sakura': 'ساکورا 🌸',
-          'cafe': 'کافه ☕', 'galaxy': 'کهکشان 🌌', 'ocean': 'اقیانوس 🌊',
-          'lavender': 'اسطوخودوس 🪻', 'peach': 'هلویی 🍑', 'forest': 'جنگل 🌲'
-        };
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('site-theme', newTheme);
-        var toast = document.createElement('div');
-        toast.textContent = 'تم تغییر کرد به: ' + msgMap[newTheme];
-        toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:10px 20px; border-radius:20px; z-index:9999; font-family:inherit; font-size:0.85rem; box-shadow:0 4px 10px rgba(0,0,0,0.2); transition: opacity 0.3s;';
-        document.body.appendChild(toast);
-        setTimeout(function () { toast.style.opacity = '0'; setTimeout(function () { toast.remove(); }, 300); }, 2000);
-      });
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', window.createThemeSwitcher);
-    } else {
-      window.createThemeSwitcher();
-    }
-
-    // --- کدهای مربوط به القاب و سطح‌ها (از themes.js) ---
-    var THEMES = {
-      'پیش فرض': ['تازه‌وارد', 'کوشا', 'پیگیر', 'پرتلاش', 'توانمند', 'برتر', 'سرآمد', 'نمونه', 'افتخارآفرین', 'الگو'],
-      'گیمینگ': ['مبتدی', 'ماجراجو', 'حرفه‌ای', 'استاد', 'اسطوره', 'قهرمان', 'افسانه', 'اوبی', 'باس', 'گاد'],
-      'ورزشی': ['آماتور', 'تمرین‌کار', 'بازیکن', 'حرفه‌ای', 'ستاره', 'کاپیتان', 'ملی‌پوش', 'اسطوره', 'قهرمان جهان', 'افسانه'],
-      'فضایی': ['ستاره‌ی کوچک', 'سیارک', 'سیاره', 'ستاره', 'ابرنواختر', 'کهکشان', 'خوشه‌ی کهکشانی', 'کائنات', 'سیاه‌چاله', 'بیگ‌بنگ'],
-      'آتش': ['جرقه', 'شعله', 'شعله‌ور', 'آتشین', 'سوزان', 'تب‌دار', 'کوره', 'آتش‌فشان', 'خورشید', 'ابرخورشید'],
-      'سفر': ['مسافر', 'رهرو', 'رهنورد', 'کاوشگر', 'ماجراجو', 'پیشرو', 'پیشگام', 'فاتح', 'سرآمد', 'اسطوره'],
-      'پادشاهی': ['سرباز', 'نگهبان', 'سردار', 'فرمانده', 'سپهسالار', 'وزیر', 'شاهزاده', 'پادشاه', 'امپراتور', 'اسطوره']
-    };
-    var LEVEL_HOURS = [0, 3, 8, 16, 30, 50, 80, 120, 170, 250];
-
-    function getLevel(minutes) {
-      var hours = minutes / 60;
-      var level = 1;
-      for (var i = 0; i < LEVEL_HOURS.length; i++) {
-        if (hours >= LEVEL_HOURS[i]) level = i + 1;
-      }
-      return level;
-    }
-
-    function getTitle(level, theme) {
-      var t = THEMES[theme] || THEMES['پیش فرض'] || ['کتاب‌خوان'];
-      var idx = level - 1;
-      if (idx < 0) idx = 0;
-      if (idx > 9) idx = 9;
-      return t[idx];
-    }
-
-    function getNextLevelHours(level) {
-      if (level >= 10) return null;
-      return LEVEL_HOURS[level];
-    }
-
-    // --- کدهای اصلی پروفایل (از profile.html) ---
     var userClassName = '';
     var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
     var selectedGenres = [];
@@ -345,8 +275,8 @@
     var currentStreak = 0;
     var totalQuestions = 0;
     var hasMorningStudy = false;
-    var globalShowGenre = true; 
 
+    // ===== لود اولیه پروفایل =====
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
       var uid = res.data.user.id;
@@ -356,18 +286,25 @@
         var profile = p.data;
         userClassName = profile.class_name;
         var titleTheme = profile.level_theme || 'پیش فرض';
-        globalShowGenre = profile.show_genre_title !== false;
 
+        // آپدیت نام و آواتار
         var nameEl = document.querySelector('.profile-name'); if(nameEl) nameEl.textContent = profile.username;
         var classEl = document.querySelector('.profile-class'); if(classEl) classEl.textContent = profile.class_name;
         var pAvatarEl = document.querySelector('.profile-avatar'); if(pAvatarEl) pAvatarEl.textContent = profile.username.charAt(0);
         var uNameEl = document.querySelector('.user-name'); if(uNameEl) uNameEl.textContent = profile.username;
         var avatarEl = document.querySelector('.avatar'); if(avatarEl) avatarEl.textContent = profile.username.charAt(0);
 
+        // تاریخ تولد (اگر قبلاً ثبت شده بود، نشون بده)
+        if (profile.birthday) {
+          var bdayInput = document.getElementById('userBirthday');
+          if (bdayInput) bdayInput.value = profile.birthday;
+        }
+
         var stats = document.querySelectorAll('.stat-value');
         if(stats[0]) stats[0].textContent = profile.total_minutes || 0;
         if(stats[1]) stats[1].textContent = profile.xp || 0;
 
+        // سطح
         try {
           var minutes = profile.total_minutes || 0;
           var level = getLevel(minutes);
@@ -436,6 +373,31 @@
         loadGenres(uid);
       });
     });
+
+    // ===== ذخیره تاریخ تولد =====
+    window.saveBirthday = function() {
+      var bday = document.getElementById('userBirthday').value;
+      var msg = document.getElementById('birthdayMsg');
+      
+      if (!bday) {
+        msg.textContent = 'لطفاً یک تاریخ انتخاب کن.';
+        msg.style.color = '#e74c3c';
+        return;
+      }
+
+      supabaseClient.auth.getUser().then(function(res) {
+        if (!res.data.user) return;
+        supabaseClient.from('profiles').update({ birthday: bday }).eq('id', res.data.user.id).then(function(updateRes) {
+          if (updateRes.error) {
+            msg.textContent = 'خطا: ' + updateRes.error.message;
+            msg.style.color = '#e74c3c';
+            return;
+          }
+          msg.textContent = '✅ تاریخ تولد با موفقیت ثبت شد!';
+          msg.style.color = 'var(--green)';
+        });
+      });
+    };
 
     function renderLevelPath(currentLevel) {
       var list = document.getElementById('levelPathList');
@@ -650,9 +612,8 @@
       var display = document.getElementById('genreTitleDisplay');
       var text = document.getElementById('genreTitleText');
       var list = document.getElementById('myGenresList');
-      
       if (selectedGenres.length > 0) {
-        if(display) display.style.display = globalShowGenre ? 'inline-block' : 'none'; 
+        if(display) display.style.display = 'inline-block';
         if(text) text.textContent = title;
         if(list) list.textContent = selectedGenres.join(' + ');
       } else {
@@ -677,38 +638,18 @@
     var closeGenreBtn = document.getElementById('closeGenreBtn');
     var saveGenreBtn = document.getElementById('saveGenreBtn');
     var genreOptions = document.getElementById('genreOptions');
-    var showGenreToggle = document.getElementById('showGenreToggle');
 
     if (selectGenreBtn) {
-      selectGenreBtn.addEventListener('click', function() { 
-        if(genreModal) genreModal.classList.remove('hidden'); 
-        if(showGenreToggle) showGenreToggle.checked = globalShowGenre; 
-        renderGenreOptions(); 
-      });
-      
+      selectGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.remove('hidden'); renderGenreOptions(); });
       if(closeGenreBtn) closeGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.add('hidden'); });
-      
       if(saveGenreBtn) saveGenreBtn.addEventListener('click', function() {
-        globalShowGenre = showGenreToggle.checked; 
-        
         supabaseClient.auth.getUser().then(function(res) {
           if (!res.data.user) return;
           var uid = res.data.user.id;
-          
-          supabaseClient.from('profiles').update({ show_genre_title: globalShowGenre }).eq('id', uid).then(function() {
-            
-            supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
-              if (selectedGenres.length === 0) { 
-                if(genreModal) genreModal.classList.add('hidden'); 
-                updateGenreUI(); 
-                return; 
-              }
-              var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
-              supabaseClient.from('user_genres').insert(inserts).then(function() { 
-                if(genreModal) genreModal.classList.add('hidden'); 
-                updateGenreUI(); 
-              });
-            });
+          supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
+            if (selectedGenres.length === 0) { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); return; }
+            var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
+            supabaseClient.from('user_genres').insert(inserts).then(function() { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); });
           });
         });
       });
