@@ -25,7 +25,6 @@ supabaseClient.auth.getUser().then(function(res) {
     document.querySelector('.user-name').textContent = p.data.username;
     document.querySelector('.avatar').textContent = p.data.username.charAt(0);
 
-    // لود کردن همه بخش‌ها
     loadRequests();
     loadUsers();
     loadExams();
@@ -33,6 +32,8 @@ supabaseClient.auth.getUser().then(function(res) {
     loadInbox();
     loadBookClubUsers();
     loadAdminNotices();
+    loadAdminPacks();
+    loadAdminWheel();
   });
 });
 
@@ -67,42 +68,28 @@ if (document.getElementById('toggleBooksBtn')) {
   });
 }
 
-// ===== اعلان جدید (با نمایش خطای دقیق) =====
+// ===== اعلان‌ها =====
 if (document.getElementById('addNoticeBtn')) {
   document.getElementById('addNoticeBtn').addEventListener('click', function() {
     var text = document.getElementById('noticeText').value.trim();
     var type = document.getElementById('noticeType').value;
     var msg = document.getElementById('noticeMsg');
 
-    if (text.length < 3) { 
-      msg.textContent = 'متن کوتاهه'; 
-      msg.style.color = '#e74c3c'; 
-      return; 
-    }
+    if (text.length < 3) { msg.textContent = 'متن کوتاهه'; msg.style.color = '#e74c3c'; return; }
 
-    msg.textContent = '⏳ در حال ثبت...'; 
-    msg.style.color = 'var(--text-dim)';
+    msg.textContent = '⏳ در حال ثبت...'; msg.style.color = 'var(--text-dim)';
 
     supabaseClient.from('notices').insert({ text: text, type: type }).then(function(res) {
       if (res.error) { 
-        msg.textContent = '❌ ' + res.error.message;
-        msg.style.color = '#e74c3c';
-        console.error('NOTICE ERROR FULL:', res.error);
-        return;
+        msg.textContent = '❌ ' + res.error.message; msg.style.color = '#e74c3c'; return;
       }
-      msg.textContent = '✅ ثبت شد'; 
-      msg.style.color = '#2ecc71';
+      msg.textContent = '✅ ثبت شد'; msg.style.color = '#2ecc71';
       document.getElementById('noticeText').value = '';
-      loadAdminNotices(); // رفرش لیست
-    }).catch(function(err) {
-      msg.textContent = '❌ خطای شبکه: ' + err.message;
-      msg.style.color = '#e74c3c';
-      console.error('NOTICE NETWORK ERROR:', err);
+      loadAdminNotices();
     });
   });
 }
 
-// ===== لود لیست اعلان‌ها توی ادمین =====
 function loadAdminNotices() {
   var list = document.getElementById('adminNoticesList');
   if (!list) return;
@@ -110,26 +97,13 @@ function loadAdminNotices() {
   supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
     list.innerHTML = '';
     var rows = res.data || [];
-    
-    if (rows.length === 0) { 
-      list.innerHTML = '<p class="lock-note">هیچ اعلانی ثبت نشده است.</p>'; 
-      return; 
-    }
+    if (rows.length === 0) { list.innerHTML = '<p class="lock-note">هیچ اعلانی ثبت نشده است.</p>'; return; }
     
     rows.forEach(function(n) {
       var div = document.createElement('div');
-      div.style.display = 'flex';
-      div.style.justifyContent = 'space-between';
-      div.style.alignItems = 'center';
-      div.style.padding = '12px';
-      div.style.background = 'var(--bg-card)';
-      div.style.border = '1px solid var(--border)';
-      div.style.borderRadius = '10px';
-      
+      div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px;';
       var typeStr = (n.type || '').toLowerCase();
-      var typeLabel = 'عادی';
-      if (typeStr.includes('فوری')) typeLabel = 'فوری';
-      else if (typeStr.includes('مهم')) typeLabel = 'مهم';
+      var typeLabel = typeStr.includes('فوری') ? 'فوری' : (typeStr.includes('مهم') ? 'مهم' : 'عادی');
       
       div.innerHTML = '<div style="flex:1;"><strong>' + n.text + '</strong><br><span style="font-size:0.75rem; color:var(--text-dim);">نوع: ' + typeLabel + '</span></div>' +
         '<button class="btn btn-dim btn-sm" onclick="delAdminNotice(' + n.id + ')" style="color:#e74c3c; border-color:#e74c3c;">حذف</button>';
@@ -138,7 +112,6 @@ function loadAdminNotices() {
   });
 }
 
-// ===== حذف اعلان =====
 window.delAdminNotice = function(id) {
   if (confirm('این اعلان حذف شود؟')) {
     supabaseClient.from('notices').delete().eq('id', id).then(function(res) {
@@ -166,15 +139,17 @@ function loadRequests() {
 }
 
 window.setUserStatus = function(id, status) {
-  supabaseClient.from('profiles').update({ status: status }).eq('id', id).then(function() { loadRequests(); });
+  supabaseClient.from('profiles').update({ status: status }).eq('id', id).then(function() { loadRequests(); loadUsers(); });
 }
 
 function loadUsers() {
   var box = document.getElementById('usersList');
   if (!box) return;
-  supabaseClient.from('profiles').select('*').order('created_at', { ascending: false }).then(function(res) {
+  
+  // فقط کاربران تایید شده
+  supabaseClient.from('profiles').select('*').eq('status', 'approved').order('created_at', { ascending: false }).then(function(res) {
     var rows = res.data || [];
-    if (rows.length === 0) { box.innerHTML = '<p class="lock-note">کاربری نیست</p>'; return; }
+    if (rows.length === 0) { box.innerHTML = '<p class="lock-note">کاربر تایید شده‌ای وجود ندارد.</p>'; return; }
     box.innerHTML = '';
     rows.forEach(function(u) {
       var canEdit = (currentRole === 'superadmin') || (u.role !== 'superadmin' && u.role !== 'admin');
@@ -184,11 +159,11 @@ function loadUsers() {
         if (r.v === 'admin' && currentRole !== 'superadmin') return;
         options += '<option value="' + r.v + '"' + (u.role === r.v ? ' selected' : '') + '>' + r.n + '</option>';
       });
-      var statusLabel = u.status === 'approved' ? '✅' : (u.status === 'pending' ? '⏳' : '❌');
+      
       var titleDisplay = (u.role === 'admin' && u.admin_subject) ? ' (' + u.admin_subject + ')' : '';
       
       var html = '<div style="width:100%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">';
-      html += '<div><strong>' + statusLabel + ' ' + u.username + '</strong><span class="admin-sub">' + u.class_name + titleDisplay + '</span></div>';
+      html += '<div><strong>✅ ' + u.username + '</strong><span class="admin-sub">' + u.class_name + titleDisplay + '</span></div>';
       
       if (canEdit && u.id !== currentUser.id) {
         html += '<select class="select role-select" data-uid="' + u.id + '" style="padding:6px;font-size:0.75rem;">' + options + '</select>';
@@ -300,9 +275,7 @@ function loadInbox() {
     var pList = document.getElementById('list-private'), eList = document.getElementById('list-explore'), rList = document.getElementById('list-reports');
     pList.innerHTML = eList.innerHTML = rList.innerHTML = '';
     var rows = res.data || [];
-    var badge = document.getElementById('inboxBadge');
-    if (rows.length > 0) { badge.textContent = rows.length; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
-
+    
     rows.forEach(function(item) {
       var div = document.createElement('div');
       div.className = 'admin-row';
@@ -397,7 +370,7 @@ window.delAdminLoan = function(id) {
   if(confirm('این امانت حذف بشه؟')) supabaseClient.from('book_loan').delete().eq('id', id).then(loadBookClubUsers);
 }
 
-// ===== اهدای نشان ویژه (🌟 بخش جدید) =====
+// ===== اهدای نشان ویژه =====
 window.giveBadge = function() {
   var username = document.getElementById('badgeUsername').value.trim();
   var badgeName = document.getElementById('badgeName').value;
@@ -405,39 +378,24 @@ window.giveBadge = function() {
   
   if (!username) { alert('نام کاربری رو وارد کن'); return; }
 
-  // پیدا کردن کاربر با این نام کاربری
   supabaseClient.from('profiles').select('id, username').ilike('username', '%' + username + '%').then(function(userRes) {
-    if (userRes.error) { 
-      alert('خطا در جستجوی کاربر: ' + userRes.error.message); 
-      return; 
-    }
-    if (!userRes.data || userRes.data.length === 0) {
-      alert('کاربری با این نام پیدا نشد!');
-      return;
-    }
+    if (userRes.error) { alert('خطا در جستجو'); return; }
+    if (!userRes.data || userRes.data.length === 0) { alert('کاربر پیدا نشد!'); return; }
     
     var user = userRes.data[0];
-    
     if (!confirm('نشان «' + badgeName + '» رو به ' + user.username + ' می‌دی؟')) return;
 
-    // ثبت نشان توی دیتابیس
     supabaseClient.from('user_badges').insert({
-      user_id: user.id,
-      badge_name: badgeName,
-      badge_icon: badgeIcon
+      user_id: user.id, badge_name: badgeName, badge_icon: badgeIcon
     }).then(function(res) {
-      if (res.error) { 
-        alert('خطای دقیق: ' + res.error.message + '\nکد: ' + (res.error.code || '?'));
-        console.error('BADGE ERROR:', res.error);
-        return; 
-      }
+      if (res.error) { alert('خطا: ' + res.error.message); return; }
       alert('🌟 نشان با موفقیت به ' + user.username + ' اهدا شد!');
       document.getElementById('badgeUsername').value = '';
     });
   });
 };
 
-// ===== افزودن فیلم به سینما =====
+// ===== سینما =====
 window.addCinemaVideo = function() {
   var title = document.getElementById('cinemaTitle').value.trim();
   var desc = document.getElementById('cinemaDesc').value.trim();
@@ -446,37 +404,24 @@ window.addCinemaVideo = function() {
   var msg = document.getElementById('cinemaMsg');
 
   if (!title || !url || !price || price < 1) {
-    msg.textContent = 'عنوان، لینک و قیمت الزامی هستند.';
-    msg.style.color = '#e74c3c';
-    return;
+    msg.textContent = 'عنوان، لینک و قیمت الزامی هستند.'; msg.style.color = '#e74c3c'; return;
   }
 
-  msg.textContent = 'در حال ذخیره...';
-  msg.style.color = 'var(--text-dim)';
+  msg.textContent = 'در حال ذخیره...'; msg.style.color = 'var(--text-dim)';
 
   supabaseClient.from('cinema_videos').insert({
-    title: title,
-    description: desc,
-    video_url: url,
-    price: price
+    title: title, description: desc, video_url: url, price: price
   }).then(function(res) {
-    if (res.error) {
-      msg.textContent = 'خطا: ' + res.error.message;
-      msg.style.color = '#e74c3c';
-      return;
-    }
-    
-    msg.textContent = '✅ فیلم با موفقیت به سینما اضافه شد!';
-    msg.style.color = 'var(--green)';
-    
-    // خالی کردن فرم
+    if (res.error) { msg.textContent = 'خطا: ' + res.error.message; msg.style.color = '#e74c3c'; return; }
+    msg.textContent = '✅ فیلم اضافه شد!'; msg.style.color = 'var(--green)';
     document.getElementById('cinemaTitle').value = '';
     document.getElementById('cinemaDesc').value = '';
     document.getElementById('cinemaUrl').value = '';
     document.getElementById('cinemaPrice').value = '';
   });
 };
-// ===== مدیریت پک‌های استیکر =====
+
+// ===== استیکرها =====
 window.createStickerPack = function() {
   var name = document.getElementById('newPackName').value.trim();
   var price = parseInt(document.getElementById('newPackPrice').value);
@@ -508,9 +453,8 @@ function loadAdminPacks() {
 
     res.data.forEach(function(pack) {
       var stickerCount = pack.stickers ? pack.stickers.length : 0;
-      
       var div = document.createElement('div');
-      div.style.cssText = 'background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--border);';
+      div.style.cssText = 'background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--border); margin-bottom:8px;';
       
       var header = document.createElement('div');
       header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;';
@@ -553,14 +497,10 @@ window.uploadSticker = function(packId) {
   input.onchange = function(e) {
     var file = e.target.files[0];
     if (!file) return;
-
     var fileName = 'sticker_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
-    
     supabaseClient.storage.from('videos').upload(fileName, file).then(function(uploadRes) {
       if (uploadRes.error) { alert('خطا در آپلود: ' + uploadRes.error.message); return; }
-      
       var publicUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
-      
       supabaseClient.from('stickers').insert({
         pack_id: packId, image_url: publicUrl
       }).then(function(insertRes) {
@@ -586,11 +526,7 @@ window.deleteSticker = function(stickerId) {
   });
 };
 
-// لود اولیه
-if (document.getElementById('adminPacksList')) {
-  loadAdminPacks();
-}
-// ===== مدیریت گردونه =====
+// ===== گردونه =====
 window.addWheelSlice = function() {
   var label = document.getElementById('wheelLabel').value.trim();
   var color = document.getElementById('wheelColor').value;
@@ -637,59 +573,3 @@ window.delWheelSlice = function(id) {
   if (!confirm('حذف بشه؟')) return;
   supabaseClient.from('wheel_config').delete().eq('id', id).then(function() { loadAdminWheel(); });
 };
-
-// لود اولیه (اگه توی صفحه ادمین بودیم)
-if (document.getElementById('wheelSlicesList')) {
-  loadAdminWheel();
-}
-// ===== مدیریت گردونه =====
-window.addWheelSlice = function() {
-  var label = document.getElementById('wheelLabel').value.trim();
-  var color = document.getElementById('wheelColor').value;
-  var type = document.getElementById('wheelType').value;
-  var val = parseInt(document.getElementById('wheelValue').value) || 0;
-
-  if (!label) { alert('متن رو بنویس'); return; }
-
-  supabaseClient.from('wheel_config').insert({
-    label: label, color: color, prize_type: type, prize_value: val
-  }).then(function(res) {
-    if (res.error) { alert('خطا: ' + res.error.message); return; }
-    document.getElementById('wheelLabel').value = '';
-    loadAdminWheel();
-  });
-};
-
-function loadAdminWheel() {
-  var list = document.getElementById('wheelSlicesList');
-  if (!list) return;
-
-  supabaseClient.from('wheel_config').select('*').order('created_at', { ascending: true }).then(function(res) {
-    list.innerHTML = '';
-    if (!res.data || res.data.length === 0) {
-      list.innerHTML = '<p class="lock-note">گردونه خالیه.</p>';
-      return;
-    }
-    res.data.forEach(function(s) {
-      var div = document.createElement('div');
-      div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid var(--border);';
-      div.innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:20px; height:20px; border-radius:50%; background:${s.color};"></div>
-          <strong>${s.label}</strong> <span style="font-size:0.7rem; color:var(--text-dim);">(${s.prize_type})</span>
-        </div>
-        <button class="btn btn-dim btn-sm" style="color:#e74c3c;" onclick="delWheelSlice('${s.id}')">حذف</button>
-      `;
-      list.appendChild(div);
-    });
-  });
-}
-
-window.delWheelSlice = function(id) {
-  if (!confirm('حذف بشه؟')) return;
-  supabaseClient.from('wheel_config').delete().eq('id', id).then(function() { loadAdminWheel(); });
-};
-
-if (document.getElementById('wheelSlicesList')) {
-  loadAdminWheel();
-}
