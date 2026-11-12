@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سینما ساراگل | تماشای فیلم</title>
+  <title>سینما | تماشای فیلم</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .cinema-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding-bottom: 80px; }
@@ -29,7 +29,6 @@
 <header class="header">
   <div class="logo">ساراگل</div>
   <div class="user-area">
-    <!-- ⬇️ این تگ رو اضافه کردم تا خطا نده ⬇️ -->
     <span class="user-name">—</span>
     <span id="myXp" style="color:#f1c40f; font-weight:bold; font-size:0.9rem;">... XP</span>
     <div class="avatar">—</div>
@@ -83,9 +82,6 @@
     
     supabaseClient.from('cinema_videos').select('*').eq('is_active', true).order('created_at', { ascending: false }).then(res => {
       
-      console.log("دیتای فیلم‌ها:", res.data);
-      console.log("خطای فیلم‌ها:", res.error);
-      
       grid.innerHTML = '';
       
       if (res.error) {
@@ -101,7 +97,7 @@
       res.data.forEach(vid => {
         var hasTicket = myTickets.includes(vid.id);
         
-        // قفل کردن اسم فیلم (اگه بلیط نداشت)
+        // قفل کردن اسم فیلم
         var displayTitle = hasTicket ? vid.title : '🔒 فیلم سینمایی (برای دیدن اسم بلیط بخر)';
         
         var mediaHtml = '';
@@ -120,9 +116,10 @@
         var buyBtnHtml = '';
         if (!hasTicket) {
           var canAfford = myXp >= vid.price;
+          // ⬇️ اینجا دیگه اسم فیلم (vid.title) رو به تابع خرید پاس نمی‌دیم ⬇️
           buyBtnHtml = `
             <div class="buy-ticket-area">
-              <button class="buy-btn" ${canAfford ? '' : 'disabled'} onclick="buyTicket('${vid.id}', ${vid.price}, '${vid.title}')">
+              <button class="buy-btn" ${canAfford ? '' : 'disabled'} onclick="buyTicket('${vid.id}', ${vid.price})">
                 🎟 خرید بلیط (${vid.price} XP)
               </button>
             </div>
@@ -146,9 +143,11 @@
     });
   }
 
-  window.buyTicket = function(videoId, price, title) {
+  // ⬇️ تابع خرید فقط آیدی و قیمت رو می‌گیره، نه اسم رو ⬇️
+  window.buyTicket = function(videoId, price) {
     if (myXp < price) { alert('XP کافی نداری!'); return; }
-    if (!confirm('آیا ' + price + ' XP برای خرید بلیط فیلم «' + title + '» پرداخت می‌کنی؟')) return;
+    // ⬇️ پیام تایید هم دیگه اسم فیلم رو نداره ⬇️
+    if (!confirm('آیا ' + price + ' XP برای خرید بلیط این فیلم پرداخت می‌کنی؟')) return;
 
     supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(updateRes => {
       if (updateRes.error) { alert('خطا در کم کردن XP'); return; }
