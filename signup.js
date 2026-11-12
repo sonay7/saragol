@@ -1,66 +1,91 @@
-var signupBtn = document.getElementById('signupBtn');
-var signupMsg = document.getElementById('signupMsg');
+// ===== گرفتن المان‌های فرم =====
+var signupBtn = document.getElementById('signupBtn'); // دکمه ثبت‌نام
+var msgEl = document.getElementById('signupMsg'); // جایی که پیام خطا یا موفقیت نشون داده میشه
+var inviteCodeInput = document.getElementById('inviteCodeInput');
 
-signupBtn.addEventListener('click', function() {
-  var firstName = document.getElementById('firstName').value.trim();
-  var lastName = document.getElementById('lastName').value.trim();
-  var className = document.getElementById('class').value;
-  var password = document.getElementById('password').value;
+// ===== پر کردن خودکار کد دعوت از URL =====
+var urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('ref') && inviteCodeInput) {
+  inviteCodeInput.value = urlParams.get('ref');
+}
 
-  // چک کردن فارسی بودن
-  var persianRegex = /^[\u0600-\u06FF\s]+$/;
-  
-  if (!persianRegex.test(firstName) || !persianRegex.test(lastName)) {
-    signupMsg.textContent = '❌ لطفاً نام و نام خانوادگی را حتماً فارسی وارد کنید.';
-    signupMsg.style.color = '#e74c3c';
-    return;
-  }
+// ===== تابع ثبت‌نام =====
+if (signupBtn) {
+  signupBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // گرفتن مقادیر از فرم (این آیدی‌ها باید با فیلدهای HTML تو یکی باشن)
+    var username = document.getElementById('username').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    var class_name = document.getElementById('className').value; // مثلاً "نهم 1"
+    var inviteCode = inviteCodeInput ? inviteCodeInput.value.trim() : '';
 
-  if (password.length < 6) {
-    signupMsg.textContent = 'رمز حداقل ۶ کاراکتر باشه';
-    signupMsg.style.color = '#e74c3c';
-    return;
-  }
-
-  // ساخت ایمیل با نام و نام خانوادگی
-  var fullName = firstName + ' ' + lastName;
-  var emailHex = '';
-  for (var i = 0; i < fullName.length; i++) {
-    emailHex += fullName.codePointAt(i).toString(16);
-  }
-  var email = 'user_' + emailHex + '@example.com';
-
-  signupMsg.textContent = 'در حال ثبت‌نام...';
-  signupMsg.style.color = '#8fa3b0';
-
-  supabaseClient.auth.signUp({
-    email: email,
-    password: password
-  }).then(function(res) {
-    if (res.error) {
-      signupMsg.textContent = 'خطا: ' + res.error.message;
-      signupMsg.style.color = '#e74c3c';
+    if (!username || !email || !password || !class_name) {
+      msgEl.textContent = 'همه فیلدها رو پر کن!';
+      msgEl.style.color = '#e74c3c';
       return;
     }
 
-    var userId = res.data.user.id;
+    msgEl.textContent = 'در حال ثبت‌نام...';
+    msgEl.style.color = 'var(--text-dim)';
+    signupBtn.disabled = true;
 
-    supabaseClient.from('profiles').insert({
-      id: userId,
-      username: fullName, // کل اسم ذخیره میشه
-      class_name: className
-    }).then(function(profileRes) {
-      if (profileRes.error) {
-        signupMsg.textContent = 'خطا در ذخیره پروفایل: ' + profileRes.error.message;
-        signupMsg.style.color = '#e74c3c';
+    // ۱. ساخت کاربر در Supabase Auth
+    supabaseClient.auth.signUp({
+      email: email,
+      password: password,
+    }).then(function(res) {
+      if (res.error) {
+        msgEl.textContent = 'خطا: ' + res.error.message;
+        msgEl.style.color = '#e74c3c';
+        signupBtn.disabled = false;
         return;
       }
 
-      signupMsg.textContent = '✅ ثبت‌نام موفق! حالا وارد شو';
-      signupMsg.style.color = '#2ecc71';
-      setTimeout(function() {
-        window.location.href = 'login.html';
-      }, 1500);
+      var userId = res.data.user.id;
+
+      // ۲. ساخت پروفایل توی جدول profiles
+      supabaseClient.from('profiles').insert({
+        id: userId,
+        username: username,
+        class_name: class_name,
+        role: 'student',
+        status: 'approved',
+        xp: 0,
+        total_minutes: 0
+      }).then(function(profileRes) {
+        if (profileRes.error) {
+          msgEl.textContent = 'خطا در ساخت پروفایل: ' + profileRes.error.message;
+          msgEl.style.color = '#e74c3c';
+          signupBtn.disabled = false;
+          return;
+        }
+
+        // ۳. پردازش کد دعوت (اگر وارد شده بود)
+        if (inviteCode) {
+          supabaseClient.rpc('process_invite', {
+            new_user_id: userId,
+            code: inviteCode
+          }).then(function(inviteRes) {
+            if (inviteRes.error) {
+              console.error('خطا در ثبت دعوت:', inviteRes.error);
+            }
+            // چه دعوت ثبت بشه چه نشه، کاربر باید بره به صفحه اصلی
+            finishSignup();
+          });
+        } else {
+          finishSignup();
+        }
+      });
     });
   });
-});
+}
+
+function finishSignup() {
+  msgEl.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
+  msgEl.style.color = 'var(--green)';
+  setTimeout(function() {
+    window.location.href = 'index.html';
+  }, 1500);
+}
