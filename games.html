@@ -8,7 +8,6 @@
   <style>
     .game-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; }
     
-    /* استایل گردونه */
     .wheel-wrapper { position: relative; width: 300px; height: 300px; margin: 30px auto; }
     .wheel-outer { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #d3d3d3, #9e9e9e); box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 0 10px rgba(0,0,0,0.5); padding: 15px; position: relative; }
     
@@ -34,7 +33,6 @@
 
     .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 30px solid #fdd835; z-index: 20; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); }
 
-    /* دکمه و نتیجه */
     .spin-btn-new { background: #fdd835; color: #000; border: none; padding: 16px 40px; border-radius: 16px; font-size: 1.3rem; font-weight: bold; font-family: inherit; cursor: pointer; box-shadow: 0 5px 15px rgba(253, 216, 53, 0.4); transition: 0.2s; margin-top: 10px; }
     .spin-btn-new:hover { transform: scale(1.05); }
     .spin-btn-new:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
@@ -61,7 +59,6 @@
   <main class="container">
     <h2 style="text-align:center; margin-bottom:20px;">🎮 بازی و سرگرمی</h2>
 
-    <!-- معما -->
     <div class="game-card">
       <h3>🧠 معمای روز</h3>
       <p id="riddleQuestion" style="margin: 10px 0; font-size: 0.95rem;">در حال بارگذاری...</p>
@@ -70,7 +67,6 @@
       <p id="riddleMsg" style="margin-top: 10px; font-size: 0.85rem;"></p>
     </div>
 
-    <!-- دکمه باز کردن گردونه -->
     <div class="game-card" style="background: transparent; border: none; padding: 0;">
       <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
         <button class="btn btn-green" onclick="openChestModal(10)" style="flex:1; padding: 15px; font-size:1.1rem;">🎡 چرخش شانس (۱۰ XP)</button>
@@ -80,29 +76,22 @@
 
   </main>
 
-  <!-- مودال گردونه -->
   <div id="chestModal" class="modal hidden">
     <div class="modal-box" style="background: transparent; border: none; box-shadow: none; max-width: 350px;">
-      
       <div class="wheel-wrapper">
         <div class="wheel-pointer"></div>
         <div class="wheel-outer">
           <div class="wheel-lights" id="wheelLights"></div>
-          <div class="wheel" id="wheel">
-            <!-- متن‌ها با JS اضافه میشن -->
-          </div>
+          <div class="wheel" id="wheel"></div>
           <div class="wheel-center"></div>
         </div>
       </div>
-
       <button id="spinBtn" class="spin-btn-new">بچرخان!</button>
-
       <div id="resultBox" class="result-box-new">
         <h4>نتیجه:</h4>
         <p id="spinResult"></p>
         <button id="closeChestBtn" class="btn btn-dim btn-sm" style="margin-top:10px;">بستن</button>
       </div>
-
     </div>
   </div>
 
@@ -119,12 +108,16 @@
   <script src="auth.js"></script>
   <script src="theme.js"></script>
   <script>
-    var myUid = null, myName = '', myXp = 0;
+    var myUid = null, myName = '', myXp = 0, myLastSpinDate = null;
     var spinning = false;
     var currentRiddle = null;
     var wheelSlices = [];
 
-    // ساخت لامپ‌ها
+    function getTodayDate() {
+      var d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+
     function createLights() {
       var lightsContainer = document.getElementById('wheelLights');
       for (var i = 0; i < 16; i++) {
@@ -145,10 +138,11 @@
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
       myUid = res.data.user.id;
-      supabaseClient.from('profiles').select('username, xp').eq('id', myUid).single().then(function(p) {
+      supabaseClient.from('profiles').select('username, xp, last_spin_date').eq('id', myUid).single().then(function(p) {
         if (p.data) {
           myName = p.data.username;
           myXp = p.data.xp || 0;
+          myLastSpinDate = p.data.last_spin_date;
           document.getElementById('myXpDisplay').textContent = myXp;
           document.querySelector('.user-name').textContent = myName;
           document.querySelector('.avatar').textContent = myName.charAt(0);
@@ -156,7 +150,6 @@
       });
     });
 
-    // ===== معما =====
     function loadRiddle() {
       supabaseClient.from('riddles').select('*').eq('is_active', true).then(function(res) {
         var riddles = res.data || [];
@@ -214,8 +207,13 @@
       }
     }
 
-    // ===== گردونه =====
     function openChestModal(cost) {
+      var todayStr = getTodayDate();
+      if (myLastSpinDate === todayStr) {
+        alert('شما امروز شانس خود را استفاده کرده‌اید! فردا بیایید. 🎡');
+        return;
+      }
+
       if (myXp < cost) { alert('XP کافی نداری!'); return; }
       
       supabaseClient.from('wheel_config').select('*').eq('is_active', true).then(function(res) {
@@ -270,10 +268,13 @@
       this.textContent = '...';
 
       var cost = 10;
+      var todayStr = getTodayDate();
       var newXp = myXp - cost;
-      supabaseClient.from('profiles').update({ xp: newXp }).eq('id', myUid).then(function(res) {
+      
+      supabaseClient.from('profiles').update({ xp: newXp, last_spin_date: todayStr }).eq('id', myUid).then(function(res) {
         if (res.error) { alert('خطا'); spinning = false; return; }
         myXp = newXp;
+        myLastSpinDate = todayStr; // آپدیت در حافظه
         document.getElementById('myXpDisplay').textContent = myXp;
 
         var winnerIndex = Math.floor(Math.random() * wheelSlices.length);
