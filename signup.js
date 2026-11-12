@@ -1,6 +1,6 @@
 // ===== گرفتن المان‌های فرم =====
-var signupBtn = document.getElementById('signupBtn'); // دکمه ثبت‌نام
-var msgEl = document.getElementById('signupMsg'); // جایی که پیام خطا یا موفقیت نشون داده میشه
+var signupBtn = document.getElementById('signupBtn');
+var msgEl = document.getElementById('signupMsg');
 var inviteCodeInput = document.getElementById('inviteCodeInput');
 
 // ===== پر کردن خودکار کد دعوت از URL =====
@@ -14,11 +14,11 @@ if (signupBtn) {
   signupBtn.addEventListener('click', function(e) {
     e.preventDefault();
     
-    // گرفتن مقادیر از فرم (این آیدی‌ها باید با فیلدهای HTML تو یکی باشن)
+    // گرفتن مقادیر
     var username = document.getElementById('username').value.trim();
     var email = document.getElementById('email').value.trim();
     var password = document.getElementById('password').value;
-    var class_name = document.getElementById('className').value; // مثلاً "نهم 1"
+    var class_name = document.getElementById('className').value;
     var inviteCode = inviteCodeInput ? inviteCodeInput.value.trim() : '';
 
     if (!username || !email || !password || !class_name) {
@@ -45,7 +45,13 @@ if (signupBtn) {
 
       var userId = res.data.user.id;
 
-      // ۲. ساخت پروفایل توی جدول profiles
+      // ۲. ساخت کد دعوت هوشمند (اسم + ۳ عدد)
+      var cleanUsername = username.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+      if (cleanUsername === '') cleanUsername = 'user';
+      var randomNum = Math.floor(100 + Math.random() * 900);
+      var generatedInviteCode = cleanUsername + randomNum;
+
+      // ۳. ساخت پروفایل توی دیتابیس
       supabaseClient.from('profiles').insert({
         id: userId,
         username: username,
@@ -53,7 +59,8 @@ if (signupBtn) {
         role: 'student',
         status: 'approved',
         xp: 0,
-        total_minutes: 0
+        total_minutes: 0,
+        invite_code: generatedInviteCode // ثبت کد ساخته شده
       }).then(function(profileRes) {
         if (profileRes.error) {
           msgEl.textContent = 'خطا در ساخت پروفایل: ' + profileRes.error.message;
@@ -62,7 +69,7 @@ if (signupBtn) {
           return;
         }
 
-        // ۳. پردازش کد دعوت (اگر وارد شده بود)
+        // ۴. پردازش کد دعوت (اگر وارد شده بود)
         if (inviteCode) {
           supabaseClient.rpc('process_invite', {
             new_user_id: userId,
@@ -71,7 +78,6 @@ if (signupBtn) {
             if (inviteRes.error) {
               console.error('خطا در ثبت دعوت:', inviteRes.error);
             }
-            // چه دعوت ثبت بشه چه نشه، کاربر باید بره به صفحه اصلی
             finishSignup();
           });
         } else {
