@@ -265,17 +265,27 @@
   // ===== توابع ادمین =====
   window.openAddItemModal = function() { document.getElementById('addItemModal').classList.remove('hidden'); };
   window.closeAddItemModal = function() { document.getElementById('addItemModal').classList.add('hidden'); };
-
   window.deleteItem = function(id) {
     if (!confirm('مطمئنی می‌خوای این آیتم رو برای همیشه حذف کنی؟')) return;
-    supabaseClient.from('shop_items').delete().eq('id', id).then(res => {
-      if (res.error) { alert('خطا: ' + res.error.message); return; }
-      alert('🗑️ آیتم حذف شد.');
-      loadTab(currentCategory);
+    
+    // .select() رو اضافه کردیم تا دیتابیس بهمون بگه چی حذف شد
+    supabaseClient.from('shop_items').delete().eq('id', id).select().then(res => {
+      if (res.error) { 
+        alert('خطا: ' + res.error.message); 
+        return; 
+      }
+      
+      // اگه دیتا خالی برگرده یعنی دیتابیس حذف نکرده
+      if (!res.data || res.data.length === 0) {
+        alert('❌ دیتابیس اجازه حذف نداد! (باید کدهای SQL رو دوباره چک کنی)');
+        return;
+      }
+      
+      alert('🗑️ آیتم با موفقیت حذف شد.');
+      loadTab(currentCategory); // رفرش صفحه
     });
   };
-
-  window.submitNewItem = async function() {
+   window.submitNewItem = async function() {
     var name = document.getElementById('addName').value.trim();
     var cat = document.getElementById('addCategory').value;
     var price = parseInt(document.getElementById('addPrice').value);
