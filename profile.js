@@ -439,3 +439,27 @@ if (document.getElementById('logoutBtn')) {
     }
   });
 }
+
+// ===== لود کردن نشان‌های ویژه =====
+supabaseClient.auth.getUser().then(function(res) {
+  if (!res.data.user) return;
+  supabaseClient.from('user_badges').select('*').eq('user_id', res.data.user.id).then(function(badgeRes) {
+    var list = document.getElementById('specialBadgesList');
+    if (!list) return;
+    
+    var badges = badgeRes.data || [];
+    list.innerHTML = '';
+    
+    if (badges.length === 0) {
+      list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim);">هنوز نشان ویژه‌ای نداری.</p>';
+      return;
+    }
+    
+    badges.forEach(function(b) {
+      var span = document.createElement('span');
+      span.style.cssText = 'background: linear-gradient(135deg, #f39c12, #f1c40f); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);';
+      span.textContent = (b.badge_icon || '🏅') + ' ' + b.badge_name;
+      list.appendChild(span);
+    });
+  });
+});
