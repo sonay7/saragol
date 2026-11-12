@@ -11,24 +11,46 @@
     .shop-tab.active { background: var(--green); color: #fff; border-color: var(--green); font-weight: bold; }
     
     .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 80px; }
-    .shop-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+    
+    /* مستطیلی کردن کارت‌ها */
+    .shop-card { 
+      position: relative;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; 
+      padding: 12px; text-align: center; display: flex; flex-direction: column; 
+      align-items: center; justify-content: space-between; 
+    }
+    
     .shop-icon { font-size: 3rem; margin-bottom: 10px; }
-    .shop-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid var(--border); }
+    
+    /* استایل جدید عکس (مستطیلی) */
+    .shop-img { 
+      width: 100%; 
+      height: 100px; 
+      border-radius: 10px; 
+      object-fit: cover; 
+      margin-bottom: 10px; 
+      border: 1px solid var(--border); 
+    }
+
     .shop-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; color: var(--text); }
     .shop-desc { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px; min-height: 30px; }
     .shop-price { color: #f1c40f; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
+    
     .buy-btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .buy-btn:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; }
     .buy-btn.bought { background: #27ae60; color: #fff; }
+    
+    .equip-btn { background: var(--blue); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 4px; }
 
-    /* دکمه شناور افزودن ادمین */
+    /* دکمه‌های ادمین */
+    .delete-btn { position: absolute; top: 8px; right: 8px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 14px; cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; }
+    
     .admin-fab { position: fixed; bottom: 90px; left: 20px; width: 60px; height: 60px; background: var(--green); color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; border: none; }
     .admin-fab:hover { transform: scale(1.1); }
 
-    /* استایل مودال */
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal.hidden { display: none; }
-    .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; }
+    .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
   </style>
 </head>
 <body>
@@ -52,12 +74,9 @@
     <button class="shop-tab" data-cat="chat">💬 چت</button>
   </div>
 
-  <div class="shop-grid" id="itemsGrid">
-    <p class="lock-note" style="grid-column: span 2;">در حال بارگذاری...</p>
-  </div>
+  <div class="shop-grid" id="itemsGrid"></div>
 </main>
 
-<!-- دکمه شناور که فقط برای ادمین نشون داده میشه -->
 <button class="admin-fab hidden" id="adminFab" onclick="openAddItemModal()">+</button>
 
 <!-- مودال اضافه کردن آیتم -->
@@ -76,7 +95,9 @@
     
     <input id="addPrice" type="number" class="input" placeholder="قیمت (XP) - الزامی" style="margin-bottom: 8px;">
     
-    <!-- بخش انتخاب عکس یا ایموجی -->
+    <!-- فیلد جدید برای تم و فونت -->
+    <input id="addEffectValue" class="input" placeholder="مقدار افکت (مثلاً sakura برای تم یا Tahoma برای فونت)" style="margin-bottom: 8px;">
+
     <div style="background: var(--bg); padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 1px dashed var(--border);">
       <p style="font-size: 0.8rem; margin-bottom: 6px; color: var(--text-dim);">انتخاب تصویر (یکی از دو روش):</p>
       <label style="font-size: 0.85rem; display: block; margin-bottom: 6px;">
@@ -92,7 +113,7 @@
 
     <input id="addDesc" class="input" placeholder="توضیحات (اختیاری)" style="margin-bottom: 12px;">
     
-    <button id="saveItemBtn" class="btn btn-green btn-full" onclick="submitNewItem()">ذخیره و افزودن به فروشگاه</button>
+    <button id="saveItemBtn" class="btn btn-green btn-full" onclick="submitNewItem()">ذخیره</button>
     <button class="btn btn-dim btn-full" style="margin-top: 8px;" onclick="closeAddItemModal()">انصراف</button>
   </div>
 </div>
@@ -113,6 +134,8 @@
   var currentUser = null;
   var myXp = 0;
   var myInventory = [];
+  var isAdmin = false;
+  var currentCategory = 'avatar';
 
   supabaseClient.auth.getUser().then(res => {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -123,6 +146,7 @@
       document.getElementById('myXp').textContent = myXp + ' XP';
       
       if (p.data.role === 'admin' || p.data.role === 'superadmin') {
+        isAdmin = true;
         document.getElementById('adminFab').classList.remove('hidden');
       }
       
@@ -137,7 +161,8 @@
     tab.addEventListener('click', function() {
       document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
-      loadTab(this.getAttribute('data-cat'));
+      currentCategory = this.getAttribute('data-cat');
+      loadTab(currentCategory);
     });
   });
 
@@ -156,9 +181,24 @@
         var isBought = myInventory.some(i => i.item_id === item.id);
         var canAfford = myXp >= item.price;
         
-        var btnClass = isBought ? 'buy-btn bought' : 'buy-btn';
-        var btnText = isBought ? '✓ خریداری شده' : 'خرید';
-        var btnDisabled = (isBought || !canAfford) ? 'disabled' : '';
+        var btnHtml = '';
+        
+        if (isBought) {
+          // اگه خریداری شده بود
+          if (category === 'theme' || category === 'font') {
+            // برای تم و فونت دکمه استفاده نشون بده
+            btnHtml = `<button class="equip-btn" onclick="applyItem('${category}', '${item.effect_value}')">✨ استفاده</button>`;
+          } else {
+            btnHtml = `<button class="buy-btn bought" disabled>✓ خریداری شده</button>`;
+          }
+        } else {
+          // اگه خریداری نشده بود
+          var btnDisabled = canAfford ? '' : 'disabled';
+          btnHtml = `<button class="buy-btn" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">خرید</button>`;
+        }
+
+        // دکمه حذف (فقط برای ادمین)
+        var deleteBtn = isAdmin ? `<button class="delete-btn" onclick="deleteItem('${item.id}')">×</button>` : '';
         
         var mediaHtml = item.image_url 
           ? `<img src="${item.image_url}" class="shop-img" alt="${item.name}">` 
@@ -167,16 +207,15 @@
         var div = document.createElement('div');
         div.className = 'shop-card';
         div.innerHTML = `
-          <div>
+          ${deleteBtn}
+          <div style="width: 100%;">
             ${mediaHtml}
             <div class="shop-name">${item.name}</div>
             <div class="shop-desc">${item.description || ''}</div>
           </div>
           <div style="width:100%;">
             <div class="shop-price">${item.price} XP</div>
-            <button class="${btnClass}" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">
-              ${btnText}
-            </button>
+            ${btnHtml}
           </div>
         `;
         grid.appendChild(div);
@@ -197,26 +236,50 @@
       }).then(() => {
         myXp = newXp;
         document.getElementById('myXp').textContent = myXp + ' XP';
-        loadTab(type);
-        alert('🎉 خرید با موفقیت انجام شد!');
+        
+        // آپدیت اینونتوری لوکال
+        supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
+          myInventory = inv.data || [];
+          loadTab(type);
+          alert('🎉 خرید با موفقیت انجام شد!');
+        });
       });
     });
   };
 
+  // ===== تابع استفاده از تم/فونت =====
+  window.applyItem = function(type, effectValue) {
+    if (!effectValue) { alert('این آیتم تنظیمات ظاهری نداره!'); return; }
+    
+    if (type === 'theme') {
+      document.documentElement.setAttribute('data-theme', effectValue);
+      localStorage.setItem('site-theme', effectValue); // ذخیره برای دفعات بعد
+      alert('🎨 تم سایت با موفقیت تغییر کرد!');
+    } else if (type === 'font') {
+      document.body.style.fontFamily = effectValue;
+      localStorage.setItem('site-font', effectValue); // ذخیره برای دفعات بعد
+      alert('🖋️ فونت سایت با موفقیت تغییر کرد!');
+    }
+  };
+
   // ===== توابع ادمین =====
-  window.openAddItemModal = function() {
-    document.getElementById('addItemModal').classList.remove('hidden');
+  window.openAddItemModal = function() { document.getElementById('addItemModal').classList.remove('hidden'); };
+  window.closeAddItemModal = function() { document.getElementById('addItemModal').classList.add('hidden'); };
+
+  window.deleteItem = function(id) {
+    if (!confirm('مطمئنی می‌خوای این آیتم رو برای همیشه حذف کنی؟')) return;
+    supabaseClient.from('shop_items').delete().eq('id', id).then(res => {
+      if (res.error) { alert('خطا: ' + res.error.message); return; }
+      alert('🗑️ آیتم حذف شد.');
+      loadTab(currentCategory);
+    });
   };
 
-  window.closeAddItemModal = function() {
-    document.getElementById('addItemModal').classList.add('hidden');
-  };
-
-  // تابع آپلود عکس و ثبت آیتم
   window.submitNewItem = async function() {
     var name = document.getElementById('addName').value.trim();
     var cat = document.getElementById('addCategory').value;
     var price = parseInt(document.getElementById('addPrice').value);
+    var effectVal = document.getElementById('addEffectValue').value.trim();
     var emoji = document.getElementById('addEmoji').value.trim();
     var desc = document.getElementById('addDesc').value.trim();
     var fileInput = document.getElementById('addImageFile');
@@ -230,49 +293,43 @@
     btn.textContent = 'در حال ذخیره...';
     var imageUrl = null;
 
-    // اگه کاربر فایل عکس انتخاب کرده بود
     if (file) {
       var fileName = 'shop_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
-      
-      // آپلود به باکتی که برای کتاب‌ها هم استفاده می‌کردیم (videos)
       var uploadRes = await supabaseClient.storage.from('videos').upload(fileName, file);
       
       if (uploadRes.error) {
         alert('خطا در آپلود عکس: ' + uploadRes.error.message);
         btn.disabled = false;
-        btn.textContent = 'ذخیره و افزودن به فروشگاه';
+        btn.textContent = 'ذخیره';
         return;
       }
-      
-      // گرفتن لینک عکس آپلود شده
       imageUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
     }
 
-    // ثبت توی دیتابیس
     supabaseClient.from('shop_items').insert({
       name: name,
       category: cat,
       price: price,
-      image_url: imageUrl, // اگه عکس آپلود شده بود لینکش، وگرنه null
-      icon: emoji || '📦',  // اگه ایموجی داشت همون، وگرنه یه ایموجی پیش‌فرض
-      description: desc
+      image_url: imageUrl,
+      icon: emoji || '📦',
+      description: desc,
+      effect_value: effectVal || null
     }).then(res => {
       btn.disabled = false;
-      btn.textContent = 'ذخیره و افزودن به فروشگاه';
+      btn.textContent = 'ذخیره';
       
       if (res.error) { alert('خطا: ' + res.error.message); return; }
       
-      // بستن مودال و خالی کردن فیلدها
       closeAddItemModal();
       document.getElementById('addName').value = '';
       document.getElementById('addPrice').value = '';
       document.getElementById('addImageFile').value = '';
       document.getElementById('addEmoji').value = '';
+      document.getElementById('addEffectValue').value = '';
       document.getElementById('addDesc').value = '';
       
       alert('✅ آیتم با موفقیت به فروشگاه اضافه شد!');
       
-      // رفتن به همون دسته
       document.querySelectorAll('.shop-tab').forEach(t => {
         if (t.getAttribute('data-cat') === cat) t.click();
       });
