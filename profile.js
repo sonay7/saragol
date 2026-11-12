@@ -2,43 +2,47 @@ var userClassName = '';
 var allGenres = ['خیال‌پردازی', 'عاشقانه', 'جنایی', 'معمایی', 'علمی-تخیلی', 'طنز', 'تاریخی', 'روانشناسی', 'ماجراجویی', 'شعر و ادبیات'];
 var selectedGenres = [];
 
+var yesterdayMinutes = 0;
+var todayMinutes = 0;
+var currentTarget = 0;
+var selectedOption = 0;
+var currentStreak = 0;
+var totalQuestions = 0;
+var hasMorningStudy = false;
+
+// ===== شروع: لود اطلاعات پروفایل =====
 supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   var uid = res.data.user.id;
 
   supabaseClient.from('profiles').select('*').eq('id', uid).single().then(function(p) {
-    // ==== سیستم ارورگیر ====
-    if (p.error) {
-      document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:50px;">خطای دیتابیس: ' + p.error.message + '</h1>';
-      return;
-    }
-    if (!p.data) {
-      document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:50px;">پروفایل شما پیدا نشد! (آیدی شما با دیتابیس همخوانی ندارد)</h1>';
-      return;
-    }
-    // =======================
-
+    if (p.error || !p.data) return;
     var profile = p.data;
     userClassName = profile.class_name;
     var titleTheme = profile.level_theme || 'پیش فرض';
 
-    // آپدیت هدر و کارت پروفایل
+    // آپدیت نام و آواتار
     var nameEl = document.querySelector('.profile-name'); if(nameEl) nameEl.textContent = profile.username;
     var classEl = document.querySelector('.profile-class'); if(classEl) classEl.textContent = profile.class_name;
     var pAvatarEl = document.querySelector('.profile-avatar'); if(pAvatarEl) pAvatarEl.textContent = profile.username.charAt(0);
     var uNameEl = document.querySelector('.user-name'); if(uNameEl) uNameEl.textContent = profile.username;
     var avatarEl = document.querySelector('.avatar'); if(avatarEl) avatarEl.textContent = profile.username.charAt(0);
 
+    // ⬇️ بخش تاریخ تولد: اگر قبلاً ثبت شده بود، توی باکس نشون بده ⬇️
+    if (profile.birthday) {
+      var bdayInput = document.getElementById('userBirthday');
+      if (bdayInput) bdayInput.value = profile.birthday;
+    }
+
     var stats = document.querySelectorAll('.stat-value');
     if(stats[0]) stats[0].textContent = profile.total_minutes || 0;
     if(stats[1]) stats[1].textContent = profile.xp || 0;
 
-    // ===== سطح =====
+    // سطح
     try {
       var minutes = profile.total_minutes || 0;
       var level = getLevel(minutes);
       var title = getTitle(level, titleTheme);
-      
       var levelBox = document.getElementById('levelBox');
       if(levelBox) levelBox.textContent = 'سطح ' + level + ' • ' + title;
 
@@ -58,70 +62,45 @@ supabaseClient.auth.getUser().then(function(res) {
         var remainMin = Math.ceil((nextH * 60) - minutes);
         if(nextEl) nextEl.textContent = 'تا سطح بعدی: ' + remainMin + ' دقیقه';
       }
-    } catch (e) {
-      console.error("خطای سطح:", e);
-    }
+      renderLevelPath(level);
+    } catch (e) { console.error("خطای سطح:", e); }
 
-    // ===== بارگذاری باغ/کافه =====
-    var colorTheme = localStorage.getItem('site-theme') || 'dark';
-    loadGarden(uid, colorTheme);
+    loadCupLogic(uid);
 
-    // ===== محاسبه‌ی رتبه‌ی کلاس =====
-    var rankEl = document.getElementById('myClassRank');
-    if(rankEl) {
-      supabaseClient.from('profiles').select('class_name, total_minutes').then(function(cr) {
-        var totals = {};
-        (cr.data || []).forEach(function(row) {
-          if (!row.class_name) return;
-          if (!totals[row.class_name]) totals[row.class_name] = 0;
-          totals[row.class_name] += row.total_minutes || 0;
-        });
-        var sorted = Object.keys(totals).sort(function(a, b) { return totals[b] - totals[a]; });
-        var rank = sorted.indexOf(profile.class_name) + 1;
-        rankEl.textContent = rank > 0 ? 'رتبه ' + rank + ' در لیگ' : 'بدون رتبه';
-      });
-    }
-
-    // ===== آمار مطالعه =====
     supabaseClient.from('study_sessions').select('questions, minutes, created_at').eq('user_id', uid).then(function(s) {
       var rows = s.data || [];
-      var totalQ = 0;
-      rows.forEach(function(r) { totalQ += r.questions || 0; });
-      if(stats[3]) stats[3].textContent = totalQ;
+      totalQuestions = 0;
+      
+      rows.forEach(function(r) {
+        totalQuestions += r.questions || 0;
+        var h = new Date(r.created_at).getHours();
+        if (h >= 4 && h < 8) hasMorningStudy = true;
+      });
+      if(stats[3]) stats[3].textContent = totalQuestions;
 
       var days = {};
       rows.forEach(function(r) {
         var d = new Date(r.created_at);
-        days[d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate()] = true;
+        days[d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate()] = true;
       });
 
-      var streak = 0;
+      currentStreak = 0;
       var today = new Date();
+      today.setHours(0,0,0,0);
       for (var i = 0; i < 365; i++) {
         var d = new Date(today);
         d.setDate(today.getDate() - i);
-        var key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
-        if (days[key]) { streak++; }
+        var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+        if (days[key]) { currentStreak++; }
         else if (i === 0) { continue; }
         else { break; }
       }
       
-      if(stats[2]) stats[2].textContent = streak;
+      if(stats[2]) stats[2].textContent = currentStreak;
       var streakNumberEl = document.querySelector('.streak-number');
-      if(streakNumberEl) streakNumberEl.textContent = streak;
+      if(streakNumberEl) streakNumberEl.textContent = currentStreak;
 
-      var weekMinutes = [0, 0, 0, 0, 0, 0, 0];
-      rows.forEach(function(r) {
-        var d = new Date(r.created_at);
-        var diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
-        if (diff >= 0 && diff < 7) weekMinutes[6 - diff] += r.minutes || 0;
-      });
-      var maxMin = Math.max.apply(null, weekMinutes);
-      if (maxMin === 0) maxMin = 1;
-      document.querySelectorAll('.chart-bar .bar').forEach(function(b, i) {
-        var h = Math.round((weekMinutes[i] / maxMin) * 100);
-        b.style.height = (h < 5 ? 5 : h) + '%';
-      });
+      renderBadges(profile.total_minutes || 0);
     });
 
     loadExams();
@@ -129,86 +108,174 @@ supabaseClient.auth.getUser().then(function(res) {
   });
 });
 
-// ===== منطق کافه / باغ =====
-function loadGarden(uid, theme) {
-  var widget = document.getElementById('gardenWidget');
-  if (!widget) return;
+// ===== تابع ذخیره تاریخ تولد (این بخش جدیده) =====
+window.saveBirthday = function() {
+  var bday = document.getElementById('userBirthday').value;
+  var msg = document.getElementById('birthdayMsg');
   
-  if (theme !== 'cafe' && theme !== 'sakura') {
-    widget.innerHTML = '<div style="font-size: 3rem; margin-bottom: 10px;">🚧</div><p style="color:var(--text-dim); font-size:0.9rem;">برای دیدن همراه روزانه، از دکمه 🎨 تم کافه یا ساکورا رو انتخاب کن.</p>';
+  if (!bday) {
+    msg.textContent = 'لطفاً یک تاریخ انتخاب کن.';
+    msg.style.color = '#e74c3c';
     return;
   }
 
-  supabaseClient.from('user_gardens').select('*').eq('user_id', uid).single().then(function(res) {
-    if (res.error && res.error.code !== 'PGRST116') {
-       widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطای دیتابیس باغ: ' + res.error.message + '</p>';
-       return;
-    }
-    
-    if (!res.data) {
-      supabaseClient.from('user_gardens').insert({ user_id: uid }).then(function(insRes) {
-        if (insRes.error) {
-          widget.innerHTML = '<p style="color:red; font-size:0.8rem;">خطا در ساخت باغ: ' + insRes.error.message + '</p>';
-          return;
-        }
-        loadGarden(uid, theme); 
-      });
-      return;
-    }
-
-    var garden = res.data;
-    var todayStr = new Date().toISOString().split('T')[0];
-    
-    if (garden.last_active_date !== todayStr) {
-      supabaseClient.from('user_gardens').update({ last_active_date: todayStr, minutes_today: 0 }).eq('user_id', uid).then(function() {
-        garden.minutes_today = 0;
-        renderGardenUI(uid, theme, garden);
-      });
-    } else {
-      renderGardenUI(uid, theme, garden);
-    }
-  });
-}
-
-function renderGardenUI(uid, theme, garden) {
-  var widget = document.getElementById('gardenWidget');
-  if (!widget) return;
-  
-  var isCafe = (theme === 'cafe');
-  var goal = garden.daily_goal || 30;
-  var done = garden.minutes_today || 0;
-  var coins = garden.coins || 0;
-  var percent = Math.min(Math.round((done / goal) * 100), 100);
-
-  var graphic = isCafe ? '☕' : '🌸';
-  var title = isCafe ? 'کافه‌ی امروز' : 'باغ ساکورا';
-  var coinName = isCafe ? 'دانه قهوه' : 'شکوفه';
-
-  widget.innerHTML = 
-    '<h3 style="font-size: 1rem; color: var(--text-dim); margin-bottom: 10px;">' + title + '</h3>' +
-    '<div class="garden-graphic">' + graphic + '</div>' +
-    '<p style="font-size: 0.85rem; margin-bottom: 10px;">هدف امروز: <strong>' + done + ' از ' + goal + ' دقیقه</strong></p>' +
-    '<div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ' + percent + '%"></div></div>' +
-    '<p style="font-size: 0.8rem; color: var(--text-dim); margin: 10px 0;">هدفت رو انتخاب کن:</p>' +
-    '<div style="margin-bottom: 15px;">' +
-      '<button class="goal-btn ' + (goal === 15 ? 'active' : '') + '" onclick="setGoal(' + uid + ', \'' + theme + '\', 15)">۱۵ دقیقه</button>' +
-      '<button class="goal-btn ' + (goal === 30 ? 'active' : '') + '" onclick="setGoal(' + uid + ', \'' + theme + '\', 30)">۳۰ دقیقه</button>' +
-      '<button class="goal-btn ' + (goal === 60 ? 'active' : '') + '" onclick="setGoal(' + uid + ', \'' + theme + '\', 60)">۶۰ دقیقه</button>' +
-    '</div>' +
-    '<div class="garden-coins">🪙 ' + coins + ' ' + coinName + '</div>';
-
-  if (percent >= 100) {
-    widget.innerHTML += '<p style="color: var(--green); font-weight: bold; margin-top: 10px;">✅ آفرین! هدف امروزت رو کامل کردی.</p>';
-  }
-}
-
-window.setGoal = function(uid, theme, mins) {
-  supabaseClient.from('user_gardens').update({ daily_goal: mins }).eq('user_id', uid).then(function() {
-    loadGarden(uid, theme);
+  supabaseClient.auth.getUser().then(function(res) {
+    if (!res.data.user) return;
+    supabaseClient.from('profiles').update({ birthday: bday }).eq('id', res.data.user.id).then(function(updateRes) {
+      if (updateRes.error) {
+        msg.textContent = 'خطا: ' + updateRes.error.message;
+        msg.style.color = '#e74c3c';
+        return;
+      }
+      msg.textContent = '✅ تاریخ تولد با موفقیت ثبت شد!';
+      msg.style.color = 'var(--green)';
+    });
   });
 };
 
-// ===== توابع آزمون =====
+// ===== بقیه توابع (بدون تغییر) =====
+function renderLevelPath(currentLevel) {
+  var list = document.getElementById('levelPathList');
+  if (!list) return;
+  var levels = [{ n: 1, h: 0 }, { n: 2, h: 5 }, { n: 3, h: 15 }, { n: 4, h: 35 }, { n: 5, h: 65 }, { n: 6, h: 105 }, { n: 7, h: 155 }, { n: 8, h: 215 }, { n: 9, h: 285 }, { n: 10, h: 360 }];
+  list.innerHTML = '';
+  levels.forEach(function(lvl) {
+    var div = document.createElement('div');
+    div.className = 'level-path-item' + (lvl.n === currentLevel ? ' current' : '');
+    div.innerHTML = '<span>سطح ' + lvl.n + '</span><span>' + lvl.h + ' ساعت</span>';
+    list.appendChild(div);
+  });
+}
+
+function renderBadges(totalMinutes) {
+  var list = document.getElementById('badgesList');
+  if (!list) return;
+  var badgesData = [
+    { id: 'min100', name: '۱۰۰ دقیقه', unlocked: totalMinutes >= 100 },
+    { id: 'min500', name: '۵۰۰ دقیقه', unlocked: totalMinutes >= 500 },
+    { id: 'min1000', name: '۱۰۰۰ دقیقه', unlocked: totalMinutes >= 1000 },
+    { id: 'streak7', name: '۷ روز پیاپی', unlocked: currentStreak >= 7 },
+    { id: 'streak30', name: '۳۰ روز پیاپی', unlocked: currentStreak >= 30 },
+    { id: 'q100', name: '۱۰۰ سؤال', unlocked: totalQuestions >= 100 },
+    { id: 'q500', name: '۵۰۰ سؤال', unlocked: totalQuestions >= 500 },
+    { id: 'morning', name: 'مطالعه صبحگاهی', unlocked: hasMorningStudy },
+    { id: 'league1', name: 'برنده لیگ هفته', unlocked: false },
+    { id: 'class1', name: 'رتبه اول کلاس', unlocked: false },
+    { id: 'top10', name: '۳ هفته تاپ ۱۰', unlocked: false },
+    { id: 'book1', name: 'اولین کتاب', unlocked: false },
+    { id: 'book5', name: '۵ کتاب', unlocked: false },
+    { id: 'bookreview', name: 'نقد کتاب', unlocked: false },
+    { id: 'firstmsg', name: 'اولین پیام', unlocked: false }
+  ];
+  list.innerHTML = '';
+  badgesData.forEach(function(b) {
+    var span = document.createElement('span');
+    span.className = 'badge' + (b.unlocked ? '' : ' locked');
+    span.textContent = b.unlocked ? b.name : '؟؟؟';
+    list.appendChild(span);
+  });
+}
+
+function loadCupLogic(uid) {
+  var today = new Date();
+  var todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
+  var yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  var yesterdayStr = yesterday.getFullYear() + '-' + (yesterday.getMonth()+1) + '-' + yesterday.getDate();
+
+  yesterdayMinutes = 0;
+  todayMinutes = 0;
+
+  supabaseClient.from('study_sessions').select('minutes, created_at').eq('user_id', uid).then(function(res) {
+    var rows = res.data || [];
+    rows.forEach(function(r) {
+      var d = new Date(r.created_at);
+      var dStr = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+      if (dStr === yesterdayStr) yesterdayMinutes += r.minutes;
+      if (dStr === todayStr) todayMinutes += r.minutes;
+    });
+
+    var opt1 = yesterdayMinutes === 0 ? 30 : yesterdayMinutes + 30;
+    var opt2 = yesterdayMinutes === 0 ? 60 : yesterdayMinutes + 60;
+    var opt3 = yesterdayMinutes === 0 ? 15 : yesterdayMinutes;
+
+    var btnContainer = document.getElementById('goalButtons');
+    btnContainer.innerHTML = '';
+    
+    var buttonsData = [
+      { id: 1, label: opt1 + ' دقیقه', val: opt1 },
+      { id: 2, label: opt2 + ' دقیقه', val: opt2 },
+      { id: 3, label: opt3 + ' دقیقه', val: opt3 }
+    ];
+
+    var savedChoice = localStorage.getItem('cup_choice_' + todayStr);
+    if (savedChoice) {
+      selectedOption = parseInt(savedChoice);
+      currentTarget = buttonsData.find(b => b.id === selectedOption).val;
+    } else {
+      selectedOption = 1;
+      currentTarget = opt1;
+    }
+
+    buttonsData.forEach(function(btnData) {
+      var btn = document.createElement('button');
+      btn.className = 'goal-btn' + (btnData.id === selectedOption ? ' active' : '');
+      btn.textContent = btnData.label;
+      btn.onclick = function() {
+        selectedOption = btnData.id;
+        currentTarget = btnData.val;
+        localStorage.setItem('cup_choice_' + todayStr, selectedOption);
+        
+        window.location.href = 'study.html?goal=' + currentTarget;
+      };
+      btnContainer.appendChild(btn);
+    });
+
+    updateCupVisuals();
+  });
+}
+
+function updateCupVisuals() {
+  var statusEl = document.getElementById('cupStatus');
+  var smartTextEl = document.getElementById('smartText');
+  var percent = Math.min(Math.round((todayMinutes / currentTarget) * 100), 100);
+
+  var cupLiquid = document.getElementById('cupLiquid');
+  if(cupLiquid) cupLiquid.style.height = percent + '%';
+
+  var galaxyLiquid = document.getElementById('galaxyLiquid');
+  if(galaxyLiquid) galaxyLiquid.style.height = percent + '%';
+
+  var simpleBar = document.getElementById('simpleBarFill');
+  if(simpleBar) simpleBar.style.width = percent + '%';
+
+  document.querySelectorAll('.blossom').forEach(function(b) {
+    var val = parseInt(b.getAttribute('data-val'));
+    if (percent >= val) {
+      b.style.opacity = '1';
+      b.style.transform = 'scale(1)';
+    } else {
+      b.style.opacity = '0';
+      b.style.transform = 'scale(0)';
+    }
+  });
+  
+  if (percent >= 100) {
+    statusEl.textContent = '🎉 آفرین! هدف امروزت پر شد.';
+    statusEl.style.color = 'var(--green)';
+  } else {
+    statusEl.textContent = todayMinutes + ' از ' + currentTarget + ' دقیقه';
+    statusEl.style.color = 'var(--text)';
+  }
+
+  smartTextEl.style.display = 'block';
+  if (yesterdayMinutes === 0) {
+    smartTextEl.textContent = 'امروز روز خوبی برای شروع هست! یکی از هدف‌های بالا رو انتخاب کن.';
+  } else {
+    smartTextEl.textContent = 'دیروز ' + yesterdayMinutes + ' دقیقه مطالعه کردی. برای پیشرفت، یکی از هدف‌های بالا رو انتخاب کن!';
+  }
+}
+
 function toShamsi(dateStr) {
   if (!dateStr) return '';
   var d = new Date(dateStr);
@@ -218,44 +285,29 @@ function toShamsi(dateStr) {
 function loadExams() {
   var listEl = document.getElementById('examCountdownList');
   if (!listEl) return;
-
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
-
     supabaseClient.from('exams').select('*').or('is_public.eq.true,user_id.eq.' + uid).order('exam_date', { ascending: true }).then(function(examRes) {
-      if (examRes.error) {
-         listEl.innerHTML = '<p style="color:red; font-size:0.8rem;">خطای آزمون‌ها: ' + examRes.error.message + '</p>';
-         return;
-      }
       var rows = examRes.data || [];
       var today = new Date();
       today.setHours(0, 0, 0, 0);
-
       var upcoming = rows.filter(function(e) {
         if (new Date(e.exam_date) < today) return false;
         if (e.is_public && e.class_name !== 'همه' && userClassName.indexOf(e.class_name) === -1) return false;
         return true;
       });
-
-      if (upcoming.length === 0) {
-        listEl.innerHTML = '<p class="lock-note">هیچ آزمونی پیش رو نداری 😎</p>';
-        return;
-      }
-
+      if (upcoming.length === 0) { listEl.innerHTML = '<p class="lock-note">هیچ آزمونی پیش رو نداری 😎</p>'; return; }
       listEl.innerHTML = '';
       upcoming.forEach(function(exam) {
         var examDate = new Date(exam.exam_date);
         examDate.setHours(0, 0, 0, 0);
         var diffDays = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
-
         var div = document.createElement('div');
         div.className = 'admin-row';
         div.style.borderColor = diffDays <= 3 ? '#e74c3c' : 'var(--border)';
-
         var label = exam.is_public ? '🏫 آزمون مدرسه' : '📝 آزمون شخصی';
         var countdown = diffDays === 0 ? 'امروز!' : (diffDays === 1 ? 'فردا' : diffDays + ' روز مونده');
-
         div.innerHTML = '<div><strong>' + exam.subject + '</strong><span class="admin-sub">' + label + ' | ' + toShamsi(exam.exam_date) + '</span></div>' +
           '<div class="admin-actions"><span style="color:' + (diffDays <= 3 ? '#e74c3c' : 'var(--green)') + ';font-weight:700;font-size:0.85rem;">⏳ ' + countdown + '</span>' +
           (!exam.is_public ? '<button class="btn btn-dim btn-sm" onclick="delExam(' + exam.id + ')">حذف</button>' : '') + '</div>';
@@ -266,7 +318,23 @@ function loadExams() {
 }
 window.delExam = function(id) { supabaseClient.from('exams').delete().eq('id', id).then(loadExams); }
 
-// ===== سیستم ژانرها =====
+if(document.getElementById('addMyExamBtn')) {
+  document.getElementById('addMyExamBtn').addEventListener('click', function() {
+    var subject = document.getElementById('myExamSubject').value.trim();
+    var examDate = document.getElementById('myExamDate').value;
+    if (subject.length < 2 || !examDate) { alert('نام درس و تاریخ رو کامل بزن'); return; }
+    supabaseClient.auth.getUser().then(function(res) {
+      if (!res.data.user) return;
+      supabaseClient.from('exams').insert({ subject: subject, exam_date: examDate, class_name: 'شخصی', is_public: false, user_id: res.data.user.id }).then(function(insRes) {
+        if (insRes.error) { alert('خطا: ' + insRes.error.message); return; }
+        document.getElementById('myExamSubject').value = '';
+        document.getElementById('myExamDate').value = '';
+        loadExams();
+      });
+    });
+  });
+}
+
 function loadGenres(uid) {
   supabaseClient.from('user_genres').select('*').eq('user_id', uid).order('id', { ascending: true }).then(function(res) {
     selectedGenres = (res.data || []).map(function(g) { return g.genre; });
@@ -279,7 +347,6 @@ function updateGenreUI() {
   var display = document.getElementById('genreTitleDisplay');
   var text = document.getElementById('genreTitleText');
   var list = document.getElementById('myGenresList');
-
   if (selectedGenres.length > 0) {
     if(display) display.style.display = 'inline-block';
     if(text) text.textContent = title;
@@ -301,7 +368,6 @@ function getTitleFromGenres(genres) {
   return 'کتاب‌خوان 📖';
 }
 
-// مودال ژانر
 var genreModal = document.getElementById('genreModal');
 var selectGenreBtn = document.getElementById('selectGenreBtn');
 var closeGenreBtn = document.getElementById('closeGenreBtn');
@@ -309,12 +375,8 @@ var saveGenreBtn = document.getElementById('saveGenreBtn');
 var genreOptions = document.getElementById('genreOptions');
 
 if (selectGenreBtn) {
-  selectGenreBtn.addEventListener('click', function() {
-    if(genreModal) genreModal.classList.remove('hidden');
-    renderGenreOptions();
-  });
+  selectGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.remove('hidden'); renderGenreOptions(); });
   if(closeGenreBtn) closeGenreBtn.addEventListener('click', function() { if(genreModal) genreModal.classList.add('hidden'); });
-
   if(saveGenreBtn) saveGenreBtn.addEventListener('click', function() {
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) return;
@@ -322,10 +384,7 @@ if (selectGenreBtn) {
       supabaseClient.from('user_genres').delete().eq('user_id', uid).then(function() {
         if (selectedGenres.length === 0) { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); return; }
         var inserts = selectedGenres.map(function(g) { return { user_id: uid, genre: g }; });
-        supabaseClient.from('user_genres').insert(inserts).then(function() {
-          if(genreModal) genreModal.classList.add('hidden');
-          updateGenreUI();
-        });
+        supabaseClient.from('user_genres').insert(inserts).then(function() { if(genreModal) genreModal.classList.add('hidden'); updateGenreUI(); });
       });
     });
   });
@@ -348,7 +407,6 @@ function renderGenreOptions() {
   });
 }
 
-// ===== تغییر تم (لقب) =====
 var changeThemeBtn = document.getElementById('changeThemeBtn');
 var themeModal = document.getElementById('themeModal');
 var closeThemeBtn = document.getElementById('closeThemeBtn');
@@ -374,7 +432,6 @@ if (changeThemeBtn) {
   });
 }
 
-// ===== دکمه خروج =====
 if (document.getElementById('logoutBtn')) {
   document.getElementById('logoutBtn').addEventListener('click', function() {
     if (confirm('از حساب کاربری خارج می‌شی؟')) {
