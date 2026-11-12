@@ -6,48 +6,53 @@
   <title>ساراگل | مدرسه‌ی ما</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* ===== استایل دکمه شروع سریع ===== */
     .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
     .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
+
+    /* ===== استایل کارت‌های بزرگ (لیگ و دسترسی سریع) ===== */
     .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; margin-bottom: 20px; }
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
     
-    /* انجمن‌ها */
+    /* ===== استایل انجمن‌ها (۲ ستونه) ===== */
     .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
 
-    /* دسترسی سریع */
-   .quick-access-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
-.quick-access-wrapper .forum-card { padding: 14px 8px; }
-@media (max-width: 480px) {
-  .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); }
-}
+    /* ===== استایل دسترسی سریع (۳ ستونه) ===== */
+    .quick-access-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+    .quick-access-wrapper .forum-card { padding: 14px 8px; }
     @media (max-width: 480px) {
       .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); }
-      .quick-access-wrapper .forum-card { grid-column: span 1; }
-      .quick-access-wrapper .forum-card:nth-child(4) { grid-column: 1 / span 1; }
-      .quick-access-wrapper .forum-card:nth-child(5) { grid-column: 2 / span 1; }
     }
 
-    /* استایل اعلان‌ها */
+    /* ===== استایل اعلان‌ها ===== */
     .notice { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 0.95rem; }
     .notice-badge { background: var(--green); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
 
-    /* ⬇️ استایل‌های جشن تولد ⬇️ */
+    /* ===== استایل مودال خوش‌آمدگویی ===== */
+    .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
+    .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
+    .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
+    .welcome-content p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
+    .welcome-content button { margin-top: 24px; }
+    .welcome-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
+
+    /* ===== استایل جشن تولد (بادکنک و کانفتی) ===== */
     .birthday-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; backdrop-filter: blur(5px); }
     .birthday-modal.hidden { display: none; }
     .birthday-box { background: var(--bg-card); border: 2px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(46, 204, 113, 0.3); position: relative; z-index: 2001; }
     .birthday-box h2 { color: var(--green); margin-bottom: 12px; font-size: 1.5rem; }
     .birthday-box p { color: var(--text); line-height: 1.6; font-size: 1rem; }
 
-    /* بادکنک‌ها و کانفتی */
     .balloon { position: fixed; bottom: -100px; width: 40px; height: 50px; border-radius: 50%; z-index: 1999; pointer-events: none; animation: floatUp 4s linear forwards; }
     .balloon::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(0,0,0,0.3); }
     @keyframes floatUp { to { transform: translateY(-120vh) rotate(10deg); } }
+    
     .confetti { position: fixed; top: -10px; width: 10px; height: 10px; z-index: 1999; pointer-events: none; animation: fall 3s linear forwards; }
     @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
   </style>
@@ -76,6 +81,7 @@
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
+    <!-- انجمن‌ها -->
     <section style="margin-bottom: 20px;">
       <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
       <div class="forum-grid">
@@ -88,17 +94,19 @@
       </div>
     </section>
 
-   <section class="big-league-card">
-  <h2 style="margin-bottom: 12px; font-size: 1.1rem;">🔗 دسترسی سریع</h2>
-  <div class="quick-access-wrapper">
-    <a href="counselor.html" class="forum-card"><span class="forum-icon">💬</span><span class="forum-name">مشاوره</span></a>
-    <a href="contact.html" class="forum-card"><span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span></a>
-    <a href="games.html" class="forum-card"><span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span></a>
-    <a href="mafia.html" class="forum-card"><span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span></a>
-    <a href="explore.html" class="forum-card"><span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span></a>
-    <a href="cinema.html" class="forum-card"><span class="forum-icon">🍿</span><span class="forum-name">سینما</span></a>
-  </div>
-</section>
+    <!-- دسترسی سریع (۳ ستونه) -->
+    <section class="big-league-card">
+      <h2 style="margin-bottom: 12px; font-size: 1.1rem;">🔗 دسترسی سریع</h2>
+      <div class="quick-access-wrapper">
+        <a href="counselor.html" class="forum-card"><span class="forum-icon">💬</span><span class="forum-name">مشاوره</span></a>
+        <a href="contact.html" class="forum-card"><span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span></a>
+        <a href="games.html" class="forum-card"><span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span></a>
+        <a href="mafia.html" class="forum-card"><span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span></a>
+        <a href="explore.html" class="forum-card"><span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span></a>
+        <a href="cinema.html" class="forum-card"><span class="forum-icon">🍿</span><span class="forum-name">سینما</span></a>
+      </div>
+    </section>
+
   </main>
 
   <nav class="bottom-nav">
@@ -109,7 +117,7 @@
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
-  <!-- مودال خوش‌آمدگویی قبلی -->
+  <!-- مودال خوش‌آمدگویی -->
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
       <span class="welcome-emoji">🌸</span>
@@ -176,18 +184,15 @@
             
             var isTodayBirthday = (today.getMonth() === bday.getMonth() && today.getDate() === bday.getDate());
             
-            // تاریخ دیروز
             var yesterday = new Date();
             yesterday.setDate(today.getDate() - 1);
             var wasYesterdayBirthday = (yesterday.getMonth() === bday.getMonth() && yesterday.getDate() === bday.getDate());
 
             if (isTodayBirthday) {
-              // امروز تولدشه!
               document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + profile.username + ' جان! 🌟 فردا بیا سایت، سورپرایز دوستات منتظرته! 🎁';
               document.getElementById('birthdayModal').classList.remove('hidden');
               playCelebration();
             } else if (wasYesterdayBirthday) {
-              // دیروز تولدش بوده، الان کادوها رو چک کن
               checkForGifts(uid);
             }
           }
@@ -204,9 +209,8 @@
     function checkForGifts(uid) {
       supabaseClient.from('gifts').select('*, sender:sender_id(username)').eq('receiver_id', uid).eq('is_claimed', false).then(function(res) {
         var gifts = res.data || [];
-        if (gifts.length === 0) return; // کادویی نیست
+        if (gifts.length === 0) return;
         
-        // پر کردن لیست کادوها توی مودال
         var list = document.getElementById('giftsListModal');
         list.innerHTML = '';
         gifts.forEach(function(g) {
@@ -226,7 +230,6 @@
         document.getElementById('giftsModal').classList.remove('hidden');
         playCelebration();
 
-        // دکمه دریافت همه هدایا
         document.getElementById('claimGiftsBtn').onclick = function() {
           supabaseClient.from('gifts').update({ is_claimed: true }).eq('receiver_id', uid).eq('is_claimed', false).then(function() {
             document.getElementById('giftsModal').classList.add('hidden');
@@ -238,8 +241,9 @@
 
     // ===== انیمیشن بادکنک و کانفتی =====
     function playCelebration() {
-      // بادکنک‌ها
       var colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
+      
+      // بادکنک‌ها
       for (var i = 0; i < 20; i++) {
         var balloon = document.createElement('div');
         balloon.className = 'balloon';
@@ -264,7 +268,7 @@
       }
     }
 
-    // ===== توابع اعلان و لیگ =====
+    // ===== لود اعلان‌ها =====
     function loadNotices() {
       supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
         var container = document.getElementById('noticesList');
@@ -287,6 +291,7 @@
       });
     }
 
+    // ===== لود لیگ =====
     function loadLeaderboard() {
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
         var container = document.getElementById('homeLeaderboard');
