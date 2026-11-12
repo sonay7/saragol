@@ -27,6 +27,16 @@
     .notice { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 0.95rem; }
     .notice-badge { background: var(--green); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
 
+    /* استایل ماموریت جدید */
+    .mission-box { background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(46,204,113,0.1)); border: 2px dashed var(--green); border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+    .mission-title { font-size: 1.1rem; font-weight: bold; color: var(--green); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .mission-desc { font-size: 0.85rem; line-height: 1.8; color: var(--text); margin-bottom: 12px; }
+    .mission-rule { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; background: var(--bg-card); padding: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 0.8rem; }
+    .mission-rule span:first-child { font-size: 1.2rem; }
+    
+    .progress-bar-bg { width: 100%; height: 14px; background: var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.5s; }
+
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
     .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
     .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
@@ -65,18 +75,39 @@
       <div id="noticesList"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <!-- ماموریت گروهی و دعوت (جدید) -->
-    <section class="big-league-card" id="missionSection" style="display:none;">
-      <h2><span>🎯 مأموریت سایت</span></h2>
-      <p style="font-size:0.9rem; line-height:1.6; margin-bottom:12px;">
-        ما داریم بزرگ می‌شیم! تا رسیدن به ۱۰ عضو، فقط <strong id="remainingUsers" style="color:var(--green);">...</strong> نفر مونده.
-        وقتی به ۱۰ نفر برسیم، به همه کاربران فعال <strong>۱۰ XP + نشان پیشگام</strong> هدیه داده می‌شه!
-      </p>
-      <div style="background: var(--border); border-radius: 10px; height: 12px; margin-bottom: 16px; overflow: hidden;">
-        <div id="missionProgressBar" style="background: linear-gradient(90deg, var(--green), var(--blue)); height: 100%; width: 0%; transition: width 0.5s;"></div>
+    <!-- ماموریت گروهی و دعوت (نسخه جدید) -->
+    <section id="missionSection" class="mission-box" style="display:none;">
+      <div class="mission-title">🎯 مأموریت بزرگ ساراگل</div>
+      
+      <div class="mission-desc">
+        ما می‌خوایم ساراگل رو بزرگ کنیم! همکلاسی‌هات رو دعوت کن تا هم خودت جایزه بگیری، هم کلاس‌ت معروف بشه. 🏆
       </div>
-      <button onclick="copyInviteLinkFromHome()" class="btn btn-green btn-full" style="padding: 14px; font-size: 1rem;">
-        🎁 دعوت از دوستان (کپی لینک)
+
+      <div class="mission-rule">
+        <span>👤</span>
+        <div><strong>جایزه دعوت:</strong> هر نفر که دعوت کنی ۵ XP بگیر. اگه ۳ نفر رو دعوت کنی، ۱۰ XP جایزه اضافه بگیر!</div>
+      </div>
+      
+      <div class="mission-rule">
+        <span>🏫</span>
+        <div><strong>جنگ کلاس‌ها:</strong> کلاسی که بیشترین کاربر رو به سایت بیاره، یه نشان طلایی اختصاصی <b>«کلاس برتر»</b> می‌گیره.</div>
+      </div>
+
+      <div class="mission-rule">
+        <span>🎁</span>
+        <div><strong>هدیه نهایی:</strong> وقتی به ۱۰ نفر برسیم، به همه کاربران فعال ۱۰ XP + نشان <b>«پیشگام»</b> هدیه داده می‌شه.</div>
+      </div>
+
+      <div style="margin-top: 12px; font-size: 0.8rem; text-align: center; color: var(--text-dim);">
+        تا رسیدن به ۱۰ نفر، فقط <strong id="remainingUsers" style="color:var(--green); font-size: 1.1rem;">...</strong> نفر مونده!
+      </div>
+      
+      <div class="progress-bar-bg">
+        <div id="missionProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+      </div>
+
+      <button onclick="copyInviteLinkFromHome()" class="btn btn-green btn-full" style="padding: 14px; font-size: 1rem; margin-top: 8px;">
+        📢 دعوت از همکلاسی‌ها (کپی لینک)
       </button>
     </section>
 
@@ -161,7 +192,7 @@
 
       loadNotices();
       loadLeaderboard();
-      loadMissionData(); // لود ماموریت گروهی
+      loadMissionData();
 
       supabaseClient.auth.getUser().then(function(res) {
         if (!res.data.user) return;
@@ -195,22 +226,19 @@
       });
     });
 
-    // ===== ماموریت گروهی و دعوت =====
     function loadMissionData() {
       supabaseClient.rpc('get_total_users_count').then(function(res) {
         if (res.error) return;
         var count = res.data || 0;
         var target = 10;
         
+        document.getElementById('missionSection').style.display = 'block';
+        
         if (count >= target) {
-          // ماموریت انجام شده
-          document.getElementById('missionSection').style.display = 'block';
           document.getElementById('remainingUsers').textContent = '0';
           document.getElementById('missionProgressBar').style.width = '100%';
-          document.querySelector('#missionSection h2 span').textContent = '🎉 ماموریت انجام شد!';
-          document.getElementById('missionSection').querySelector('p').innerHTML = 'ما به ۱۰ عضو رسیدیم! به زودی نشان پیشگام به همه کاربران فعال داده می‌شه.';
+          document.getElementById('missionSection').querySelector('.mission-desc').innerHTML = '🎉 ما به ۱۰ عضو رسیدیم! ماموریت با موفقیت انجام شد. به زودی نشان پیشگام به همه کاربران فعال داده می‌شه.';
         } else {
-          document.getElementById('missionSection').style.display = 'block';
           var remaining = target - count;
           document.getElementById('remainingUsers').textContent = remaining;
           var percent = (count / target) * 100;
@@ -227,7 +255,7 @@
           
           var link = 'https://sonay7.github.io/saragol/signup.html?ref=' + p.data.invite_code;
           navigator.clipboard.writeText(link).then(function() {
-            alert('✅ لینک دعوت کپی شد! برای دوستت بفرست.');
+            alert('✅ لینک دعوت کپی شد! برای همکلاسی‌هات بفرست.');
           }).catch(function() {
             prompt('لینک دعوت رو کپی کن:', link);
           });
@@ -235,7 +263,6 @@
       });
     };
 
-    // ===== بقیه توابع =====
     function checkForGifts(uid) {
       supabaseClient.from('gifts').select('*, sender:sender_id(username)').eq('receiver_id', uid).eq('is_claimed', false).then(function(res) {
         var gifts = res.data || [];
