@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سینما | تماشای فیلم</title>
+  <title>سینما ساراگل | تماشای فیلم</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .cinema-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding-bottom: 80px; }
@@ -29,6 +29,8 @@
 <header class="header">
   <div class="logo">ساراگل</div>
   <div class="user-area">
+    <!-- ⬇️ این تگ رو اضافه کردم تا خطا نده ⬇️ -->
+    <span class="user-name">—</span>
     <span id="myXp" style="color:#f1c40f; font-weight:bold; font-size:0.9rem;">... XP</span>
     <div class="avatar">—</div>
   </div>
@@ -81,7 +83,6 @@
     
     supabaseClient.from('cinema_videos').select('*').eq('is_active', true).order('created_at', { ascending: false }).then(res => {
       
-      // ⬇️ این دو خط برای دیباگ اضافه شدن. اگه فیلم نیومد، برو کنسول (F12) و اینا رو چک کن ⬇️
       console.log("دیتای فیلم‌ها:", res.data);
       console.log("خطای فیلم‌ها:", res.error);
       
@@ -100,7 +101,7 @@
       res.data.forEach(vid => {
         var hasTicket = myTickets.includes(vid.id);
         
-        // ⬇️ قفل کردن اسم فیلم (اگه بلیط نداشت) ⬇️
+        // قفل کردن اسم فیلم (اگه بلیط نداشت)
         var displayTitle = hasTicket ? vid.title : '🔒 فیلم سینمایی (برای دیدن اسم بلیط بخر)';
         
         var mediaHtml = '';
@@ -138,7 +139,7 @@
           <div class="video-wrapper">
             ${mediaHtml}
           </div>
-          ${buyTicketHtml}
+          ${buyBtnHtml}
         `;
         grid.appendChild(div);
       });
