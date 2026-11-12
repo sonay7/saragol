@@ -12,7 +12,6 @@
     
     .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 80px; }
     
-    /* استایل کارت‌ها (ساده و تمیز) */
     .shop-card { 
       position: relative; background: var(--bg-card); border: 1px solid var(--border); 
       border-radius: 16px; padding: 12px; text-align: center; 
@@ -25,10 +24,13 @@
     .shop-desc { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px; min-height: 30px; }
     .shop-price { color: #f1c40f; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
     
+    /* دکمه خرید (سبز) */
     .buy-btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    .buy-btn:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; }
     
-    /* دکمه استفاده (برای تم و فونت) */
+    /* دکمه خریداری شده (خاکستری) */
+    .btn-bought { background: #444 !important; color: #888 !important; cursor: not-allowed !important; }
+    
+    /* دکمه استفاده (آبی) */
     .equip-btn { background: var(--blue); color: #fff; border: none; padding: 8px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 6px; font-size: 0.8rem; }
 
     /* دکمه‌های ادمین */
@@ -130,7 +132,7 @@
   var isAdmin = false;
   var currentCategory = 'avatar';
   var editingItemId = null;
-  var isBuying = false; // جلوگیری از کلیک سریع دوباره
+  var isBuying = false;
 
   supabaseClient.auth.getUser().then(res => {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
@@ -177,21 +179,22 @@
       }
       
       res.data.forEach(item => {
+        // چک میکنیم آیا کاربر این آیتم رو داره یا نه
         var isBought = myInventory.some(i => i.item_id === item.id);
         var canAfford = myXp >= item.price;
         
-        // ===== منطق دکمه‌ها =====
         var btnHtml = '';
+        
         if (isBought) {
-          // اگر خریده بود: دکمه خریداری شده
-          btnHtml = `<button class="buy-btn" disabled>خریداری شده</button>`;
+          // اگر خریده بود
+          btnHtml = `<button class="buy-btn btn-bought" disabled>خریداری شده</button>`;
           
-          // اگر تم یا فونت بود، دکمه استفاده رو هم زیرش اضافه کن
+          // اگر آیتم از نوع تم یا فونت بود، دکمه استفاده رو هم اضافه کن
           if (category === 'theme' || category === 'font') {
             btnHtml += `<button class="equip-btn" onclick="applyItem('${category}', '${item.effect_value}')">✨ استفاده</button>`;
           }
         } else {
-          // اگر نخریده بود: دکمه خرید
+          // اگر نخریده بود
           var btnDisabled = canAfford ? '' : 'disabled';
           btnHtml = `<button class="buy-btn" id="buyBtn_${item.id}" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">خرید</button>`;
         }
@@ -227,34 +230,33 @@
   }
 
   window.buyItem = function(itemId, price, type, name) {
-    if (isBuying) return; // جلوگیری از کلیک سریع
+    if (isBuying) return;
     if (myXp < price) { alert('XP کافی نداری!'); return; }
     if (!confirm('آیا ' + price + ' XP برای خرید ' + name + ' پرداخت می‌کنی؟')) return;
 
     isBuying = true;
-    var btn = document.getElementById('buyBtn_' + itemId);
-    if (btn) { btn.disabled = true; btn.textContent = 'در حال خرید...'; }
 
-    var newXp = myXp - price;
-    supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentUser.id).then(res => {
+    // کم کردن XP
+    supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(res => {
       if (res.error) { alert('خطا در خرید'); isBuying = false; return; }
       
+      // اضافه کردن به اینونتوری
       supabaseClient.from('user_inventory').insert({
         user_id: currentUser.id, item_type: type, item_id: itemId
       }).then(insertRes => {
         isBuying = false;
+        
         if (insertRes.error) {
           alert('شما قبلاً این آیتم را خریده‌اید!');
-          myXp += price; // برگرداندن XP
+          // برگردوندن XP (چون خطا داد)
           supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
-          loadTab(type);
+          location.reload(); // رفرش صفحه
           return;
         }
         
-        myXp = newXp;
-        document.getElementById('myXp').textContent = myXp + ' XP';
         alert('🎉 خرید با موفقیت انجام شد!');
-        loadInventoryAndTab(type);
+        // ⬇️ این خط مهم‌ترین بخشه: صفحه رو کامل رفرش می‌کنه تا دکمه خریداری شده بیاد
+        location.reload(); 
       });
     });
   };
