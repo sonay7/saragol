@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فروشگاه | ساراگل</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .shop-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; scrollbar-width: none; }
+    .shop-tab { background: var(--bg-card); color: var(--text-dim); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-family: inherit; cursor: pointer; white-space: nowrap; }
+    .shop-tab.active { background: var(--green); color: #fff; border-color: var(--green); font-weight: bold; }
+    
+    .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .shop-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+    .shop-icon { font-size: 3rem; margin-bottom: 10px; }
+    .shop-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid var(--border); }
+    .shop-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; color: var(--text); }
+    .shop-desc { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px; min-height: 30px; }
+    .shop-price { color: #f1c40f; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
+    .buy-btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .buy-btn:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; }
+    .buy-btn.bought { background: #27ae60; color: #fff; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span id="myXp" style="color:#f1c40f; font-weight:bold; font-size:0.9rem;">... XP</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <h2 style="text-align:center; margin-bottom:20px;">🛒 فروشگاه ساراگل</h2>
+  
+  <div class="shop-tabs" id="shopTabs">
+    <button class="shop-tab active" data-cat="avatar">👤 عکس پروفایل</button>
+    <button class="shop-tab" data-cat="theme">🎨 تم‌ها</button>
+    <button class="shop-tab" data-cat="font">🖋️ فونت‌ها</button>
+    <button class="shop-tab" data-cat="mafia">🕵️ مافیا</button>
+    <button class="shop-tab" data-cat="chat">💬 چت</button>
+  </div>
+
+  <div class="shop-grid" id="itemsGrid">
+    <p class="lock-note" style="grid-column: span 2;">در حال بارگذاری...</p>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="shop.html" class="nav-item active">🛒 فروشگاه</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+
+<script>
+  var currentUser = null;
+  var myXp = 0;
+  var myInventory = [];
+
+  supabaseClient.auth.getUser().then(res => {
+    if (!res.data.user) { window.location.href = 'login.html'; return; }
+    currentUser = res.data.user;
+    
+    supabaseClient.from('profiles').select('xp').eq('id', currentUser.id).single().then(p => {
+      myXp = p.data.xp || 0;
+      document.getElementById('myXp').textContent = myXp + ' XP';
+      
+      supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
+        myInventory = inv.data || [];
+        loadTab('avatar');
+      });
+    });
+  });
+
+  document.querySelectorAll('.shop-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      loadTab(this.getAttribute('data-cat'));
+    });
+  });
+
+  function loadTab(category) {
+    var grid = document.getElementById('itemsGrid');
+    grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">در حال بارگذاری...</p>';
+    
+    supabaseClient.from('shop_items').select('*').eq('category', category).eq('is_active', true).then(res => {
+      grid.innerHTML = '';
+      if (!res.data || res.data.length === 0) {
+        grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">آیتمی در این دسته وجود ندارد.</p>';
+        return;
+      }
+      
+      res.data.forEach(item => {
+        var isBought = myInventory.some(i => i.item_id === item.id);
+        var canAfford = myXp >= item.price;
+        
+        var btnClass = isBought ? 'buy-btn bought' : 'buy-btn';
+        var btnText = isBought ? '✓ خریداری شده' : 'خرید';
+        var btnDisabled = (isBought || !canAfford) ? 'disabled' : '';
+        
+        // ⬇️ منطق نمایش عکس یا ایموجی ⬇️
+        var mediaHtml = item.image_url 
+          ? `<img src="${item.image_url}" class="shop-img" alt="${item.name}">` 
+          : `<div class="shop-icon">${item.icon || '📦'}</div>`;
+
+        var div = document.createElement('div');
+        div.className = 'shop-card';
+        div.innerHTML = `
+          <div>
+            ${mediaHtml}
+            <div class="shop-name">${item.name}</div>
+            <div class="shop-desc">${item.description || ''}</div>
+          </div>
+          <div style="width:100%;">
+            <div class="shop-price">${item.price} XP</div>
+            <button class="${btnClass}" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">
+              ${btnText}
+            </button>
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    });
+  }
+
+  window.buyItem = function(itemId, price, type, name) {
+    if (myXp < price) { alert('XP کافی نداری!'); return; }
+    if (!confirm('آیا ' + price + ' XP برای خرید ' + name + ' پرداخت می‌کنی؟')) return;
+
+    var newXp = myXp - price;
+    supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentUser.id).then(res => {
+      if (res.error) { alert('خطا در خرید'); return; }
+      
+      supabaseClient.from('user_inventory').insert({
+        user_id: currentUser.id, item_type: type, item_id: itemId
+      }).then(() => {
+        myXp = newXp;
+        document.getElementById('myXp').textContent = myXp + ' XP';
+        loadTab(type);
+        alert('🎉 خرید با موفقیت انجام شد!');
+      });
+    });
+  };
+</script>
+</body>
+</html>
