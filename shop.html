@@ -64,7 +64,8 @@
 <div id="addItemModal" class="modal hidden">
   <div class="modal-box">
     <h3 style="margin-bottom: 12px;">➕ افزودن آیتم جدید</h3>
-    <input id="addName" class="input" placeholder="نام آیتم" style="margin-bottom: 8px;">
+    <input id="addName" class="input" placeholder="نام آیتم (الزامی)" style="margin-bottom: 8px;">
+    
     <select id="addCategory" class="input" style="margin-bottom: 8px;">
       <option value="avatar">عکس پروفایل</option>
       <option value="theme">تم</option>
@@ -72,10 +73,26 @@
       <option value="mafia">مافیا</option>
       <option value="chat">چت</option>
     </select>
-    <input id="addPrice" type="number" class="input" placeholder="قیمت (XP)" style="margin-bottom: 8px;">
-    <input id="addImage" class="input" placeholder="لینک عکس (اختیاری)" style="margin-bottom: 8px;">
+    
+    <input id="addPrice" type="number" class="input" placeholder="قیمت (XP) - الزامی" style="margin-bottom: 8px;">
+    
+    <!-- بخش انتخاب عکس یا ایموجی -->
+    <div style="background: var(--bg); padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 1px dashed var(--border);">
+      <p style="font-size: 0.8rem; margin-bottom: 6px; color: var(--text-dim);">انتخاب تصویر (یکی از دو روش):</p>
+      <label style="font-size: 0.85rem; display: block; margin-bottom: 6px;">
+        📁 از گالری عکس انتخاب کن:
+        <input id="addImageFile" type="file" accept="image/*" class="input" style="margin-top: 4px; padding: 6px;">
+      </label>
+      <p style="font-size: 0.75rem; color: var(--text-dim); text-align: center; margin: 4px 0;">یا</p>
+      <label style="font-size: 0.85rem; display: block;">
+        😀 یه ایموجی تایپ کن:
+        <input id="addEmoji" type="text" class="input" placeholder="مثلاً 🎨 یا 🕵️" style="margin-top: 4px;">
+      </label>
+    </div>
+
     <input id="addDesc" class="input" placeholder="توضیحات (اختیاری)" style="margin-bottom: 12px;">
-    <button class="btn btn-green btn-full" onclick="submitNewItem()">ذخیره و افزودن به فروشگاه</button>
+    
+    <button id="saveItemBtn" class="btn btn-green btn-full" onclick="submitNewItem()">ذخیره و افزودن به فروشگاه</button>
     <button class="btn btn-dim btn-full" style="margin-top: 8px;" onclick="closeAddItemModal()">انصراف</button>
   </div>
 </div>
@@ -96,23 +113,19 @@
   var currentUser = null;
   var myXp = 0;
   var myInventory = [];
-  var currentCategory = 'avatar'; // برای اینکه بعد از اضافه کردن، همون تب رفرش بشه
 
   supabaseClient.auth.getUser().then(res => {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
     currentUser = res.data.user;
     
-    // گرفتن اطلاعات کاربر (XP و نقش)
     supabaseClient.from('profiles').select('xp, role').eq('id', currentUser.id).single().then(p => {
       myXp = p.data.xp || 0;
       document.getElementById('myXp').textContent = myXp + ' XP';
       
-      // اگه ادمین بود، دکمه + رو نشون بده
       if (p.data.role === 'admin' || p.data.role === 'superadmin') {
         document.getElementById('adminFab').classList.remove('hidden');
       }
       
-      // گرفتن اینونتوری
       supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
         myInventory = inv.data || [];
         loadTab('avatar');
@@ -124,8 +137,7 @@
     tab.addEventListener('click', function() {
       document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
-      currentCategory = this.getAttribute('data-cat');
-      loadTab(currentCategory);
+      loadTab(this.getAttribute('data-cat'));
     });
   });
 
@@ -200,35 +212,67 @@
     document.getElementById('addItemModal').classList.add('hidden');
   };
 
-  window.submitNewItem = function() {
+  // تابع آپلود عکس و ثبت آیتم
+  window.submitNewItem = async function() {
     var name = document.getElementById('addName').value.trim();
     var cat = document.getElementById('addCategory').value;
     var price = parseInt(document.getElementById('addPrice').value);
-    var img = document.getElementById('addImage').value.trim();
+    var emoji = document.getElementById('addEmoji').value.trim();
     var desc = document.getElementById('addDesc').value.trim();
+    var fileInput = document.getElementById('addImageFile');
+    var file = fileInput.files[0];
+    var btn = document.getElementById('saveItemBtn');
 
     if (!name || !price || price < 1) { alert('نام و قیمت رو درست وارد کن'); return; }
+    if (!file && !emoji) { alert('یا یه عکس انتخاب کن یا یه ایموجی بنویس!'); return; }
 
+    btn.disabled = true;
+    btn.textContent = 'در حال ذخیره...';
+    var imageUrl = null;
+
+    // اگه کاربر فایل عکس انتخاب کرده بود
+    if (file) {
+      var fileName = 'shop_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+      
+      // آپلود به باکتی که برای کتاب‌ها هم استفاده می‌کردیم (videos)
+      var uploadRes = await supabaseClient.storage.from('videos').upload(fileName, file);
+      
+      if (uploadRes.error) {
+        alert('خطا در آپلود عکس: ' + uploadRes.error.message);
+        btn.disabled = false;
+        btn.textContent = 'ذخیره و افزودن به فروشگاه';
+        return;
+      }
+      
+      // گرفتن لینک عکس آپلود شده
+      imageUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
+    }
+
+    // ثبت توی دیتابیس
     supabaseClient.from('shop_items').insert({
       name: name,
       category: cat,
       price: price,
-      image_url: img || null,
-      description: desc,
-      icon: '📦'
+      image_url: imageUrl, // اگه عکس آپلود شده بود لینکش، وگرنه null
+      icon: emoji || '📦',  // اگه ایموجی داشت همون، وگرنه یه ایموجی پیش‌فرض
+      description: desc
     }).then(res => {
+      btn.disabled = false;
+      btn.textContent = 'ذخیره و افزودن به فروشگاه';
+      
       if (res.error) { alert('خطا: ' + res.error.message); return; }
       
       // بستن مودال و خالی کردن فیلدها
       closeAddItemModal();
       document.getElementById('addName').value = '';
       document.getElementById('addPrice').value = '';
-      document.getElementById('addImage').value = '';
+      document.getElementById('addImageFile').value = '';
+      document.getElementById('addEmoji').value = '';
       document.getElementById('addDesc').value = '';
       
       alert('✅ آیتم با موفقیت به فروشگاه اضافه شد!');
       
-      // رفتن به همون دسته‌ای که آیتم رو اضافه کردی
+      // رفتن به همون دسته
       document.querySelectorAll('.shop-tab').forEach(t => {
         if (t.getAttribute('data-cat') === cat) t.click();
       });
