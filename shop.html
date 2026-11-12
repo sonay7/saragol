@@ -10,7 +10,7 @@
     .shop-tab { background: var(--bg-card); color: var(--text-dim); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-family: inherit; cursor: pointer; white-space: nowrap; }
     .shop-tab.active { background: var(--green); color: #fff; border-color: var(--green); font-weight: bold; }
     
-    .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 80px; }
     .shop-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
     .shop-icon { font-size: 3rem; margin-bottom: 10px; }
     .shop-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid var(--border); }
@@ -20,6 +20,15 @@
     .buy-btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .buy-btn:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; }
     .buy-btn.bought { background: #27ae60; color: #fff; }
+
+    /* دکمه شناور افزودن ادمین */
+    .admin-fab { position: fixed; bottom: 90px; left: 20px; width: 60px; height: 60px; background: var(--green); color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; border: none; }
+    .admin-fab:hover { transform: scale(1.1); }
+
+    /* استایل مودال */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .modal.hidden { display: none; }
+    .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; }
   </style>
 </head>
 <body>
@@ -48,6 +57,29 @@
   </div>
 </main>
 
+<!-- دکمه شناور که فقط برای ادمین نشون داده میشه -->
+<button class="admin-fab hidden" id="adminFab" onclick="openAddItemModal()">+</button>
+
+<!-- مودال اضافه کردن آیتم -->
+<div id="addItemModal" class="modal hidden">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 12px;">➕ افزودن آیتم جدید</h3>
+    <input id="addName" class="input" placeholder="نام آیتم" style="margin-bottom: 8px;">
+    <select id="addCategory" class="input" style="margin-bottom: 8px;">
+      <option value="avatar">عکس پروفایل</option>
+      <option value="theme">تم</option>
+      <option value="font">فونت</option>
+      <option value="mafia">مافیا</option>
+      <option value="chat">چت</option>
+    </select>
+    <input id="addPrice" type="number" class="input" placeholder="قیمت (XP)" style="margin-bottom: 8px;">
+    <input id="addImage" class="input" placeholder="لینک عکس (اختیاری)" style="margin-bottom: 8px;">
+    <input id="addDesc" class="input" placeholder="توضیحات (اختیاری)" style="margin-bottom: 12px;">
+    <button class="btn btn-green btn-full" onclick="submitNewItem()">ذخیره و افزودن به فروشگاه</button>
+    <button class="btn btn-dim btn-full" style="margin-top: 8px;" onclick="closeAddItemModal()">انصراف</button>
+  </div>
+</div>
+
 <nav class="bottom-nav">
   <a href="index.html" class="nav-item">🏠 خانه</a>
   <a href="study.html" class="nav-item">⏱ مطالعه</a>
@@ -64,15 +96,23 @@
   var currentUser = null;
   var myXp = 0;
   var myInventory = [];
+  var currentCategory = 'avatar'; // برای اینکه بعد از اضافه کردن، همون تب رفرش بشه
 
   supabaseClient.auth.getUser().then(res => {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
     currentUser = res.data.user;
     
-    supabaseClient.from('profiles').select('xp').eq('id', currentUser.id).single().then(p => {
+    // گرفتن اطلاعات کاربر (XP و نقش)
+    supabaseClient.from('profiles').select('xp, role').eq('id', currentUser.id).single().then(p => {
       myXp = p.data.xp || 0;
       document.getElementById('myXp').textContent = myXp + ' XP';
       
+      // اگه ادمین بود، دکمه + رو نشون بده
+      if (p.data.role === 'admin' || p.data.role === 'superadmin') {
+        document.getElementById('adminFab').classList.remove('hidden');
+      }
+      
+      // گرفتن اینونتوری
       supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
         myInventory = inv.data || [];
         loadTab('avatar');
@@ -84,7 +124,8 @@
     tab.addEventListener('click', function() {
       document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
-      loadTab(this.getAttribute('data-cat'));
+      currentCategory = this.getAttribute('data-cat');
+      loadTab(currentCategory);
     });
   });
 
@@ -107,7 +148,6 @@
         var btnText = isBought ? '✓ خریداری شده' : 'خرید';
         var btnDisabled = (isBought || !canAfford) ? 'disabled' : '';
         
-        // ⬇️ منطق نمایش عکس یا ایموجی ⬇️
         var mediaHtml = item.image_url 
           ? `<img src="${item.image_url}" class="shop-img" alt="${item.name}">` 
           : `<div class="shop-icon">${item.icon || '📦'}</div>`;
@@ -147,6 +187,50 @@
         document.getElementById('myXp').textContent = myXp + ' XP';
         loadTab(type);
         alert('🎉 خرید با موفقیت انجام شد!');
+      });
+    });
+  };
+
+  // ===== توابع ادمین =====
+  window.openAddItemModal = function() {
+    document.getElementById('addItemModal').classList.remove('hidden');
+  };
+
+  window.closeAddItemModal = function() {
+    document.getElementById('addItemModal').classList.add('hidden');
+  };
+
+  window.submitNewItem = function() {
+    var name = document.getElementById('addName').value.trim();
+    var cat = document.getElementById('addCategory').value;
+    var price = parseInt(document.getElementById('addPrice').value);
+    var img = document.getElementById('addImage').value.trim();
+    var desc = document.getElementById('addDesc').value.trim();
+
+    if (!name || !price || price < 1) { alert('نام و قیمت رو درست وارد کن'); return; }
+
+    supabaseClient.from('shop_items').insert({
+      name: name,
+      category: cat,
+      price: price,
+      image_url: img || null,
+      description: desc,
+      icon: '📦'
+    }).then(res => {
+      if (res.error) { alert('خطا: ' + res.error.message); return; }
+      
+      // بستن مودال و خالی کردن فیلدها
+      closeAddItemModal();
+      document.getElementById('addName').value = '';
+      document.getElementById('addPrice').value = '';
+      document.getElementById('addImage').value = '';
+      document.getElementById('addDesc').value = '';
+      
+      alert('✅ آیتم با موفقیت به فروشگاه اضافه شد!');
+      
+      // رفتن به همون دسته‌ای که آیتم رو اضافه کردی
+      document.querySelectorAll('.shop-tab').forEach(t => {
+        if (t.getAttribute('data-cat') === cat) t.click();
       });
     });
   };
