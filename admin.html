@@ -126,7 +126,16 @@
         <p id="directMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
       </section>
     </div>
-
+<div class="admin-card" style="margin-top:20px; background:var(--bg-card); padding:16px; border-radius:12px;">
+  <h3>🎬 مدیریت سینما (افزودن فیلم)</h3>
+  <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">لینک ویدیو رو باید به صورت <b>Embed</b> از آپارات کپی کنی (مثلاً با کلمه embed داخلش باشه).</p>
+  <input id="cinemaTitle" class="input" placeholder="اسم فیلم" style="margin-bottom:8px;">
+  <input id="cinemaDesc" class="input" placeholder="توضیحات کوتاه" style="margin-bottom:8px;">
+  <input id="cinemaUrl" class="input" placeholder="لینک Embed آپارات" style="margin-bottom:8px;">
+  <input id="cinemaPrice" type="number" class="input" placeholder="قیمت بلیط (XP)" style="margin-bottom:8px;">
+  <button onclick="addCinemaVideo()" class="btn btn-green btn-full">➕ افزودن به سینما</button>
+  <p id="cinemaMsg" style="font-size:0.85rem; margin-top:8px; text-align:center;"></p>
+</div>
     <!-- ===== تب پیام‌ها ===== -->
     <div id="tab-inbox" class="admin-tab-content hidden">
       <section>
