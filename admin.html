@@ -20,6 +20,12 @@
     
     .tab-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-family: inherit; color: var(--text); margin-bottom: 10px; font-size: 0.9rem; }
     .tab-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+    /* استایل کشوی داخلی برای کاربران */
+    details.inner-accordion { background: rgba(0,0,0,0.1); border: 1px dashed var(--border); margin-top: 16px; }
+    details.inner-accordion[open] { border-style: solid; }
+    details.inner-accordion summary.accordion-header { font-size: 0.9rem; padding: 12px; color: var(--blue); }
+    details.inner-accordion summary.accordion-header::after { color: var(--blue); }
   </style>
 </head>
 <body>
@@ -115,13 +121,21 @@
       </div>
     </details>
 
+    <!-- بخش کاربران با کشوی داخلی -->
     <details class="accordion">
       <summary class="accordion-header">👥 کاربران و درخواست‌ها</summary>
       <div class="accordion-content">
+        
         <h4 style="font-size: 0.9rem; margin-bottom: 8px;">درخواست‌های عضویت:</h4>
         <div id="requestsList"></div>
-        <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">لیست کاربران:</h4>
-        <div id="usersList"></div>
+        
+        <details class="accordion inner-accordion">
+          <summary class="accordion-header">📋 لیست کاربران تایید شده</summary>
+          <div class="accordion-content">
+            <div id="usersList"></div>
+          </div>
+        </details>
+
       </div>
     </details>
 
