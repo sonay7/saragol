@@ -573,3 +573,68 @@ window.delWheelSlice = function(id) {
   if (!confirm('حذف بشه؟')) return;
   supabaseClient.from('wheel_config').delete().eq('id', id).then(function() { loadAdminWheel(); });
 };
+// ===== پایش کاربران =====
+window.loadUserMonitoring = function() {
+  var inactiveList = document.getElementById('inactiveUsersList');
+  var wanderingList = document.getElementById('wanderingUsersList');
+  if (!inactiveList || !wanderingList) return;
+  
+  inactiveList.innerHTML = '<p class="lock-note">در حال بارگذاری...</p>';
+  wanderingList.innerHTML = '<p class="lock-note">در حال بارگذاری...</p>';
+  
+  // کاربران غیرفعال
+  supabaseClient.from('profiles').select('*').eq('status', 'inactive').then(function(res) {
+    inactiveList.innerHTML = '';
+    var rows = res.data || [];
+    if (rows.length === 0) { inactiveList.innerHTML = '<p class="lock-note">کاربر غیرفعالی وجود ندارد.</p>'; return; }
+    rows.forEach(function(u) {
+      var daysAgo = u.last_seen ? Math.floor((Date.now() - new Date(u.last_seen).getTime()) / (1000*60*60*24)) : '?';
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>😴 ' + u.username + '</strong><span class="admin-sub">' + u.class_name + ' - ' + daysAgo + ' روز غیرفعال</span></div><button class="btn btn-green btn-sm" onclick="reactivateUser(\'' + u.id + '\')">فعال‌سازی مجدد</button>';
+      inactiveList.appendChild(div);
+    });
+  });
+  
+  // کاربران غایب 3-9 روز
+  supabaseClient.from('profiles').select('*').eq('status', 'approved').then(function(res) {
+    wanderingList.innerHTML = '';
+    var rows = (res.data || []).filter(function(u) {
+      if (!u.last_seen) return false;
+      var days = Math.floor((Date.now() - new Date(u.last_seen).getTime()) / (1000*60*60*24));
+      return days >= 3;
+    }).sort(function(a, b) { return new Date(a.last_seen) - new Date(b.last_seen); });
+    
+    if (rows.length === 0) { wanderingList.innerHTML = '<p class="lock-note">همه کاربران فعال هستند ✅</p>'; return; }
+    
+    rows.forEach(function(u) {
+      var daysAgo = Math.floor((Date.now() - new Date(u.last_seen).getTime()) / (1000*60*60*24));
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>💤 ' + u.username + '</strong><span class="admin-sub">' + u.class_name + ' - ' + daysAgo + ' روز غیبت</span></div>';
+      wanderingList.appendChild(div);
+    });
+  });
+};
+
+window.reactivateUser = function(id) {
+  if (!confirm('این کاربر دوباره فعال بشه؟')) return;
+  supabaseClient.from('profiles').update({ status: 'approved', last_seen: new Date().toISOString() }).eq('id', id).then(function() {
+    loadUserMonitoring();
+  });
+};
+
+window.deactivateInactive = function() {
+  if (!confirm('کاربرانی که بیش از ۱۰ روز غیرفعال هستند، غیرفعال شوند؟')) return;
+  var tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+  supabaseClient.from('profiles').update({ status: 'inactive' }).eq('status', 'approved').lt('last_seen', tenDaysAgo).then(function(res) {
+    if (res.error) { alert('خطا: ' + res.error.message); return; }
+    alert('✅ کاربران ۱۰ روز به بالا غیرفعال شدند.');
+    loadUserMonitoring();
+  });
+};
+
+// لود اولیه
+if (document.getElementById('inactiveUsersList')) {
+  loadUserMonitoring();
+}
