@@ -14,14 +14,10 @@
     details[open] summary.accordion-header::after { transform: rotate(180deg); color: var(--green); }
     .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
     .admin-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }
     .admin-sub { font-size: 0.78rem; color: var(--text-dim); display: block; margin-top: 4px; }
-    
     .tab-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-family: inherit; color: var(--text); margin-bottom: 10px; font-size: 0.9rem; }
     .tab-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
-
-    /* استایل کشوی داخلی برای کاربران */
     details.inner-accordion { background: rgba(0,0,0,0.1); border: 1px dashed var(--border); margin-top: 16px; }
     details.inner-accordion[open] { border-style: solid; }
     details.inner-accordion summary.accordion-header { font-size: 0.9rem; padding: 12px; color: var(--blue); }
@@ -121,21 +117,34 @@
       </div>
     </details>
 
-    <!-- بخش کاربران با کشوی داخلی -->
+    <!-- بخش جدید: پایش کاربران -->
+    <details class="accordion">
+      <summary class="accordion-header">👁️ پایش کاربران (غیبت و غیرفعال)</summary>
+      <div class="accordion-content">
+        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+          <button class="btn btn-blue btn-sm" onclick="loadUserMonitoring()" style="flex:1;">🔄 رفرش لیست</button>
+          <button class="btn btn-dim btn-sm" onclick="deactivateInactive()" style="flex:1; color:#e74c3c; border-color:#e74c3c;">⚠️ غیرفعال کردن ۱۰ روز به بالا</button>
+        </div>
+        
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">😴 کاربران غیرفعال (نیاز به فعال‌سازی):</h4>
+        <div id="inactiveUsersList"></div>
+        
+        <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">💤 کاربران نیازمند توجه (۳ روز به بالا):</h4>
+        <div id="wanderingUsersList"></div>
+      </div>
+    </details>
+
     <details class="accordion">
       <summary class="accordion-header">👥 کاربران و درخواست‌ها</summary>
       <div class="accordion-content">
-        
         <h4 style="font-size: 0.9rem; margin-bottom: 8px;">درخواست‌های عضویت:</h4>
         <div id="requestsList"></div>
-        
         <details class="accordion inner-accordion">
           <summary class="accordion-header">📋 لیست کاربران تایید شده</summary>
           <div class="accordion-content">
             <div id="usersList"></div>
           </div>
         </details>
-
       </div>
     </details>
 
@@ -175,7 +184,6 @@
         <input id="directFile" type="file" class="input" style="margin-bottom: 8px; padding: 8px;">
         <button id="directUploadBtn" class="btn btn-green btn-full">آپلود و انتشار</button>
         <p id="directMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
-
         <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">محتوای در انتظار تایید:</h4>
         <div style="display: flex; gap: 8px; margin-bottom: 10px;">
           <button class="tab-btn active" data-tab="inbox-private">پیام‌ها</button>
