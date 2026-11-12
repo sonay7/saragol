@@ -4,25 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ساراگل | مدرسه‌ی ما</title>
-  <meta name="description" content="ساراگل، پلتفرم آموزشی و رقابتی دانش‌آموزان با سیستم مطالعه، لیگ، بازی و کتاب‌خوانی.">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* استایل اختصاصی برای دسترسی سریع تا دقیقاً وسط‌چین بشه */
-    .quick-access-wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-    }
-    .quick-access-wrapper .forum-card {
-      width: calc(33.333% - 12px);
-      min-width: 90px;
-    }
+    .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
+    .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
+    .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; margin-bottom: 20px; }
+    .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
+    .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
+    .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
+    
+    /* انجمن‌ها */
+    .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .forum-icon { font-size: 3rem; }
+    .forum-name { font-size: 1rem; font-weight: 600; }
+
+    /* دسترسی سریع */
+    .quick-access-wrapper { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 12px; }
+    .quick-access-wrapper .forum-card { grid-column: span 2; padding: 14px 8px; }
+    .quick-access-wrapper .forum-card:nth-child(4) { grid-column: 2 / span 2; }
+    .quick-access-wrapper .forum-card:nth-child(5) { grid-column: 4 / span 2; }
     @media (max-width: 480px) {
-      .quick-access-wrapper .forum-card {
-        width: calc(50% - 12px); /* توی موبایل دو ستونه بشه */
-      }
+      .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); }
+      .quick-access-wrapper .forum-card { grid-column: span 1; }
+      .quick-access-wrapper .forum-card:nth-child(4) { grid-column: 1 / span 1; }
+      .quick-access-wrapper .forum-card:nth-child(5) { grid-column: 2 / span 1; }
     }
+
+    /* استایل اعلان‌ها */
+    .notice { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 0.95rem; }
+    .notice-badge { background: var(--green); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
+
+    /* ⬇️ استایل‌های جشن تولد ⬇️ */
+    .birthday-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; backdrop-filter: blur(5px); }
+    .birthday-modal.hidden { display: none; }
+    .birthday-box { background: var(--bg-card); border: 2px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(46, 204, 113, 0.3); position: relative; z-index: 2001; }
+    .birthday-box h2 { color: var(--green); margin-bottom: 12px; font-size: 1.5rem; }
+    .birthday-box p { color: var(--text); line-height: 1.6; font-size: 1rem; }
+
+    /* بادکنک‌ها و کانفتی */
+    .balloon { position: fixed; bottom: -100px; width: 40px; height: 50px; border-radius: 50%; z-index: 1999; pointer-events: none; animation: floatUp 4s linear forwards; }
+    .balloon::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(0,0,0,0.3); }
+    @keyframes floatUp { to { transform: translateY(-120vh) rotate(10deg); } }
+    .confetti { position: fixed; top: -10px; width: 10px; height: 10px; z-index: 1999; pointer-events: none; animation: fall 3s linear forwards; }
+    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
   </style>
 </head>
 <body>
@@ -37,32 +63,21 @@
 
   <main class="container">
 
-    <!-- دکمه شروع سریع -->
-    <a href="study.html" class="btn btn-green btn-full" style="padding: 20px; font-size: 1.2rem; border-radius: 16px; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 10px;">
-      <span>🚀</span> شروع سریع مطالعه
-    </a>
+    <a href="study.html" class="quick-start-btn"><span>🚀</span> شروع سریع مطالعه</a>
 
-    <!-- تابلو اعلانات -->
-    <section>
+    <section class="notice-board">
       <h2>📌 تابلو اعلانات</h2>
-      <div id="noticesList">
-        <p class="lock-note">در حال بارگذاری...</p>
-      </div>
+      <div id="noticesList"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <!-- لیگ -->
-    <section class="big-league-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px;">
-      <h2 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <span>🏆 لیگ این هفته</span>
-        <a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a>
-      </h2>
+    <section class="big-league-card">
+      <h2><span>🏆 لیگ این هفته</span><a href="leaderboard.html" class="see-all">مشاهده لیگ ←</a></h2>
       <div id="homeLeaderboard"><p class="lock-note">در حال بارگذاری...</p></div>
     </section>
 
-    <!-- انجمن‌ها -->
-    <section>
-      <h2>💬 انجمن‌ها</h2>
-      <div class="forum-list">
+    <section style="margin-bottom: 20px;">
+      <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
+      <div class="forum-grid">
         <a href="books.html" class="forum-card">
           <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
         </a>
@@ -72,44 +87,54 @@
       </div>
     </section>
 
-    <!-- دسترسی سریع (با استایل اختصاصی برای مرتب شدن) -->
-    <section>
-      <h2>🔗 دسترسی سریع</h2>
+    <section class="big-league-card">
+      <h2 style="margin-bottom: 12px; font-size: 1.1rem;">🔗 دسترسی سریع</h2>
       <div class="quick-access-wrapper">
-        <a href="counselor.html" class="forum-card">
-          <span class="forum-icon">💬</span><span class="forum-name">مشاوره</span>
-        </a>
-        <a href="contact.html" class="forum-card">
-          <span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span>
-        </a>
-        <a href="games.html" class="forum-card">
-          <span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span>
-        </a>
-        <a href="mafia.html" class="forum-card">
-          <span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span>
-        </a>
-        <a href="explore.html" class="forum-card">
-          <span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span>
-        </a>
+        <a href="counselor.html" class="forum-card"><span class="forum-icon">💬</span><span class="forum-name">مشاوره</span></a>
+        <a href="contact.html" class="forum-card"><span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span></a>
+        <a href="games.html" class="forum-card"><span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span></a>
+        <a href="mafia.html" class="forum-card"><span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span></a>
+        <a href="explore.html" class="forum-card"><span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span></a>
       </div>
     </section>
-
   </main>
 
- <nav class="bottom-nav">
-  <a href="index.html" class="nav-item active">🏠 خانه</a>
-  <a href="study.html" class="nav-item">⏱ مطالعه</a>
-  <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
-  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
-  <a href="profile.html" class="nav-item">👤 پروفایل</a>
-</nav>
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">🏠 خانه</a>
+    <a href="study.html" class="nav-item">⏱ مطالعه</a>
+    <a href="gift.html" class="nav-item">🎁 هدیه</a>
+    <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+    <a href="profile.html" class="nav-item">👤 پروفایل</a>
+  </nav>
 
-  <!-- متن خوش‌آمدگویی -->
+  <!-- مودال خوش‌آمدگویی قبلی -->
   <div id="welcomeModal" class="welcome-modal hidden">
     <div class="welcome-content">
-      <h2>🌸 سلام! به ساراگل خوش اومدی 👋</h2>
+      <span class="welcome-emoji">🌸</span>
+      <h2>سلام! به ساراگل خوش اومدی 👋</h2>
       <p>اینجا قراره با هم درس بخونیم، رقابت کنیم، بازی کنیم و پیشرفت کنیم. آماده‌ای که بهترین نسخه‌ی خودت بشی؟ 🚀</p>
       <button id="closeWelcomeBtn" class="btn btn-green btn-full">بزن بریم! 🚀</button>
+    </div>
+  </div>
+
+  <!-- مودال جشن تولد -->
+  <div id="birthdayModal" class="birthday-modal hidden">
+    <div class="birthday-box">
+      <div style="font-size: 4rem; margin-bottom: 10px;">🎂</div>
+      <h2>تولدت مبارک! 🎉</h2>
+      <p id="birthdayText"></p>
+      <button id="closeBirthdayBtn" class="btn btn-green btn-full" style="margin-top: 20px;">مرسی! 🥳</button>
+    </div>
+  </div>
+
+  <!-- مودال دریافت کادوها -->
+  <div id="giftsModal" class="birthday-modal hidden">
+    <div class="birthday-box" style="max-width: 450px;">
+      <div style="font-size: 4rem; margin-bottom: 10px;">🎁</div>
+      <h2>سورپرایز! 🎉</h2>
+      <p style="margin-bottom: 15px;">این کادوهای تولدت هستن که دوستات برات فرستادن:</p>
+      <div id="giftsListModal" style="max-height: 250px; overflow-y: auto; text-align: right;"></div>
+      <button id="claimGiftsBtn" class="btn btn-green btn-full" style="margin-top: 15px;">دریافت همه هدایا ✨</button>
     </div>
   </div>
 
@@ -121,7 +146,8 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // نمایش متن خوش‌آمدگویی
+      
+      // ===== مودال خوش‌آمدگویی =====
       if (!localStorage.getItem('hasSeenWelcome')) {
         document.getElementById('welcomeModal').classList.remove('hidden');
       }
@@ -130,10 +156,136 @@
         localStorage.setItem('hasSeenWelcome', 'true');
       });
 
-      // لود اعلان‌ها
       loadNotices();
+      loadLeaderboard();
 
-      // لود لیگ
+      // ===== چک کردن تولد و هدایا =====
+      supabaseClient.auth.getUser().then(function(res) {
+        if (!res.data.user) return;
+        var uid = res.data.user.id;
+        
+        supabaseClient.from('profiles').select('username, birthday').eq('id', uid).single().then(function(p) {
+          if (!p.data) return;
+          var profile = p.data;
+          
+          if (profile.birthday) {
+            var today = new Date();
+            var bday = new Date(profile.birthday);
+            
+            var isTodayBirthday = (today.getMonth() === bday.getMonth() && today.getDate() === bday.getDate());
+            
+            // تاریخ دیروز
+            var yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+            var wasYesterdayBirthday = (yesterday.getMonth() === bday.getMonth() && yesterday.getDate() === bday.getDate());
+
+            if (isTodayBirthday) {
+              // امروز تولدشه!
+              document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + profile.username + ' جان! 🌟 فردا بیا سایت، سورپرایز دوستات منتظرته! 🎁';
+              document.getElementById('birthdayModal').classList.remove('hidden');
+              playCelebration();
+            } else if (wasYesterdayBirthday) {
+              // دیروز تولدش بوده، الان کادوها رو چک کن
+              checkForGifts(uid);
+            }
+          }
+        });
+      });
+      
+      // دکمه بستن مودال تولد
+      document.getElementById('closeBirthdayBtn').addEventListener('click', function() {
+        document.getElementById('birthdayModal').classList.add('hidden');
+      });
+    });
+
+    // ===== چک کردن کادوهای دریافتی (برای روز بعد تولد) =====
+    function checkForGifts(uid) {
+      supabaseClient.from('gifts').select('*, sender:sender_id(username)').eq('receiver_id', uid).eq('is_claimed', false).then(function(res) {
+        var gifts = res.data || [];
+        if (gifts.length === 0) return; // کادویی نیست
+        
+        // پر کردن لیست کادوها توی مودال
+        var list = document.getElementById('giftsListModal');
+        list.innerHTML = '';
+        gifts.forEach(function(g) {
+          var senderName = g.is_anonymous ? 'یک دوست ناشناس 🕵️' : (g.sender ? g.sender.username : 'ناشناس');
+          var div = document.createElement('div');
+          div.style.cssText = 'background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;';
+          div.innerHTML = `
+            <div style="font-size: 1.5rem;">${g.gift_icon}</div>
+            <div style="flex:1;">
+              <div style="font-weight: bold; font-size: 0.85rem;">${g.gift_name}</div>
+              <div style="font-size: 0.7rem; color: var(--text-dim);">از طرف: ${senderName}</div>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+
+        document.getElementById('giftsModal').classList.remove('hidden');
+        playCelebration();
+
+        // دکمه دریافت همه هدایا
+        document.getElementById('claimGiftsBtn').onclick = function() {
+          supabaseClient.from('gifts').update({ is_claimed: true }).eq('receiver_id', uid).eq('is_claimed', false).then(function() {
+            document.getElementById('giftsModal').classList.add('hidden');
+            alert('🎉 همه هدایا دریافت شد!');
+          });
+        };
+      });
+    }
+
+    // ===== انیمیشن بادکنک و کانفتی =====
+    function playCelebration() {
+      // بادکنک‌ها
+      var colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
+      for (var i = 0; i < 20; i++) {
+        var balloon = document.createElement('div');
+        balloon.className = 'balloon';
+        balloon.style.left = Math.random() * 100 + 'vw';
+        balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        balloon.style.animationDelay = (Math.random() * 2) + 's';
+        balloon.style.animationDuration = (Math.random() * 2 + 3) + 's';
+        document.body.appendChild(balloon);
+        setTimeout(function(b) { return function() { b.remove(); } }(balloon), 6000);
+      }
+
+      // کانفتی
+      for (var j = 0; j < 50; j++) {
+        var confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = (Math.random() * 1) + 's';
+        confetti.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
+        document.body.appendChild(confetti);
+        setTimeout(function(c) { return function() { c.remove(); } }(confetti), 5000);
+      }
+    }
+
+    // ===== توابع اعلان و لیگ =====
+    function loadNotices() {
+      supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
+        var container = document.getElementById('noticesList');
+        if (res.error || !res.data || res.data.length === 0) {
+          container.innerHTML = '<div class="notice"><span class="notice-badge">فوری</span> به سایت ساراگل خوش آمدید!</div>';
+          return;
+        }
+        container.innerHTML = '';
+        res.data.forEach(function(n) {
+          var typeStr = (n.type || '').toLowerCase();
+          var badgeText = 'عادی';
+          if (typeStr.includes('فوری') || typeStr === 'urgent') { badgeText = 'فوری'; } 
+          else if (typeStr.includes('مهم') || typeStr === 'important') { badgeText = 'مهم'; }
+          
+          var div = document.createElement('div');
+          div.className = 'notice';
+          div.innerHTML = '<span class="notice-badge">' + badgeText + '</span> <span>' + n.text + '</span>';
+          container.appendChild(div);
+        });
+      });
+    }
+
+    function loadLeaderboard() {
       supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
         var container = document.getElementById('homeLeaderboard');
         if (res.error || !res.data || res.data.length === 0) {
@@ -148,33 +300,6 @@
           var div = document.createElement('div');
           div.className = 'league-row';
           div.innerHTML = '<span>' + medal + ' ' + className + '</span><span>' + classes[className] + ' دقیقه</span>';
-          container.appendChild(div);
-        });
-      });
-    });
-
-    function loadNotices() {
-      supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
-        var container = document.getElementById('noticesList');
-        if (res.error || !res.data || res.data.length === 0) {
-          container.innerHTML = '<div class="notice"><span class="notice-badge">فوری</span> به سایت ساراگل خوش آمدید!</div>';
-          return;
-        }
-        
-        container.innerHTML = '';
-        res.data.forEach(function(n) {
-          var typeStr = (n.type || '').toLowerCase();
-          var badgeText = 'عادی';
-          
-          if (typeStr.includes('فوری') || typeStr === 'urgent') {
-            badgeText = 'فوری';
-          } else if (typeStr.includes('مهم') || typeStr === 'important') {
-            badgeText = 'مهم';
-          }
-          
-          var div = document.createElement('div');
-          div.className = 'notice';
-          div.innerHTML = '<span class="notice-badge">' + badgeText + '</span> <span>' + n.text + '</span>';
           container.appendChild(div);
         });
       });
