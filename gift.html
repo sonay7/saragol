@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ارسال هدیه | ساراگل</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .gift-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .gift-search-box { display: flex; gap: 8px; margin-top: 12px; }
+    .gift-search-box input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; }
+    .gift-search-box button { padding: 12px 20px; border-radius: 10px; background: var(--green); color: #fff; border: none; font-family: inherit; font-weight: bold; cursor: pointer; }
+    
+    .user-found-card { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px; border-radius: 10px; margin-top: 12px; border: 1px solid var(--green); }
+    .user-found-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue); color: #fff; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem; }
+    
+    .gift-options { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .gift-option { background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 12px; cursor: pointer; text-align: center; flex: 1 1 30%; transition: 0.2s; }
+    .gift-option.selected { border-color: var(--green); background: rgba(46, 204, 113, 0.1); }
+    .gift-option .icon { font-size: 2rem; display: block; margin-bottom: 4px; }
+    .gift-option .name { font-size: 0.8rem; font-weight: bold; }
+    .gift-option .price { font-size: 0.7rem; color: #f1c40f; margin-top: 4px; }
+    
+    .received-gift-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+    .gift-icon { font-size: 2rem; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span id="myXp" style="color:#f1c40f; font-weight:bold; font-size:0.9rem;">... XP</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <h2 style="text-align:center; margin-bottom:20px;">🎁 ارسال هدیه</h2>
+
+  <!-- بخش جستجوی کاربر -->
+  <div class="gift-section">
+    <h3>۱. دوستت رو پیدا کن</h3>
+    <div class="gift-search-box">
+      <input id="searchUsername" type="text" placeholder="نام کاربری دوستت رو بنویس...">
+      <button onclick="searchUser()">جستجو</button>
+    </div>
+    <div id="searchResult"></div>
+  </div>
+
+  <!-- بخش انتخاب کادو (بعد از پیدا شدن کاربر فعال میشه) -->
+  <div class="gift-section" id="giftForm" style="display: none;">
+    <h3>۲. کادوت رو انتخاب کن (هزینه: ۱۰ XP)</h3>
+    
+    <div class="gift-options">
+      <div class="gift-option" data-gift="قلب طلایی" data-icon="💖" onclick="selectGift(this)">
+        <span class="icon">💖</span><span class="name">قلب طلایی</span><span class="price">۱۰ XP</span>
+      </div>
+      <div class="gift-option" data-gift="ستاره درخشان" data-icon="🌟" onclick="selectGift(this)">
+        <span class="icon">🌟</span><span class="name">ستاره درخشان</span><span class="price">۱۰ XP</span>
+      </div>
+      <div class="gift-option" data-gift="کیک تولد" data-icon="🎂" onclick="selectGift(this)">
+        <span class="icon">🎂</span><span class="name">کیک تولد</span><span class="price">۱۰ XP</span>
+      </div>
+      <div class="gift-option" data-gift="خرس کوچولو" data-icon="🧸" onclick="selectGift(this)">
+        <span class="icon">🧸</span><span class="name">خرس کوچولو</span><span class="price">۱۰ XP</span>
+      </div>
+      <div class="gift-option" data-gift="شکوفه" data-icon="🌸" onclick="selectGift(this)">
+        <span class="icon">🌸</span><span class="name">شکوفه</span><span class="price">۱۰ XP</span>
+      </div>
+    </div>
+
+    <input id="giftMessage" class="input" placeholder="یه پیام صمیمی براش بنویس (اختیاری)" style="margin-top: 12px;">
+    
+    <label style="display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 0.9rem; cursor: pointer;">
+      <input type="checkbox" id="isAnonymous" style="width: 18px; height: 18px;">
+      ارسال به صورت ناشناس (اسم من مخفی بشه)
+    </label>
+
+    <button onclick="sendGift()" class="btn btn-green btn-full" style="margin-top: 16px;">🎁 ارسال هدیه</button>
+    <p id="giftMsg" style="margin-top: 8px; font-size: 0.85rem; text-align: center;"></p>
+  </div>
+
+  <!-- بخش هدایای دریافتی -->
+  <div class="gift-section">
+    <h3>📥 هدایای دریافتی من</h3>
+    <div id="receivedGiftsList" style="margin-top: 12px;">
+      <p class="lock-note">در حال بارگذاری...</p>
+    </div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="gift.html" class="nav-item active">🎁 هدیه</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+
+<script>
+  var currentUser = null;
+  var myXp = 0;
+  var selectedReceiver = null; // کسی که قراره کادو بگیره
+  var selectedGift = null; // کادوی انتخاب شده
+  var GIFT_COST = 10; // هزینه هر کادو
+
+  supabaseClient.auth.getUser().then(res => {
+    if (!res.data.user) { window.location.href = 'login.html'; return; }
+    currentUser = res.data.user;
+    
+    supabaseClient.from('profiles').select('xp, username').eq('id', currentUser.id).single().then(p => {
+      myXp = p.data.xp || 0;
+      document.getElementById('myXp').textContent = myXp + ' XP';
+      document.querySelector('.user-name').textContent = p.data.username;
+      document.querySelector('.avatar').textContent = p.data.username.charAt(0);
+      
+      loadReceivedGifts();
+    });
+  });
+
+  // ===== جستجوی کاربر =====
+  window.searchUser = function() {
+    var query = document.getElementById('searchUsername').value.trim();
+    var resultBox = document.getElementById('searchResult');
+    
+    if (query.length < 2) { resultBox.innerHTML = '<p style="color:#e74c3c; font-size:0.85rem; margin-top:8px;">حداقل ۲ حرف بنویس.</p>'; return; }
+    
+    resultBox.innerHTML = '<p style="font-size:0.85rem; margin-top:8px;">در حال جستجو...</p>';
+    
+    supabaseClient.from('profiles').select('id, username').ilike('username', '%' + query + '%').then(res => {
+      resultBox.innerHTML = '';
+      var users = res.data || [];
+      
+      if (users.length === 0) {
+        resultBox.innerHTML = '<p style="color:#e74c3c; font-size:0.85rem; margin-top:8px;">کاربری با این اسم پیدا نشد.</p>';
+        return;
+      }
+      
+      users.forEach(user => {
+        if (user.id === currentUser.id) return; // خودت رو نشون نده
+        
+        var div = document.createElement('div');
+        div.className = 'user-found-card';
+        div.innerHTML = `
+          <div class="user-found-avatar">${user.username.charAt(0)}</div>
+          <div style="flex:1; font-weight:bold;">${user.username}</div>
+          <button class="btn btn-green btn-sm" onclick="selectReceiver('${user.id}', '${user.username}')">انتخاب</button>
+        `;
+        resultBox.appendChild(div);
+      });
+    });
+  };
+
+  // ===== انتخاب گیرنده =====
+  window.selectReceiver = function(id, name) {
+    selectedReceiver = { id: id, name: name };
+    document.getElementById('giftForm').style.display = 'block';
+    document.getElementById('searchResult').innerHTML = `<div class="user-found-card" style="border-color:var(--blue);"><div class="user-found-avatar" style="background:var(--green);">✓</div><div style="flex:1; font-weight:bold;">کادو برای: ${name}</div></div>`;
+    document.getElementById('giftForm').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // ===== انتخاب کادو =====
+  window.selectGift = function(el) {
+    document.querySelectorAll('.gift-option').forEach(opt => opt.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedGift = {
+      name: el.getAttribute('data-gift'),
+      icon: el.getAttribute('data-icon')
+    };
+  };
+
+  // ===== ارسال هدیه =====
+  window.sendGift = function() {
+    var msgEl = document.getElementById('giftMsg');
+    
+    if (!selectedReceiver) { msgEl.textContent = 'اول یه کاربر رو انتخاب کن.'; msgEl.style.color = '#e74c3c'; return; }
+    if (!selectedGift) { msgEl.textContent = 'اول یه کادو انتخاب کن.'; msgEl.style.color = '#e74c3c'; return; }
+    if (myXp < GIFT_COST) { msgEl.textContent = 'XP کافی نداری! (نیاز: ' + GIFT_COST + ' XP)'; msgEl.style.color = '#e74c3c'; return; }
+
+    var message = document.getElementById('giftMessage').value.trim();
+    var isAnonymous = document.getElementById('isAnonymous').checked;
+
+    if (!confirm('آیا ' + GIFT_COST + ' XP برای ارسال ' + selectedGift.name + ' به ' + selectedReceiver.name + ' پرداخت می‌کنی؟')) return;
+
+    msgEl.textContent = 'در حال ارسال...'; msgEl.style.color = 'var(--text-dim)';
+
+    // ۱. کم کردن XP از فرستنده
+    supabaseClient.from('profiles').update({ xp: myXp - GIFT_COST }).eq('id', currentUser.id).then(updateRes => {
+      if (updateRes.error) { msgEl.textContent = 'خطا در کم کردن XP'; msgEl.style.color = '#e74c3c'; return; }
+      
+      // ۲. ثبت هدیه در دیتابیس
+      supabaseClient.from('gifts').insert({
+        sender_id: currentUser.id,
+        receiver_id: selectedReceiver.id,
+        gift_name: selectedGift.name,
+        gift_icon: selectedGift.icon,
+        message: message,
+        is_anonymous: isAnonymous,
+        is_claimed: false // یعنی هنوز گیرنده ندیده
+      }).then(insertRes => {
+        if (insertRes.error) { 
+          msgEl.textContent = 'خطا: ' + insertRes.error.message; 
+          msgEl.style.color = '#e74c3c';
+          // برگردوندن XP
+          supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
+          return; 
+        }
+        
+        msgEl.textContent = '🎉 هدیه با موفقیت ارسال شد!';
+        msgEl.style.color = 'var(--green)';
+        
+        // ریست کردن فرم
+        setTimeout(() => {
+          location.reload(); // رفرش برای آپدیت XP
+        }, 2000);
+      });
+    });
+  };
+
+  // ===== لود کردن هدایای دریافتی =====
+  function loadReceivedGifts() {
+    var list = document.getElementById('receivedGiftsList');
+    
+    supabaseClient.from('gifts')
+      .select('*, sender:sender_id(username)')
+      .eq('receiver_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .then(res => {
+        list.innerHTML = '';
+        var gifts = res.data || [];
+        
+        if (gifts.length === 0) {
+          list.innerHTML = '<p class="lock-note">هنوز هیچ کادویی دریافت نکردی.</p>';
+          return;
+        }
+        
+        gifts.forEach(g => {
+          var senderName = g.is_anonymous ? 'یک دوست ناشناس 🕵️' : (g.sender ? g.sender.username : 'ناشناس');
+          var claimedStatus = g.is_claimed ? '✅ دریافت شده' : '🎁 جدید!';
+          
+          var div = document.createElement('div');
+          div.className = 'received-gift-card';
+          if (!g.is_claimed) div.style.border = '2px solid var(--green)';
+          
+          div.innerHTML = `
+            <div class="gift-icon">${g.gift_icon}</div>
+            <div style="flex:1;">
+              <div style="font-weight:bold; font-size:0.9rem;">${g.gift_name}</div>
+              <div style="font-size:0.75rem; color:var(--text-dim);">از طرف: ${senderName}</div>
+              ${g.message ? `<div style="font-size:0.8rem; margin-top:4px; background:var(--bg); padding:6px; border-radius:6px;">"${g.message}"</div>` : ''}
+            </div>
+            <div style="font-size:0.7rem; color:var(--green); font-weight:bold;">${claimedStatus}</div>
+          `;
+          list.appendChild(div);
+        });
+      });
+  }
+</script>
+</body>
+</html>
