@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-<head> 
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>پنل ادمین | مدرسه‌ی ما</title>
+  <title>پنل ادمین | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .badge { background-color: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-right: 4px; vertical-align: middle; }
-    .toggle-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; cursor: pointer; background: var(--bg-card); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); }
+    /* استایل کشوها (Accordion) */
+    details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
+    details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
+    summary.accordion-header:hover { background: rgba(255,255,255,0.02); }
+    summary.accordion-header::after { content: '▼'; font-size: 0.7rem; color: var(--text-dim); transition: transform 0.3s; }
+    details[open] summary.accordion-header::after { transform: rotate(180deg); color: var(--green); }
+    .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* استایل عمومی فرم‌ها و لیست‌ها */
+    .admin-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }
+    .admin-sub { font-size: 0.78rem; color: var(--text-dim); display: block; margin-top: 4px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-dim); }
     
-    /* استایل برای لیست کاربران کتابخوانی */
-    .user-accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
-    .user-accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; }
-    .user-accordion-header:hover { background: rgba(255,255,255,0.05); }
-    .user-accordion-content { display: none; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg); }
-    .user-accordion.active .user-accordion-content { display: block; }
-    .user-accordion.active .user-accordion-header { border-bottom: 1px solid var(--border); }
-    
-    /* استایل برای آیتم‌های داخل کشو */
-    .mini-book-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
-    .mini-book-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .mini-book-item img { width: 30px; height: 45px; object-fit: cover; border-radius: 4px; }
+    .tab-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-family: inherit; color: var(--text); margin-bottom: 10px; font-size: 0.9rem; }
+    .tab-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+    /* استایل استیکرها */
+    .sticker-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .sticker-img { width: 50px; height: 50px; object-fit: contain; background: #fff; border-radius: 8px; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
@@ -35,124 +42,152 @@
 
   <main class="container">
 
-    <div class="tabs main-admin-tabs" style="margin-bottom: 20px;">
-      <button class="tab active" data-admin-tab="tab-users">👥 کاربران</button>
-      <button class="tab" data-admin-tab="tab-announcements">📢 اطلاع‌رسانی</button>
-      <button class="tab" data-admin-tab="tab-content">📱 محتوا</button>
-      <button class="tab" data-admin-tab="tab-inbox">📩 پیام‌ها <span id="inboxBadge" class="badge hidden">0</span></button>
-    </div>
-
-    <!-- ===== تب کاربران ===== -->
-    <div id="tab-users" class="admin-tab-content">
-      <section>
-        <h2>👥 درخواست‌های عضویت</h2>
-        <div id="requestsList"><p class="lock-note">در حال بارگذاری...</p></div>
-      </section>
-      <section>
-        <h2>🛡 مدیریت نقش‌ها</h2>
-        <div id="usersList"><p class="lock-note">در حال بارگذاری...</p></div>
-      </section>
-
-      <!-- بخش اعضای انجمن کتاب‌خوانی (کشویی) -->
-      <section style="margin-top: 30px;">
-        <div class="toggle-header" id="toggleBooksBtn">
-          <h2 style="margin: 0;">📚 اعضای انجمن کتاب‌خوانی</h2>
-          <span id="booksArrow" style="font-size: 1.2rem; transition: transform 0.3s;">▼</span>
+    <!-- بخش مدیریت اعلانات -->
+    <details class="accordion">
+      <summary class="accordion-header">📌 مدیریت اعلانات</summary>
+      <div class="accordion-content">
+        <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
+          <textarea id="noticeText" class="input" placeholder="متن اعلان..." style="min-height: 60px;"></textarea>
+          <select id="noticeType" class="input" style="margin-top: 8px;">
+            <option value="urgent">فوری</option>
+            <option value="important">مهم</option>
+            <option value="info">عادی</option>
+          </select>
+          <button id="addNoticeBtn" class="btn btn-green btn-full" style="margin-top: 8px;">ثبت اعلان</button>
+          <p id="noticeMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
         </div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">لیست اعلان‌ها:</h4>
+        <div id="adminNoticesList"></div>
+      </div>
+    </details>
+
+    <!-- بخش اهدای نشان -->
+    <details class="accordion">
+      <summary class="accordion-header">🌟 اهدای نشان ویژه</summary>
+      <div class="accordion-content">
+        <input id="badgeUsername" class="input" placeholder="نام کاربری فرد" style="margin-bottom: 8px;">
+        <select id="badgeName" class="input" style="margin-bottom: 8px;">
+          <option value="اولین ستاره">🌟 اولین ستاره</option>
+          <option value="پیشتاز مطالعه">🚀 پیشتاز مطالعه</option>
+          <option value="قهرمان لیگ">🏆 قهرمان لیگ</option>
+        </select>
+        <button onclick="giveBadge()" class="btn btn-green btn-full">اهدا نشان</button>
+      </div>
+    </details>
+
+    <!-- بخش مدیریت سینما -->
+    <details class="accordion">
+      <summary class="accordion-header">🎬 مدیریت سینما</summary>
+      <div class="accordion-content">
+        <input id="cinemaTitle" class="input" placeholder="اسم فیلم" style="margin-bottom: 8px;">
+        <input id="cinemaDesc" class="input" placeholder="توضیحات کوتاه" style="margin-bottom: 8px;">
+        <input id="cinemaUrl" class="input" placeholder="لینک Embed آپارات" style="margin-bottom: 8px;">
+        <input id="cinemaPrice" type="number" class="input" placeholder="قیمت بلیط (XP)" style="margin-bottom: 8px;">
+        <button onclick="addCinemaVideo()" class="btn btn-green btn-full">➕ افزودن به سینما</button>
+        <p id="cinemaMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
+      </div>
+    </details>
+
+    <!-- بخش مدیریت استیکرها (جدید) -->
+    <details class="accordion">
+      <summary class="accordion-header">🎨 مدیریت پک‌های استیکر</summary>
+      <div class="accordion-content">
+        <!-- فرم ساخت پک جدید -->
+        <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem; margin-bottom: 8px;">ساخت پک جدید:</h4>
+          <input id="newPackName" class="input" placeholder="اسم پک (مثلاً گربه‌ها)" style="margin-bottom: 8px;">
+          <div style="display: flex; gap: 8px;">
+            <input id="newPackPrice" type="number" class="input" placeholder="قیمت (XP)" style="flex: 1;">
+            <input id="newPackIcon" class="input" placeholder="ایموجی (🐱)" style="width: 80px;">
+          </div>
+          <button onclick="createStickerPack()" class="btn btn-green btn-full" style="margin-top: 8px;">➕ ساخت پک</button>
+        </div>
+        
+        <!-- لیست پک‌ها -->
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">پک‌های موجود:</h4>
+        <div id="adminPacksList"></div>
+      </div>
+    </details>
+
+    <!-- بخش درخواست‌ها و کاربران -->
+    <details class="accordion">
+      <summary class="accordion-header">👥 کاربران و درخواست‌ها</summary>
+      <div class="accordion-content">
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">درخواست‌های عضویت:</h4>
+        <div id="requestsList"></div>
+        
+        <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">لیست کاربران:</h4>
+        <div id="usersList"></div>
+      </div>
+    </details>
+
+    <!-- بخش آزمون‌ها -->
+    <details class="accordion">
+      <summary class="accordion-header">📝 مدیریت آزمون‌ها</summary>
+      <div class="accordion-content">
+        <div id="examsList" style="margin-bottom: 12px;"></div>
+        
+        <div style="background: var(--bg); padding: 12px; border-radius: 10px;">
+          <input id="examSubject" class="input" placeholder="نام درس" style="margin-bottom: 8px;">
+          <input id="examDate" type="date" class="input" style="margin-bottom: 8px;">
+          <select id="examClass" class="input" style="margin-bottom: 8px;">
+            <option value="همه">همه پایه‌ها</option>
+            <option value="هفتم">هفتم</option>
+            <option value="هشتم">هشتم</option>
+            <option value="نهم">نهم</option>
+          </select>
+          <button id="addExamBtn" class="btn btn-green btn-full">افزودن آزمون</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- بخش جمله‌ها -->
+    <details class="accordion">
+      <summary class="accordion-header">💬 مدیریت جمله‌ها</summary>
+      <div class="accordion-content">
+        <div id="quotesList" style="margin-bottom: 12px;"></div>
+        <div style="background: var(--bg); padding: 12px; border-radius: 10px;">
+          <input id="quoteText" class="input" placeholder="متن جمله..." style="margin-bottom: 8px;">
+          <button id="addQuoteBtn" class="btn btn-green btn-full">افزودن جمله</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- بخش صندوق ورودی و انتشار مستقیم -->
+    <details class="accordion">
+      <summary class="accordion-header">📥 صندوق ورودی و آپلود</summary>
+      <div class="accordion-content">
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">آپلود مستقیم به اکسپلور:</h4>
+        <input id="directFile" type="file" class="input" style="margin-bottom: 8px; padding: 8px;">
+        <button id="directUploadBtn" class="btn btn-green btn-full">آپلود و انتشار</button>
+        <p id="directMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
+
+        <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">محتوای در انتظار تایید:</h4>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <button class="tab-btn active" data-tab="inbox-private">پیام‌ها</button>
+          <button class="tab-btn" data-tab="inbox-explore">اکسپلور</button>
+          <button class="tab-btn" data-tab="inbox-reports">گزارش‌ها</button>
+        </div>
+        <div id="inbox-private"></div>
+        <div id="inbox-explore" class="hidden"></div>
+        <div id="inbox-reports" class="hidden"></div>
+      </div>
+    </details>
+
+    <!-- بخش انجمن کتاب‌خوانی -->
+    <details class="accordion">
+      <summary class="accordion-header">📚 مدیریت کتاب‌خوانی</summary>
+      <div class="accordion-content">
+        <button id="toggleBooksBtn" class="btn btn-blue btn-full" style="margin-bottom: 10px;">نمایش/مخفی کردن کاربران</button>
         <div id="booksContainer" class="hidden">
           <div id="bookClubUsersList"></div>
         </div>
-      </section>
-    </div>
-
-    <!-- ===== تب اطلاع‌رسانی ===== -->
-    <div id="tab-announcements" class="admin-tab-content hidden">
-  <h2>📌 مدیریت اعلانات</h2>
-  <!-- فرم ثبت اعلان جدید -->
-  <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border);">
-    <h3 style="font-size: 1rem; margin-bottom: 12px;">افزودن اعلان جدید</h3>
-    <textarea id="noticeText" class="input" placeholder="متن اعلان..." style="min-height: 80px; resize: vertical;"></textarea>
-    <select id="noticeType" class="input" style="margin-top: 8px;">
-      <option value="urgent">فوری</option>
-      <option value="important">مهم</option>
-      <option value="info">عادی</option>
-    </select>
-    <button id="addNoticeBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت اعلان</button>
-    <p id="noticeMsg" style="font-size: 0.85rem; margin-top: 8px;"></p>
-  </div>
-
-  <!-- لیست اعلان‌های فعلی و دکمه حذف -->
-  <h3 style="font-size: 1rem; margin-bottom: 12px;">اعلان‌های فعلی:</h3>
-  <div id="adminNoticesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
-      <div class="admin-card" style="margin-top:20px; background:var(--bg-card); padding:16px; border-radius:12px;">
-  <h3>🌟 اهدای نشان ویژه</h3>
-  <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:10px;">نشان «اولین ستاره» رو به کی می‌خوای بدی؟</p>
-  <input id="badgeUsername" class="input" placeholder="نام کاربری فرد (مثلاً sara)" style="margin-bottom:8px;">
-  <select id="badgeName" class="input" style="margin-bottom:8px;">
-    <option value="اولین ستاره">🌟 اولین ستاره</option>
-    <!-- می‌تونی نشان‌های دیگه رو هم اینجا اضافه کنی -->
-  </select>
-  <button onclick="giveBadge()" class="btn btn-green btn-full">اهدا نشان</button>
-</div>
-</section>
-        <h2>📅 افزودن آزمون رسمی</h2>
-        <input id="examSubject" type="text" class="input" placeholder="نام درس">
-        <input id="examDate" type="date" class="input" style="margin-top: 8px;">
-        <select id="examClass" class="select" style="margin-top: 8px;">
-          <option value="همه">همه پایه‌ها</option>
-          <option value="هفتم">فقط هفتم</option>
-          <option value="هشتم">فقط هشتم</option>
-          <option value="نهم">فقط نهم</option>
-        </select>
-        <button id="addExamBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت آزمون</button>
-        <p id="examMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
-        <div id="examsList" style="margin-top: 16px;"></div>
-      </section>
-    </div>
-
-    <!-- ===== تب محتوا ===== -->
-    <div id="tab-content" class="admin-tab-content hidden">
-      <section>
-        <h2>💬 افزودن جمله انگیزشی</h2>
-        <textarea id="quoteText" class="input" placeholder="متن جمله..." rows="3"></textarea>
-        <button id="addQuoteBtn" class="btn btn-green btn-full" style="margin-top: 10px;">ثبت جمله</button>
-        <p id="quoteMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
-        <div id="quotesList" style="margin-top: 16px;"></div>
-      </section>
-      <section>
-        <h2>🎬 انتشار مستقیم در اکسپلور</h2>
-        <input id="directFile" type="file" accept="video/mp4,image/jpeg,image/png,image/webp" class="input" style="padding: 10px;">
-        <button id="directUploadBtn" class="btn btn-green btn-full" style="margin-top: 10px;">آپلود و انتشار</button>
-        <p id="directMsg" style="margin-top: 8px; text-align: center; font-size: 0.82rem;"></p>
-      </section>
-    </div>
-<div class="admin-card" style="margin-top:20px; background:var(--bg-card); padding:16px; border-radius:12px;">
-  <h3>🎬 مدیریت سینما (افزودن فیلم)</h3>
-  <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">لینک ویدیو رو باید به صورت <b>Embed</b> از آپارات کپی کنی (مثلاً با کلمه embed داخلش باشه).</p>
-  <input id="cinemaTitle" class="input" placeholder="اسم فیلم" style="margin-bottom:8px;">
-  <input id="cinemaDesc" class="input" placeholder="توضیحات کوتاه" style="margin-bottom:8px;">
-  <input id="cinemaUrl" class="input" placeholder="لینک Embed آپارات" style="margin-bottom:8px;">
-  <input id="cinemaPrice" type="number" class="input" placeholder="قیمت بلیط (XP)" style="margin-bottom:8px;">
-  <button onclick="addCinemaVideo()" class="btn btn-green btn-full">➕ افزودن به سینما</button>
-  <p id="cinemaMsg" style="font-size:0.85rem; margin-top:8px; text-align:center;"></p>
-</div>
-    <!-- ===== تب پیام‌ها ===== -->
-    <div id="tab-inbox" class="admin-tab-content hidden">
-      <section>
-        <div class="tabs" style="margin-bottom: 16px;">
-          <button class="tab active" data-tab="inbox-private">پیام‌ها</button>
-          <button class="tab" data-tab="inbox-explore">اکسپلور</button>
-          <button class="tab" data-tab="inbox-reports">گزارش‌ها</button>
-        </div>
-        <div id="inbox-private" class="tab-content"><div id="list-private"></div></div>
-        <div id="inbox-explore" class="tab-content hidden"><div id="list-explore"></div></div>
-        <div id="inbox-reports" class="tab-content hidden"><div id="list-reports"></div></div>
-      </section>
-    </div>
+      </div>
+    </details>
 
   </main>
 
-    <nav class="bottom-nav">
+  <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
     <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
@@ -163,7 +198,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
-    <script src="theme.js"></script>
+  <script src="theme.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
