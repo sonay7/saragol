@@ -11,12 +11,7 @@
     .shop-tab.active { background: var(--green); color: #fff; border-color: var(--green); font-weight: bold; }
     
     .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 80px; }
-    
-    .shop-card { 
-      position: relative; background: var(--bg-card); border: 1px solid var(--border); 
-      border-radius: 16px; padding: 12px; text-align: center; 
-      display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-    }
+    .shop-card { position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
     
     .shop-icon { font-size: 3rem; margin-bottom: 10px; }
     .shop-img { width: 100%; height: 100px; border-radius: 10px; object-fit: cover; margin-bottom: 10px; border: 1px solid var(--border); }
@@ -25,11 +20,7 @@
     .shop-price { color: #f1c40f; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
     
     .buy-btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    
-    /* دکمه خریداری شده (خاکستری) */
     .btn-bought { background: #444 !important; color: #888 !important; cursor: not-allowed !important; }
-    
-    /* دکمه استفاده (آبی) */
     .equip-btn { background: var(--blue); color: #fff; border: none; padding: 8px; border-radius: 10px; width: 100%; font-family: inherit; font-weight: bold; cursor: pointer; margin-top: 6px; font-size: 0.8rem; }
 
     /* دکمه‌های ادمین */
@@ -63,7 +54,7 @@
     <button class="shop-tab" data-cat="theme">🎨 تم‌ها</button>
     <button class="shop-tab" data-cat="font">🖋️ فونت‌ها</button>
     <button class="shop-tab" data-cat="mafia">🕵️ مافیا</button>
-    <button class="shop-tab" data-cat="chat">💬 چت</button>
+    <button class="shop-tab" data-cat="chat">💬 چت و استیکر</button>
   </div>
 
   <div class="shop-grid" id="itemsGrid"></div>
@@ -82,7 +73,7 @@
       <option value="theme">تم</option>
       <option value="font">فونت</option>
       <option value="mafia">مافیا</option>
-      <option value="chat">چت</option>
+      <option value="chat">چت (آیتم معمولی)</option>
     </select>
     
     <input id="addPrice" type="number" class="input" placeholder="قیمت (XP) - الزامی" style="margin-bottom: 8px;">
@@ -112,7 +103,6 @@
   </div>
 </div>
 
-<!-- منوی پایین با اضافه شدن دکمه هدیه -->
 <nav class="bottom-nav">
   <a href="index.html" class="nav-item">🏠 خانه</a>
   <a href="study.html" class="nav-item">⏱ مطالعه</a>
@@ -164,6 +154,13 @@
     var grid = document.getElementById('itemsGrid');
     grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">در حال بارگذاری...</p>';
     
+    // ⬇️ اگر تب چت بود، هم آیتم‌های معمولی و هم پک‌های استیکر رو لود کن ⬇️
+    if (category === 'chat') {
+      loadChatAndStickers();
+      return;
+    }
+    
+    // بقیه تب‌ها (عکس، تم، فونت، مافیا)
     supabaseClient.from('user_inventory').select('item_id').eq('user_id', currentUser.id).then(invRes => {
       var boughtIds = (invRes.data || []).map(i => String(i.item_id));
       
@@ -221,6 +218,92 @@
     });
   }
 
+  // ===== تابع اختصاصی برای تب چت (ترکیب آیتم‌های چت و پک‌های استیکر) =====
+  function loadChatAndStickers() {
+    var grid = document.getElementById('itemsGrid');
+    
+    Promise.all([
+      supabaseClient.from('shop_items').select('*').eq('category', 'chat').eq('is_active', true),
+      supabaseClient.from('sticker_packs').select('*, stickers(id)').eq('is_active', true),
+      supabaseClient.from('user_inventory').select('item_id').eq('user_id', currentUser.id)
+    ]).then(results => {
+      var chatItems = results[0].data || [];
+      var stickerPacks = results[1].data || [];
+      var boughtIds = (results[2].data || []).map(i => String(i.item_id));
+      
+      grid.innerHTML = '';
+      
+      if (chatItems.length === 0 && stickerPacks.length === 0) {
+        grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">آیتمی در این دسته وجود ندارد.</p>';
+        return;
+      }
+
+      // ۱. رندر کردن آیتم‌های معمولی چت (مثل هایلایت)
+      chatItems.forEach(item => {
+        var isBought = boughtIds.includes(String(item.id));
+        var canAfford = myXp >= item.price;
+        
+        var btnHtml = isBought 
+          ? `<button class="buy-btn btn-bought" disabled>خریداری شده</button>`
+          : `<button class="buy-btn" ${canAfford ? '' : 'disabled'} onclick="buyItem('${item.id}', ${item.price}, 'chat', '${item.name}')">خرید</button>`;
+
+        var adminBtns = isAdmin ? `
+          <div class="admin-actions">
+            <button class="edit-btn" onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>✏️</button>
+            <button class="delete-btn" onclick="deleteItem('${item.id}')">×</button>
+          </div>
+        ` : '';
+        
+        var mediaHtml = item.image_url 
+          ? `<img src="${item.image_url}" class="shop-img" alt="${item.name}">` 
+          : `<div class="shop-icon">${item.icon || '✨'}</div>`;
+
+        var div = document.createElement('div');
+        div.className = 'shop-card';
+        div.innerHTML = `
+          ${adminBtns}
+          <div style="width: 100%;">
+            ${mediaHtml}
+            <div class="shop-name">${item.name}</div>
+            <div class="shop-desc">${item.description || ''}</div>
+          </div>
+          <div style="width:100%;">
+            <div class="shop-price">${item.price} XP</div>
+            ${btnHtml}
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+
+      // ۲. رندر کردن پک‌های استیکر
+      stickerPacks.forEach(pack => {
+        var isBought = boughtIds.includes(String(pack.id));
+        var canAfford = myXp >= pack.price;
+        var stickerCount = pack.stickers ? pack.stickers.length : 0;
+
+        var btnHtml = isBought 
+          ? `<button class="buy-btn btn-bought" disabled>خریداری شده</button>`
+          : `<button class="buy-btn" ${canAfford ? '' : 'disabled'} onclick="buyStickerPack('${pack.id}', ${pack.price}, '${pack.name}')">خرید</button>`;
+
+        var div = document.createElement('div');
+        div.className = 'shop-card';
+        div.innerHTML = `
+          <div style="width: 100%;">
+            <div class="shop-icon">${pack.icon}</div>
+            <div class="shop-name">${pack.name}</div>
+            <div class="shop-desc">${stickerCount} استیکر</div>
+          </div>
+          <div style="width:100%;">
+            <div class="shop-price">${pack.price} XP</div>
+            ${btnHtml}
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    });
+  }
+
+  // ===== خرید آیتم‌های معمولی =====
   window.buyItem = function(itemId, price, type, name) {
     if (isBuying) return;
     isBuying = true;
@@ -257,6 +340,44 @@
     });
   };
 
+  // ===== خرید پک استیکر =====
+  window.buyStickerPack = function(packId, price, name) {
+    if (isBuying) return;
+    isBuying = true;
+
+    supabaseClient.from('user_inventory').select('id').eq('user_id', currentUser.id).eq('item_id', packId).then(checkRes => {
+      if (checkRes.data && checkRes.data.length > 0) {
+        alert('شما قبلاً این پک را خریده‌اید!');
+        isBuying = false;
+        location.reload();
+        return;
+      }
+
+      if (myXp < price) { alert('XP کافی نداری!'); isBuying = false; return; }
+      if (!confirm('آیا ' + price + ' XP برای خرید پک «' + name + '» پرداخت می‌کنی؟')) { isBuying = false; return; }
+
+      supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(updateRes => {
+        if (updateRes.error) { alert('خطا در کم کردن XP'); isBuying = false; return; }
+        
+        supabaseClient.from('user_inventory').insert({
+          user_id: currentUser.id, item_type: 'sticker', item_id: packId
+        }).then(insertRes => {
+          isBuying = false;
+          
+          if (insertRes.error) {
+            alert('خطا در ثبت خرید: ' + insertRes.error.message);
+            supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
+            return;
+          }
+          
+          alert('🎉 پک استیکر با موفقیت خریداری شد! حالا می‌تونی توی چت ازش استفاده کنی.');
+          location.reload();
+        });
+      });
+    });
+  };
+
+  // ===== استفاده از تم و فونت =====
   window.applyItem = function(type, effectValue) {
     if (!effectValue || effectValue.trim() === '') { 
       alert('❌ این آیتم مقدار افکت ندارد! ادمین باید مقدار را تنظیم کند.'); 
