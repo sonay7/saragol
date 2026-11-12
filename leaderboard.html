@@ -3,13 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>رقابت | مدرسه‌ی ما</title>
+  <title>لیگ هفتگی | ساراگل</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* فیلترها */
+    .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 16px; scrollbar-width: none; }
+    .filter-btn { background: var(--bg-card); color: var(--text-dim); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-family: inherit; cursor: pointer; white-space: nowrap; font-size: 0.85rem; transition: 0.2s; }
+    .filter-btn.active { background: var(--green); color: #fff; border-color: var(--green); font-weight: bold; }
+
+    /* سوییچ بین کلاس و دانش‌آموز */
+    .view-toggle { display: flex; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 16px; }
+    .view-btn { flex: 1; background: transparent; border: none; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: bold; color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+    .view-btn.active { background: var(--blue); color: #fff; }
+
+    /* جدول لیگ */
+    .leaderboard-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 80px; }
+    .lb-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; }
+    .lb-row.top1 { background: linear-gradient(90deg, rgba(241,196,15,0.15), var(--bg-card)); border-color: #f1c40f; }
+    .lb-row.top2 { background: linear-gradient(90deg, rgba(192,192,192,0.15), var(--bg-card)); border-color: #c0c0c0; }
+    .lb-row.top3 { background: linear-gradient(90deg, rgba(205,127,50,0.15), var(--bg-card)); border-color: #cd7f32; }
+    
+    .lb-rank { font-size: 1.2rem; font-weight: bold; width: 30px; text-align: center; }
+    .lb-name { font-weight: bold; font-size: 0.95rem; }
+    .lb-class { font-size: 0.75rem; color: var(--text-dim); }
+    .lb-score { color: var(--green); font-weight: bold; font-size: 1rem; text-align: left; }
+    
+    .lock-note { text-align: center; padding: 20px; color: var(--text-dim); font-size: 0.85rem; }
+  </style>
 </head>
 <body>
 
   <header class="header">
-    <div class="logo">مدرسه‌ی ما</div>
+    <div class="logo">ساراگل</div>
     <div class="user-area">
       <span class="user-name">—</span>
       <div class="avatar">—</div>
@@ -17,42 +42,201 @@
   </header>
 
   <main class="container">
+    <h2 style="text-align:center; margin-bottom:20px;">🏆 جدول لیگ</h2>
 
-    <section>
-      <h2>🏆 رقابت این هفته</h2>
-      <div class="tabs">
-        <button class="tab active" data-tab="individual">فردی</button>
-        <button class="tab" data-tab="class">کلاسی</button>
-      </div>
-    </section>
+    <!-- فیلترهای زمانی -->
+    <div class="filter-bar" id="timeFilters">
+      <button class="filter-btn" data-time="today">امروز</button>
+      <button class="filter-btn" data-time="yesterday">دیروز</button>
+      <button class="filter-btn active" data-time="this_week">این هفته</button>
+      <button class="filter-btn" data-time="last_week">هفته قبل</button>
+      <button class="filter-btn" data-time="this_month">این ماه</button>
+      <button class="filter-btn" data-time="all">کل</button>
+    </div>
 
-    <section id="individual" class="tab-content">
-      <div id="individualList">
-        <p class="lock-note">در حال بارگذاری...</p>
-      </div>
-    </section>
+    <!-- سوییچ نمایش کلاس / دانش‌آموز -->
+    <div class="view-toggle" id="viewToggle">
+      <button class="view-btn active" data-view="class">🏫 کلاس‌ها</button>
+      <button class="view-btn" data-view="student">👤 دانش‌آموزها</button>
+    </div>
 
-    <section id="class" class="tab-content hidden">
-      <div id="classList">
-        <p class="lock-note">در حال بارگذاری...</p>
-      </div>
-    </section>
+    <!-- جدول -->
+    <div id="leaderboardContent" class="leaderboard-list">
+      <p class="lock-note">در حال بارگذاری...</p>
+    </div>
 
   </main>
 
-   <nav class="bottom-nav">
+  <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="leaderboard.html" class="nav-item">🏆 رقابت</a>
-    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
-    <a href="admin.html" class="nav-item">🛠 ادمین</a>
+    <a href="leaderboard.html" class="nav-item active">🏆 لیگ</a>
+    <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
     <a href="profile.html" class="nav-item">👤 پروفایل</a>
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
-    <script src="theme.js"></script>
-  <script src="leaderboard.js"></script>
+  <script src="theme.js"></script>
+  <script>
+    var currentFilter = 'this_week';
+    var currentView = 'class';
+    var allUsersData = []; // دیتای خام
+
+    // ===== تعیین بازه زمانی =====
+    function getDateRange(filter) {
+      var now = new Date();
+      var start, end;
+
+      if (filter === 'today') {
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      } else if (filter === 'yesterday') {
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+      } else if (filter === 'this_week') {
+        // شنبه شروع هفته در ایران
+        var day = now.getDay(); // 0=یکشنبه, 6=شنبه
+        var diff = (day + 1) % 7; // فاصله از شنبه
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      } else if (filter === 'last_week') {
+        var day2 = now.getDay();
+        var diff2 = (day2 + 1) % 7;
+        // شنبه هفته قبل
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff2 - 7, 0, 0, 0);
+        // جمعه هفته قبل
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff2 - 1, 23, 59, 59);
+      } else if (filter === 'this_month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      } else {
+        start = new Date(2000, 0, 1);
+        end = new Date(2100, 0, 1);
+      }
+
+      return { start: start.toISOString(), end: end.toISOString() };
+    }
+
+    // ===== لود لیگ =====
+    function loadLeaderboard() {
+      var box = document.getElementById('leaderboardContent');
+      box.innerHTML = '<p class="lock-note">در حال بارگذاری...</p>';
+
+      var range = getDateRange(currentFilter);
+
+      supabaseClient.rpc('get_leaderboard_stats', { p_start: range.start, p_end: range.end }).then(function(res) {
+        if (res.error) {
+          box.innerHTML = '<p class="lock-note" style="color:#e74c3c;">خطا در بارگذاری لیگ</p>';
+          return;
+        }
+        
+        allUsersData = res.data || [];
+        renderLeaderboard();
+      });
+    }
+
+    // ===== نمایش لیگ =====
+    function renderLeaderboard() {
+      var box = document.getElementById('leaderboardContent');
+      box.innerHTML = '';
+
+      if (currentView === 'class') {
+        // جمع‌آوری بر اساس کلاس
+        var classes = {};
+        allUsersData.forEach(function(u) {
+          if (!u.class_name) return;
+          if (!classes[u.class_name]) classes[u.class_name] = 0;
+          classes[u.class_name] += parseInt(u.total_minutes || 0);
+        });
+
+        var sortedClasses = Object.keys(classes).map(function(c) {
+          return { name: c, score: classes[c] };
+        }).sort(function(a, b) { return b.score - a.score; });
+
+        if (sortedClasses.length === 0) { box.innerHTML = '<p class="lock-note">داده‌ای موجود نیست.</p>'; return; }
+
+        sortedClasses.forEach(function(c, index) {
+          var rank = index + 1;
+          var medal = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : rank));
+          var rowClass = rank <= 3 ? ' top' + rank : '';
+          
+          var div = document.createElement('div');
+          div.className = 'lb-row' + rowClass;
+          div.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="lb-rank">${medal}</div>
+              <div>
+                <div class="lb-name">${c.name}</div>
+                <div class="lb-class">کلاس</div>
+              </div>
+            </div>
+            <div class="lb-score">${c.score} دقیقه</div>
+          `;
+          box.appendChild(div);
+        });
+
+      } else {
+        // نمایش بر اساس دانش‌آموز
+        var sortedStudents = allUsersData.filter(function(u) { return u.total_minutes > 0; })
+          .sort(function(a, b) { return b.total_minutes - a.total_minutes; })
+          .slice(0, 30); // فقط 30 نفر اول
+
+        if (sortedStudents.length === 0) { box.innerHTML = '<p class="lock-note">داده‌ای موجود نیست.</p>'; return; }
+
+        sortedStudents.forEach(function(s, index) {
+          var rank = index + 1;
+          var medal = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : rank));
+          var rowClass = rank <= 3 ? ' top' + rank : '';
+          
+          var div = document.createElement('div');
+          div.className = 'lb-row' + rowClass;
+          div.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="lb-rank">${medal}</div>
+              <div>
+                <div class="lb-name">${s.username}</div>
+                <div class="lb-class">${s.class_name || ''}</div>
+              </div>
+            </div>
+            <div class="lb-score">${s.total_minutes} دقیقه</div>
+          `;
+          box.appendChild(div);
+        });
+      }
+    }
+
+    // ===== رویدادهای کلیک =====
+    document.querySelectorAll('#timeFilters .filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#timeFilters .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        currentFilter = this.getAttribute('data-time');
+        loadLeaderboard();
+      });
+    });
+
+    document.querySelectorAll('#viewToggle .view-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#viewToggle .view-btn').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        currentView = this.getAttribute('data-view');
+        renderLeaderboard(); // دوباره رندر کن
+      });
+    });
+
+    // شروع
+    supabaseClient.auth.getUser().then(function(res) {
+      if (!res.data.user) { window.location.href = 'login.html'; return; }
+      supabaseClient.from('profiles').select('username').eq('id', res.data.user.id).single().then(function(p) {
+        if (p.data) {
+          document.querySelector('.user-name').textContent = p.data.username;
+          document.querySelector('.avatar').textContent = p.data.username.charAt(0);
+        }
+      });
+      loadLeaderboard();
+    });
+  </script>
 </body>
 </html>
