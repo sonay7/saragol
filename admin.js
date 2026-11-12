@@ -642,3 +642,54 @@ window.delWheelSlice = function(id) {
 if (document.getElementById('wheelSlicesList')) {
   loadAdminWheel();
 }
+// ===== مدیریت گردونه =====
+window.addWheelSlice = function() {
+  var label = document.getElementById('wheelLabel').value.trim();
+  var color = document.getElementById('wheelColor').value;
+  var type = document.getElementById('wheelType').value;
+  var val = parseInt(document.getElementById('wheelValue').value) || 0;
+
+  if (!label) { alert('متن رو بنویس'); return; }
+
+  supabaseClient.from('wheel_config').insert({
+    label: label, color: color, prize_type: type, prize_value: val
+  }).then(function(res) {
+    if (res.error) { alert('خطا: ' + res.error.message); return; }
+    document.getElementById('wheelLabel').value = '';
+    loadAdminWheel();
+  });
+};
+
+function loadAdminWheel() {
+  var list = document.getElementById('wheelSlicesList');
+  if (!list) return;
+
+  supabaseClient.from('wheel_config').select('*').order('created_at', { ascending: true }).then(function(res) {
+    list.innerHTML = '';
+    if (!res.data || res.data.length === 0) {
+      list.innerHTML = '<p class="lock-note">گردونه خالیه.</p>';
+      return;
+    }
+    res.data.forEach(function(s) {
+      var div = document.createElement('div');
+      div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid var(--border);';
+      div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:20px; height:20px; border-radius:50%; background:${s.color};"></div>
+          <strong>${s.label}</strong> <span style="font-size:0.7rem; color:var(--text-dim);">(${s.prize_type})</span>
+        </div>
+        <button class="btn btn-dim btn-sm" style="color:#e74c3c;" onclick="delWheelSlice('${s.id}')">حذف</button>
+      `;
+      list.appendChild(div);
+    });
+  });
+}
+
+window.delWheelSlice = function(id) {
+  if (!confirm('حذف بشه؟')) return;
+  supabaseClient.from('wheel_config').delete().eq('id', id).then(function() { loadAdminWheel(); });
+};
+
+if (document.getElementById('wheelSlicesList')) {
+  loadAdminWheel();
+}
