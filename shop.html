@@ -127,7 +127,6 @@
 <script>
   var currentUser = null;
   var myXp = 0;
-  var myInventory = [];
   var isAdmin = false;
   var currentCategory = 'avatar';
   var editingItemId = null;
@@ -146,119 +145,128 @@
         document.getElementById('adminFab').classList.remove('hidden');
       }
       
-      loadInventoryAndTab('avatar');
+      loadTab('avatar');
     });
   });
-
-  function loadInventoryAndTab(cat) {
-    supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id).then(inv => {
-      // لاگ برای دیباگ در کنسول
-      console.log("دیتای اینونتوری:", inv.data);
-      console.log("خطای اینونتوری:", inv.error);
-      
-      myInventory = inv.data || [];
-      loadTab(cat);
-    });
-  }
 
   document.querySelectorAll('.shop-tab').forEach(tab => {
     tab.addEventListener('click', function() {
       document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
       currentCategory = this.getAttribute('data-cat');
-      loadInventoryAndTab(currentCategory);
+      loadTab(currentCategory);
     });
   });
 
+  // ===== تابع اصلی لود تب (اینبار خیلی مطمئن!) =====
   function loadTab(category) {
     var grid = document.getElementById('itemsGrid');
     grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">در حال بارگذاری...</p>';
     
-    supabaseClient.from('shop_items').select('*').eq('category', category).eq('is_active', true).then(res => {
-      grid.innerHTML = '';
-      if (!res.data || res.data.length === 0) {
-        grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">آیتمی در این دسته وجود ندارد.</p>';
-        return;
-      }
+    // اول می‌ریم چک می‌کنیم کاربر دقیقاً چی خریده
+    supabaseClient.from('user_inventory').select('item_id').eq('user_id', currentUser.id).then(invRes => {
+      // آرایه‌ای از آیدی آیتم‌هایی که کاربر خریده
+      var boughtIds = (invRes.data || []).map(i => String(i.item_id));
       
-      res.data.forEach(item => {
-        // استفاده از String برای اطمینان از مقایسه درست UUID ها
-        var isBought = myInventory.some(i => String(i.item_id) === String(item.id));
-        var canAfford = myXp >= item.price;
-        
-        console.log("آیتم:", item.name, "| خریداری شده:", isBought);
-        
-        var btnHtml = '';
-        
-        if (isBought) {
-          // اگر خریده بود
-          btnHtml = `<button class="buy-btn btn-bought" disabled>خریداری شده</button>`;
-          
-          // اگر آیتم از نوع تم یا فونت بود، دکمه استفاده رو هم اضافه کن
-          if (category === 'theme' || category === 'font') {
-            btnHtml += `<button class="equip-btn" onclick="applyItem('${category}', '${item.effect_value}')">✨ استفاده</button>`;
-          }
-        } else {
-          // اگر نخریده بود
-          var btnDisabled = canAfford ? '' : 'disabled';
-          btnHtml = `<button class="buy-btn" id="buyBtn_${item.id}" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">خرید</button>`;
+      // حالا آیتم‌های فروشگاه رو می‌گیریم
+      supabaseClient.from('shop_items').select('*').eq('category', category).eq('is_active', true).then(res => {
+        grid.innerHTML = '';
+        if (!res.data || res.data.length === 0) {
+          grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">آیتمی در این دسته وجود ندارد.</p>';
+          return;
         }
-
-        var adminBtns = isAdmin ? `
-          <div class="admin-actions">
-            <button class="edit-btn" onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>✏️</button>
-            <button class="delete-btn" onclick="deleteItem('${item.id}')">×</button>
-          </div>
-        ` : '';
         
-        var mediaHtml = item.image_url 
-          ? `<img src="${item.image_url}" class="shop-img" alt="${item.name}">` 
-          : `<div class="shop-icon">${item.icon || '📦'}</div>`;
+        res.data.forEach(item => {
+          // چک کردن اینکه این آیتم توی لیست خریدهای کاربر هست یا نه
+          var isBought = boughtIds.includes(String(item.id));
+          var canAfford = myXp >= item.price;
+          
+          var btnHtml = '';
+          
+          if (isBought) {
+            // اگر خریده بود، دکمه خاکستری
+            btnHtml = `<button class="buy-btn btn-bought" disabled>خریداری شده</button>`;
+            
+            // اگر تم یا فونت بود، دکمه استفاده رو هم اضافه کن
+            if (category === 'theme' || category === 'font') {
+              btnHtml += `<button class="equip-btn" onclick="applyItem('${category}', '${item.effect_value}')">✨ استفاده</button>`;
+            }
+          } else {
+            // اگر نخریده بود، دکمه سبز
+            var btnDisabled = canAfford ? '' : 'disabled';
+            btnHtml = `<button class="buy-btn" ${btnDisabled} onclick="buyItem('${item.id}', ${item.price}, '${category}', '${item.name}')">خرید</button>`;
+          }
 
-        var div = document.createElement('div');
-        div.className = 'shop-card';
-        div.innerHTML = `
-          ${adminBtns}
-          <div style="width: 100%;">
-            ${mediaHtml}
-            <div class="shop-name">${item.name}</div>
-            <div class="shop-desc">${item.description || ''}</div>
-          </div>
-          <div style="width:100%;">
-            <div class="shop-price">${item.price} XP</div>
-            ${btnHtml}
-          </div>
-        `;
-        grid.appendChild(div);
+          var adminBtns = isAdmin ? `
+            <div class="admin-actions">
+              <button class="edit-btn" onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>✏️</button>
+              <button class="delete-btn" onclick="deleteItem('${item.id}')">×</button>
+            </div>
+          ` : '';
+          
+          var mediaHtml = item.image_url 
+            ? `<img src="${item.image_url}" class="shop-img" alt="${item.name}">` 
+            : `<div class="shop-icon">${item.icon || '📦'}</div>`;
+
+          var div = document.createElement('div');
+          div.className = 'shop-card';
+          div.innerHTML = `
+            ${adminBtns}
+            <div style="width: 100%;">
+              ${mediaHtml}
+              <div class="shop-name">${item.name}</div>
+              <div class="shop-desc">${item.description || ''}</div>
+            </div>
+            <div style="width:100%;">
+              <div class="shop-price">${item.price} XP</div>
+              ${btnHtml}
+            </div>
+          `;
+          grid.appendChild(div);
+        });
       });
     });
   }
 
+  // ===== تابع خرید (با محافظت کامل) =====
   window.buyItem = function(itemId, price, type, name) {
     if (isBuying) return;
-    if (myXp < price) { alert('XP کافی نداری!'); return; }
-    if (!confirm('آیا ' + price + ' XP برای خرید ' + name + ' پرداخت می‌کنی؟')) return;
-
+    
     isBuying = true;
 
-    supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(res => {
-      if (res.error) { alert('خطا در خرید'); isBuying = false; return; }
+    // ⬇️ اول از همه چک می‌کنیم ببینیم قبلاً خریدیم یا نه (تا XP کم نشه)
+    supabaseClient.from('user_inventory').select('id').eq('user_id', currentUser.id).eq('item_id', itemId).then(checkRes => {
       
-      supabaseClient.from('user_inventory').insert({
-        user_id: currentUser.id, item_type: type, item_id: itemId
-      }).then(insertRes => {
+      if (checkRes.data && checkRes.data.length > 0) {
+        alert('شما قبلاً این آیتم را خریده‌اید! صفحه بروزرسانی می‌شود.');
         isBuying = false;
+        location.reload();
+        return;
+      }
+
+      if (myXp < price) { alert('XP کافی نداری!'); isBuying = false; return; }
+      if (!confirm('آیا ' + price + ' XP برای خرید ' + name + ' پرداخت می‌کنی؟')) { isBuying = false; return; }
+
+      // مرحله ۱: کم کردن XP
+      supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(updateRes => {
+        if (updateRes.error) { alert('خطا در کم کردن XP'); isBuying = false; return; }
         
-        if (insertRes.error) {
-          // اینجا دقیقاً خطای دیتابیس رو نشون می‌دیم که بفهمیم چرا ارور داد
-          alert('خطا در ثبت خرید: ' + insertRes.error.message);
-          // XP رو برمی‌گردونیم
-          supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
-          return;
-        }
-        
-        alert('🎉 خرید با موفقیت انجام شد!');
-        location.reload(); // رفرش صفحه برای اعمال تغییرات
+        // مرحله ۲: اضافه کردن به اینونتوری
+        supabaseClient.from('user_inventory').insert({
+          user_id: currentUser.id, item_type: type, item_id: itemId
+        }).then(insertRes => {
+          isBuying = false;
+          
+          if (insertRes.error) {
+            alert('خطا در ثبت خرید: ' + insertRes.error.message);
+            // برگردوندن XP
+            supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
+            return;
+          }
+          
+          alert('🎉 خرید با موفقیت انجام شد!');
+          location.reload(); // رفرش برای آپدیت دکمه‌ها
+        });
       });
     });
   };
