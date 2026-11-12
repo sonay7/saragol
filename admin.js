@@ -476,3 +476,117 @@ window.addCinemaVideo = function() {
     document.getElementById('cinemaPrice').value = '';
   });
 };
+// ===== مدیریت پک‌های استیکر =====
+window.createStickerPack = function() {
+  var name = document.getElementById('newPackName').value.trim();
+  var price = parseInt(document.getElementById('newPackPrice').value);
+  var icon = document.getElementById('newPackIcon').value.trim() || '📦';
+
+  if (!name || !price || price < 1) { alert('اسم و قیمت رو درست وارد کن'); return; }
+
+  supabaseClient.from('sticker_packs').insert({
+    name: name, price: price, icon: icon
+  }).then(function(res) {
+    if (res.error) { alert('خطا: ' + res.error.message); return; }
+    document.getElementById('newPackName').value = '';
+    document.getElementById('newPackPrice').value = '';
+    document.getElementById('newPackIcon').value = '';
+    loadAdminPacks();
+  });
+};
+
+function loadAdminPacks() {
+  var list = document.getElementById('adminPacksList');
+  if (!list) return;
+
+  supabaseClient.from('sticker_packs').select('*, stickers(id, image_url)').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    if (!res.data || res.data.length === 0) {
+      list.innerHTML = '<p class="lock-note">هنوز پکی ساخته نشده.</p>';
+      return;
+    }
+
+    res.data.forEach(function(pack) {
+      var stickerCount = pack.stickers ? pack.stickers.length : 0;
+      
+      var div = document.createElement('div');
+      div.style.cssText = 'background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--border);';
+      
+      var header = document.createElement('div');
+      header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;';
+      header.innerHTML = `
+        <div><strong>${pack.icon} ${pack.name}</strong> <span style="font-size:0.75rem; color:var(--text-dim);">(${pack.price} XP - ${stickerCount} استیکر)</span></div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-blue btn-sm" onclick="uploadSticker('${pack.id}')">➕ استیکر</button>
+          <button class="btn btn-dim btn-sm" style="color:#e74c3c; border-color:#e74c3c;" onclick="deleteStickerPack('${pack.id}')">حذف پک</button>
+        </div>
+      `;
+
+      var stickersGrid = document.createElement('div');
+      stickersGrid.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;';
+      
+      if (pack.stickers && pack.stickers.length > 0) {
+        pack.stickers.forEach(function(st) {
+          var imgWrap = document.createElement('div');
+          imgWrap.style.cssText = 'position:relative; width:50px; height:50px;';
+          imgWrap.innerHTML = `
+            <img src="${st.image_url}" style="width:100%; height:100%; object-fit:contain; background:#fff; border-radius:8px; border:1px solid var(--border);">
+            <button onclick="deleteSticker('${st.id}')" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer;">×</button>
+          `;
+          stickersGrid.appendChild(imgWrap);
+        });
+      } else {
+        stickersGrid.innerHTML = '<p style="font-size:0.7rem; color:var(--text-dim);">خالیه</p>';
+      }
+
+      div.appendChild(header);
+      div.appendChild(stickersGrid);
+      list.appendChild(div);
+    });
+  });
+}
+
+window.uploadSticker = function(packId) {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    var fileName = 'sticker_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+    
+    supabaseClient.storage.from('videos').upload(fileName, file).then(function(uploadRes) {
+      if (uploadRes.error) { alert('خطا در آپلود: ' + uploadRes.error.message); return; }
+      
+      var publicUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
+      
+      supabaseClient.from('stickers').insert({
+        pack_id: packId, image_url: publicUrl
+      }).then(function(insertRes) {
+        if (insertRes.error) { alert('خطا: ' + insertRes.error.message); return; }
+        loadAdminPacks();
+      });
+    });
+  };
+  input.click();
+};
+
+window.deleteStickerPack = function(id) {
+  if (!confirm('این پک و همه استیکرهاش حذف بشن؟')) return;
+  supabaseClient.from('sticker_packs').delete().eq('id', id).then(function(res) {
+    if (!res.error) loadAdminPacks();
+  });
+};
+
+window.deleteSticker = function(stickerId) {
+  if (!confirm('این استیکر حذف بشه؟')) return;
+  supabaseClient.from('stickers').delete().eq('id', stickerId).then(function(res) {
+    if (!res.error) loadAdminPacks();
+  });
+};
+
+// لود اولیه
+if (document.getElementById('adminPacksList')) {
+  loadAdminPacks();
+}
