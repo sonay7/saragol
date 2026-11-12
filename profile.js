@@ -28,13 +28,13 @@ supabaseClient.auth.getUser().then(function(res) {
     var uNameEl = document.querySelector('.user-name'); if(uNameEl) uNameEl.textContent = profile.username;
     var avatarEl = document.querySelector('.avatar'); if(avatarEl) avatarEl.textContent = profile.username.charAt(0);
 
-    // ⬇️ کد دعوت ⬇️
+    // ⬇️ نمایش کد دعوت ⬇️
     var inviteInput = document.getElementById('myInviteCode');
     if (inviteInput && profile.invite_code) {
       inviteInput.value = profile.invite_code;
     }
 
-    // تاریخ تولد (اگر قبلاً ثبت شده بود)
+    // نمایش تاریخ تولد
     if (profile.birthday) {
       var bdayInput = document.getElementById('userBirthday');
       if (bdayInput) bdayInput.value = profile.birthday;
@@ -111,8 +111,6 @@ supabaseClient.auth.getUser().then(function(res) {
 
     loadExams();
     loadGenres(uid);
-    
-    // لود نشان‌های ویژه
     loadSpecialBadges(uid);
   });
 });
@@ -179,7 +177,7 @@ function loadSpecialBadges(uid) {
   });
 }
 
-// ===== بقیه توابع (سطح، لیگ، ویجت، آزمون، ژانر، تم) =====
+// ===== بقیه توابع =====
 function renderLevelPath(currentLevel) {
   var list = document.getElementById('levelPathList');
   if (!list) return;
