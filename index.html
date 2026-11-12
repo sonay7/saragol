@@ -21,10 +21,11 @@
     .forum-name { font-size: 1rem; font-weight: 600; }
 
     /* دسترسی سریع */
-    .quick-access-wrapper { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 12px; }
-    .quick-access-wrapper .forum-card { grid-column: span 2; padding: 14px 8px; }
-    .quick-access-wrapper .forum-card:nth-child(4) { grid-column: 2 / span 2; }
-    .quick-access-wrapper .forum-card:nth-child(5) { grid-column: 4 / span 2; }
+   .quick-access-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.quick-access-wrapper .forum-card { padding: 14px 8px; }
+@media (max-width: 480px) {
+  .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); }
+}
     @media (max-width: 480px) {
       .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); }
       .quick-access-wrapper .forum-card { grid-column: span 1; }
