@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سینما ساراگل | تماشای فیلم</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .cinema-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding-bottom: 80px; }
+    .cinema-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .cinema-header { padding: 16px; border-bottom: 1px solid var(--border); }
+    .cinema-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 4px; color: var(--text); }
+    .cinema-desc { font-size: 0.8rem; color: var(--text-dim); }
+    
+    .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; display: flex; justify-content: center; align-items: center; }
+    .video-wrapper iframe { width: 100%; height: 100%; border: none; }
+    
+    .video-lock { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; z-index: 10; backdrop-filter: blur(4px); }
+    .lock-icon { font-size: 3rem; margin-bottom: 10px; }
+    
+    .buy-ticket-area { padding: 16px; text-align: center; }
+    .buy-btn { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3); }
+    .buy-btn:hover { transform: translateY(-2px); }
+    .buy-btn:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; box-shadow: none; transform: none; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span id="myXp" style="color:#f1c40f; font-weight:bold; font-size:0.9rem;">... XP</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <h2 style="text-align:center; margin-bottom:20px;">🎬 سینما ساراگل</h2>
+  <div class="cinema-grid" id="cinemaGrid">
+    <p class="lock-note">در حال بارگذاری فیلم‌ها...</p>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="gift.html" class="nav-item">🎁 هدیه</a>
+  <a href="cinema.html" class="nav-item active">🎬 سینما</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+
+<script>
+  var currentUser = null;
+  var myXp = 0;
+  var myTickets = [];
+
+  supabaseClient.auth.getUser().then(res => {
+    if (!res.data.user) { window.location.href = 'login.html'; return; }
+    currentUser = res.data.user;
+    
+    // گرفتن XP
+    supabaseClient.from('profiles').select('xp, username').eq('id', currentUser.id).single().then(p => {
+      myXp = p.data.xp || 0;
+      document.getElementById('myXp').textContent = myXp + ' XP';
+      document.querySelector('.user-name').textContent = p.data.username;
+      document.querySelector('.avatar').textContent = p.data.username.charAt(0);
+      
+      // گرفتن بلیط‌های کاربر
+      supabaseClient.from('cinema_tickets').select('video_id').eq('user_id', currentUser.id).then(tk => {
+        myTickets = (tk.data || []).map(t => t.video_id);
+        loadCinema();
+      });
+    });
+  });
+
+  function loadCinema() {
+    var grid = document.getElementById('cinemaGrid');
+    
+    supabaseClient.from('cinema_videos').select('*').eq('is_active', true).order('created_at', { ascending: false }).then(res => {
+      grid.innerHTML = '';
+      
+      if (!res.data || res.data.length === 0) {
+        grid.innerHTML = '<p class="lock-note">هنوز فیلمی در سینما اکران نشده است.</p>';
+        return;
+      }
+      
+      res.data.forEach(vid => {
+        var hasTicket = myTickets.includes(vid.id);
+        
+        var mediaHtml = '';
+        if (hasTicket) {
+          // ⬇️ ویدیو با لینک آپارات پخش میشه
+          mediaHtml = `<iframe src="${vid.video_url}" allowfullscreen></iframe>`;
+        } else {
+          mediaHtml = `
+            <div class="video-lock">
+              <div class="lock-icon">🔒</div>
+              <p>برای تماشای این فیلم باید بلیط بخری.</p>
+            </div>
+            <div style="position:absolute; font-size:5rem; opacity:0.1;">🎬</div>
+          `;
+        }
+
+        var buyBtnHtml = '';
+        if (!hasTicket) {
+          var canAfford = myXp >= vid.price;
+          buyBtnHtml = `
+            <div class="buy-ticket-area">
+              <button class="buy-btn" ${canAfford ? '' : 'disabled'} onclick="buyTicket('${vid.id}', ${vid.price}, '${vid.title}')">
+                🎟 خرید بلیط (${vid.price} XP)
+              </button>
+            </div>
+          `;
+        }
+
+        var div = document.createElement('div');
+        div.className = 'cinema-card';
+        div.innerHTML = `
+          <div class="cinema-header">
+            <div class="cinema-title">${vid.title}</div>
+            <div class="cinema-desc">${vid.description || ''}</div>
+          </div>
+          <div class="video-wrapper">
+            ${mediaHtml}
+          </div>
+          ${buyBtnHtml}
+        `;
+        grid.appendChild(div);
+      });
+    });
+  }
+
+  window.buyTicket = function(videoId, price, title) {
+    if (myXp < price) { alert('XP کافی نداری!'); return; }
+    if (!confirm('آیا ' + price + ' XP برای خرید بلیط فیلم «' + title + '» پرداخت می‌کنی؟')) return;
+
+    supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(updateRes => {
+      if (updateRes.error) { alert('خطا در کم کردن XP'); return; }
+      
+      supabaseClient.from('cinema_tickets').insert({
+        user_id: currentUser.id,
+        video_id: videoId
+      }).then(insertRes => {
+        if (insertRes.error) {
+          alert('خطا در خرید بلیط: ' + insertRes.error.message);
+          // برگردوندن XP
+          supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
+          return;
+        }
+        
+        alert('🍿 بلیط با موفقیت خریداری شد! فیلم رو ببین.');
+        location.reload(); // رفرش صفحه برای باز شدن قفل
+      });
+    });
+  };
+</script>
+</body>
+</html>
