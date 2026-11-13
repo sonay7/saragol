@@ -4,23 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!res.data.user) return;
     var myUid = res.data.user.id;
 
-    // ۱. ساخت و اضافه کردن آیکون زنگوله به هدر
     var userArea = document.querySelector('.user-area');
     if (!userArea) return;
 
+    // ساخت آیکون زنگوله (بدون فاصله اضافه، چسبیده به آواتار)
     var bellContainer = document.createElement('div');
-    bellContainer.style.cssText = 'position: relative; cursor: pointer; margin-left: 12px; font-size: 1.3rem; display: flex; align-items: center;';
-    bellContainer.innerHTML = `🔔<span id="notifBadge" style="display:none; position:absolute; top:-4px; right:-6px; background:#e74c3c; color:#fff; font-size:0.6rem; font-weight:bold; padding:2px 6px; border-radius:50%;"></span>`;
+    bellContainer.style.cssText = 'position: relative; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; margin-left: 8px;';
+    bellContainer.innerHTML = `🔔<span id="notifBadge" style="display:none; position:absolute; top:-4px; right:-8px; background:#e74c3c; color:#fff; font-size:0.6rem; font-weight:bold; padding:2px 5px; border-radius:50%;"></span>`;
     
-    // اضافه کردن قبل از آواتار
-    var avatar = userArea.querySelector('.avatar');
-    if (avatar) {
-      userArea.insertBefore(bellContainer, avatar);
-    } else {
-      userArea.appendChild(bellContainer);
-    }
+    // اضافه کردن به انتهای user-area (کنار آواتار)
+    userArea.appendChild(bellContainer);
 
-    // ۲. ساخت مودال اعلان‌ها
+    // ساخت مودال
     var modalHTML = `
       <div id="notifModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:9999; padding:20px;">
         <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:20px; width:100%; max-width:400px; max-height:80vh; display:flex; flex-direction:column;">
@@ -41,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var list = document.getElementById('notifList');
     var closeBtn = document.getElementById('closeNotifBtn');
 
-    // ۳. لود کردن تعداد اعلان‌های خوانده نشده
     function loadBadge() {
       supabaseClient.from('notifications').select('id', { count: 'exact' }).eq('user_id', myUid).eq('is_read', false).then(function(res) {
         var count = res.count || 0;
@@ -54,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // ۴. نمایش لیست اعلان‌ها در مودال
     function openNotifications() {
       modal.style.display = 'flex';
       list.innerHTML = '<p style="text-align:center; color:var(--text-dim);">در حال بارگذاری...</p>';
@@ -77,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="font-size:0.65rem; color:var(--text-dim); margin-top:8px; text-align:left;">${new Date(n.created_at).toLocaleString('fa-IR')}</div>
           `;
           
-          // اگر لینک داشت، با کلیک برو
           div.onclick = function() {
             if (n.link) window.location.href = n.link;
           };
@@ -85,21 +77,17 @@ document.addEventListener('DOMContentLoaded', function() {
           list.appendChild(div);
         });
 
-        // مارک کردن همه به عنوان خوانده شده
+        // مارک کردن به عنوان خوانده شده
         supabaseClient.from('notifications').update({ is_read: true }).eq('user_id', myUid).eq('is_read', false).then(function() {
           badge.style.display = 'none';
         });
       });
     }
 
-    // ۵. رویدادها
     bellContainer.onclick = openNotifications;
     closeBtn.onclick = function() { modal.style.display = 'none'; };
 
-    // شروع
     loadBadge();
-    
-    // هر ۳۰ ثانیه چک کن ببین اعلان جدید اومده یا نه
     setInterval(loadBadge, 30000);
   });
 });
