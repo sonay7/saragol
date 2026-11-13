@@ -150,6 +150,9 @@
 <script src="notifications.js"></script>
 
 <script>
+// متغیر سراسری برای جلوگیری از نمایش دوباره
+window.birthdayShownThisSession = false;
+
 document.addEventListener('DOMContentLoaded', function() {
   if (!localStorage.getItem('hasSeenWelcome')) {
     document.getElementById('welcomeModal').classList.remove('hidden');
@@ -163,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadLeaderboard();
   loadMissionData();
 
-  // ===== منطق تولد (قطعی) =====
+  // ===== منطق تولد (با ۳ لایه امنیتی) =====
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
@@ -179,16 +182,23 @@ document.addEventListener('DOMContentLoaded', function() {
       var currentYear = today.getFullYear();
       
       var isTodayBirthday = (today.getMonth() === bMonth && today.getDate() === bDay);
-      var firstName = profile.username.split(' ')[0]; // فقط اسم کوچک
       
-      // استفاده از localStorage برای جلوگیری از نمایش مجدد
+      // برش اسم (فقط کلمه اول)
+      var firstName = profile.username.split(' ')[0]; 
+      
       var bdayKey = 'bday_seen_' + currentYear + '_' + uid;
       
-      if (isTodayBirthday && !localStorage.getItem(bdayKey)) {
-        // ثبت در لوکال استوریج و دیتابیس
+      // لایه اول: چک دیتابیس | لایه دوم: چک لوکال استوریج | لایه سوم: چک متغیر سراسری
+      if (isTodayBirthday && profile.last_birthday_year !== currentYear && !localStorage.getItem(bdayKey) && !window.birthdayShownThisSession) {
+        
+        // تنظیم فلگ‌ها
+        window.birthdayShownThisSession = true;
         localStorage.setItem(bdayKey, 'true');
+        
+        // آپدیت دیتابیس
         supabaseClient.from('profiles').update({ last_birthday_year: currentYear }).eq('id', uid);
         
+        // نمایش پیام
         document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + firstName + ' جان! 🌟';
         document.getElementById('birthdayModal').classList.remove('hidden');
       }
