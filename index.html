@@ -162,67 +162,42 @@ document.addEventListener('DOMContentLoaded', function() {
   loadLeaderboard();
   loadMissionData();
 
+  // ===== منطق تولد (جدید و قطعی) =====
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
     
-    supabaseClient.from('profiles').select('username, birthday').eq('id', uid).single().then(function(p) {
-      if (!p.data) return;
+    supabaseClient.from('profiles').select('username, birthday, last_birthday_year').eq('id', uid).single().then(function(p) {
+      if (!p.data || !p.data.birthday) return;
       var profile = p.data;
       
-      if (profile.birthday) {
-        var today = new Date();
-        var bday = new Date(profile.birthday);
-        var isTodayBirthday = (today.getMonth() === bday.getMonth() && today.getDate() === bday.getDate());
-        var yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
-        var wasYesterdayBirthday = (yesterday.getMonth() === bday.getMonth() && yesterday.getDate() === bday.getDate());
-
-        // ⬇️ اصلاح جشن تولد ⬇️
-        var bdayKey = 'bday_seen_' + today.getFullYear() + '_' + profile.username;
-        if (isTodayBirthday && !localStorage.getItem(bdayKey)) {
-          document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + profile.username + ' جان! 🌟 فردا بیا سایت، سورپرایز دوستات منتظرته! 🎁';
-          document.getElementById('birthdayModal').classList.remove('hidden');
-          // بادکنک‌ها با تأخیر
-          setTimeout(function() { playCelebration(); }, 800);
-          localStorage.setItem(bdayKey, 'true');
-        } else if (wasYesterdayBirthday) {
-          checkForGifts(uid);
-        }
+      var today = new Date();
+      var parts = profile.birthday.split('-');
+      var bMonth = parseInt(parts[1], 10) - 1;
+      var bDay = parseInt(parts[2], 10);
+      var currentYear = today.getFullYear();
+      
+      // چک کردن تولد
+      var isTodayBirthday = (today.getMonth() === bMonth && today.getDate() === bDay);
+      
+      if (isTodayBirthday && profile.last_birthday_year !== currentYear) {
+        // ثبت اینکه امسال جشن گرفته شد
+        supabaseClient.from('profiles').update({ last_birthday_year: currentYear }).eq('id', uid);
+        
+        // نمایش پیام
+        document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + profile.username + ' جان! 🌟';
+        document.getElementById('birthdayModal').classList.remove('hidden');
       }
     });
   });
   
+  // دکمه بستن تولد (و بعدش بادکنک‌ها)
   document.getElementById('closeBirthdayBtn').addEventListener('click', function() {
     document.getElementById('birthdayModal').classList.add('hidden');
+    // بادکنک‌ها حالا اجرا میشن (نه همزمان با پیام)
+    playCelebration();
   });
 });
-
-function checkForGifts(uid) {
-  supabaseClient.from('gifts').select('*, sender:sender_id(username)').eq('receiver_id', uid).eq('is_claimed', false).then(function(res) {
-    var gifts = res.data || [];
-    if (gifts.length === 0) return;
-    
-    var list = document.getElementById('giftsListModal');
-    list.innerHTML = '';
-    gifts.forEach(function(g) {
-      var senderName = g.is_anonymous ? 'یک دوست ناشناس 🕵️' : (g.sender ? g.sender.username : 'ناشناس');
-      var div = document.createElement('div');
-      div.style.cssText = 'background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;';
-      div.innerHTML = `<div style="font-size: 1.5rem;">${g.gift_icon}</div><div style="flex:1;"><div style="font-weight: bold; font-size: 0.85rem;">${g.gift_name}</div><div style="font-size: 0.7rem; color: var(--text-dim);">از طرف: ${senderName}</div></div>`;
-      list.appendChild(div);
-    });
-
-    document.getElementById('giftsModal').classList.remove('hidden');
-    playCelebration();
-
-    document.getElementById('claimGiftsBtn').onclick = function() {
-      supabaseClient.from('gifts').update({ is_claimed: true }).eq('receiver_id', uid).eq('is_claimed', false).then(function() {
-        document.getElementById('giftsModal').classList.add('hidden');
-        alert('🎉 همه هدایا دریافت شد!');
-      });
-    };
-  });
-}
 
 function playCelebration() {
   var colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
