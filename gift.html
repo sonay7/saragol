@@ -100,8 +100,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
-  <script src="notifications.js"></script>
 <script src="theme.js"></script>
+<script src="notifications.js"></script>
 
 <script>
   var currentUser = null;
@@ -118,7 +118,6 @@
       if (!p.data) return;
       myXp = p.data.xp || 0;
       
-      // با چک ایمنی
       var xpEl = document.getElementById('myXp');
       if (xpEl) xpEl.textContent = myXp + ' XP';
       
@@ -212,6 +211,19 @@
           supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
           return; 
         }
+
+        // ⬇️ ارسال اعلان به گیرنده ⬇️
+        var senderNameForNotif = isAnonymous ? 'یک دوست ناشناس' : (currentUser.user_metadata ? currentUser.user_metadata.username : 'یک دوست');
+        // برای اطمینان از اسم خودمون، از متغیر myName استفاده می‌کنیم که در auth.js پر می‌شه، یا از پروفایل
+        supabaseClient.from('profiles').select('username').eq('id', currentUser.id).single().then(myP => {
+            var actualSenderName = isAnonymous ? 'یک دوست ناشناس' : (myP.data ? myP.data.username : 'یک دوست');
+            supabaseClient.from('notifications').insert({
+              user_id: selectedReceiver.id,
+              title: '🎁 هدیه جدید!',
+              body: actualSenderName + ' به شما یک ' + selectedGift.name + ' هدیه داد.',
+              link: 'gift.html'
+            });
+        });
         
         msgEl.textContent = '🎉 هدیه با موفقیت ارسال شد!';
         msgEl.style.color = 'var(--green)';
