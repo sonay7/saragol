@@ -9,6 +9,7 @@ var selectedOption = 0;
 var currentStreak = 0;
 var totalQuestions = 0;
 var hasMorningStudy = false;
+var totalSpecialBadges = 0;
 
 // ===== لود اولیه پروفایل =====
 supabaseClient.auth.getUser().then(function(res) {
@@ -30,9 +31,7 @@ supabaseClient.auth.getUser().then(function(res) {
 
     // کد دعوت
     var inviteInput = document.getElementById('myInviteCode');
-    if (inviteInput && profile.invite_code) {
-      inviteInput.value = profile.invite_code;
-    }
+    if (inviteInput && profile.invite_code) inviteInput.value = profile.invite_code;
 
     // تاریخ تولد
     if (profile.birthday) {
@@ -82,7 +81,7 @@ supabaseClient.auth.getUser().then(function(res) {
         var h = new Date(r.created_at).getHours();
         if (h >= 4 && h < 8) hasMorningStudy = true;
       });
-      if(stats[3]) stats[3].textContent = totalQuestions;
+      if(stats[2]) stats[2].textContent = totalQuestions; // سوال حل شده
 
       var days = {};
       rows.forEach(function(r) {
@@ -102,23 +101,26 @@ supabaseClient.auth.getUser().then(function(res) {
         else { break; }
       }
       
-      if(stats[2]) stats[2].textContent = currentStreak;
       var streakNumberEl = document.querySelector('.streak-number');
       if(streakNumberEl) streakNumberEl.textContent = currentStreak;
 
-      renderBadges(profile.total_minutes || 0);
+      var unlockedStandardCount = renderBadges(profile.total_minutes || 0);
+      
+      loadSpecialBadges(uid).then(function(specialCount) {
+        totalSpecialBadges = specialCount;
+        var totalAchievements = unlockedStandardCount + totalSpecialBadges;
+        var statAch = document.getElementById('statAchievements');
+        if (statAch) statAch.textContent = totalAchievements;
+      });
     });
 
     loadExams();
     loadGenres(uid);
-    loadSpecialBadges(uid);
-    
-    // ⬇️ لود نمودار هفتگی ⬇️
     loadWeeklyChart(uid);
   });
 });
 
-// ===== تابع نمودار هفتگی =====
+// ===== نمودار هفتگی =====
 function loadWeeklyChart(uid) {
   var canvas = document.getElementById('weeklyChart');
   if (!canvas) return;
@@ -131,139 +133,95 @@ function loadWeeklyChart(uid) {
   for (var i = 6; i >= 0; i--) {
     var d = new Date();
     d.setDate(today.getDate() - i);
-    var dayName = dayNames[d.getDay()];
-    labels.push(dayName);
+    labels.push(dayNames[d.getDay()]);
     dateKeys.push(d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
   }
 
-  supabaseClient.from('study_sessions')
-    .select('minutes, created_at')
-    .eq('user_id', uid)
-    .then(function(res) {
-      var rows = res.data || [];
-      var dataByDate = {};
-      
-      rows.forEach(function(r) {
-        var d = new Date(r.created_at);
-        var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
-        if (!dataByDate[key]) dataByDate[key] = 0;
-        dataByDate[key] += r.minutes;
-      });
-
-      var chartData = dateKeys.map(function(key) {
-        return dataByDate[key] || 0;
-      });
-
-      var ctx = canvas.getContext('2d');
-      
-      var gradient = ctx.createLinearGradient(0, 0, 0, 220);
-      gradient.addColorStop(0, '#2ecc71');
-      gradient.addColorStop(1, '#3498db');
-
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'دقیقه مطالعه',
-            data: chartData,
-            backgroundColor: gradient,
-            borderRadius: 6,
-            borderSkipped: false
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return context.parsed.y + ' دقیقه';
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              ticks: { color: '#888', stepSize: 30 }
-            },
-            x: {
-              grid: { display: false },
-              ticks: { color: '#888', font: { family: 'Vazirmatn, sans-serif' } }
-            }
-          }
-        }
-      });
+  supabaseClient.from('study_sessions').select('minutes, created_at').eq('user_id', uid).then(function(res) {
+    var rows = res.data || [];
+    var dataByDate = {};
+    rows.forEach(function(r) {
+      var d = new Date(r.created_at);
+      var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+      if (!dataByDate[key]) dataByDate[key] = 0;
+      dataByDate[key] += r.minutes;
     });
+
+    var chartData = dateKeys.map(function(key) { return dataByDate[key] || 0; });
+    var ctx = canvas.getContext('2d');
+    
+    var gradient = ctx.createLinearGradient(0, 0, 0, 220);
+    gradient.addColorStop(0, '#2ecc71');
+    gradient.addColorStop(1, '#3498db');
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{ label: 'دقیقه مطالعه', data: chartData, backgroundColor: gradient, borderRadius: 6, borderSkipped: false }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', stepSize: 30 } },
+          x: { grid: { display: false }, ticks: { color: '#888', font: { family: 'Vazirmatn, sans-serif' } } }
+        }
+      }
+    });
+  });
 }
 
 // ===== کپی کردن لینک دعوت =====
 window.copyInviteLink = function() {
   var code = document.getElementById('myInviteCode').value;
   if (!code) { alert('کد دعوت شما در حال ساخته شدنه، یه بار صفحه رو رفرش کن.'); return; }
-  
   var link = 'https://sonay7.github.io/saragol/signup.html?ref=' + code;
-  
-  navigator.clipboard.writeText(link).then(function() {
-    alert('✅ لینک دعوت کپی شد! برای دوستت بفرست.');
-  }).catch(function() {
-    prompt('لینک دعوت رو کپی کن:', link);
-  });
+  navigator.clipboard.writeText(link).then(function() { alert('✅ لینک دعوت کپی شد!'); }).catch(function() { prompt('لینک دعوت رو کپی کن:', link); });
 };
 
 // ===== ذخیره تاریخ تولد =====
 window.saveBirthday = function() {
   var bday = document.getElementById('userBirthday').value;
   var msg = document.getElementById('birthdayMsg');
-  
-  if (!bday) {
-    msg.textContent = 'لطفاً یک تاریخ انتخاب کن.';
-    msg.style.color = '#e74c3c';
-    return;
-  }
+  if (!bday) { msg.textContent = 'لطفاً یک تاریخ انتخاب کن.'; msg.style.color = '#e74c3c'; return; }
 
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     supabaseClient.from('profiles').update({ birthday: bday }).eq('id', res.data.user.id).then(function(updateRes) {
-      if (updateRes.error) {
-        msg.textContent = 'خطا: ' + updateRes.error.message;
-        msg.style.color = '#e74c3c';
-        return;
-      }
-      msg.textContent = '✅ تاریخ تولد با موفقیت ثبت شد!';
-      msg.style.color = 'var(--green)';
+      if (updateRes.error) { msg.textContent = 'خطا: ' + updateRes.error.message; msg.style.color = '#e74c3c'; return; }
+      msg.textContent = '✅ تاریخ تولد ثبت شد!'; msg.style.color = 'var(--green)';
     });
   });
 };
 
-// ===== لود نشان‌های ویژه =====
+// ===== لود نشان‌های ویژه (با برگرداندن تعداد) =====
 function loadSpecialBadges(uid) {
-  supabaseClient.from('user_badges').select('*').eq('user_id', uid).then(function(badgeRes) {
-    var list = document.getElementById('specialBadgesList');
-    if (!list) return;
-    
-    var badges = badgeRes.data || [];
-    list.innerHTML = '';
-    
-    if (badges.length === 0) {
-      list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim);">هنوز نشان ویژه‌ای نداری.</p>';
-      return;
-    }
-    
-    badges.forEach(function(b) {
-      var span = document.createElement('span');
-      span.style.cssText = 'background: linear-gradient(135deg, #f39c12, #f1c40f); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);';
-      span.textContent = (b.badge_icon || '🏅') + ' ' + b.badge_name;
-      list.appendChild(span);
+  return new Promise(function(resolve) {
+    supabaseClient.from('user_badges').select('*').eq('user_id', uid).then(function(badgeRes) {
+      var list = document.getElementById('specialBadgesList');
+      if (!list) { resolve(0); return; }
+      
+      var badges = badgeRes.data || [];
+      list.innerHTML = '';
+      
+      if (badges.length === 0) {
+        list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim);">هنوز نشان ویژه‌ای نداری.</p>';
+        resolve(0);
+        return;
+      }
+      
+      badges.forEach(function(b) {
+        var span = document.createElement('span');
+        span.style.cssText = 'background: linear-gradient(135deg, #f39c12, #f1c40f); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);';
+        span.textContent = (b.badge_icon || '🏅') + ' ' + b.badge_name;
+        list.appendChild(span);
+      });
+      resolve(badges.length);
     });
   });
 }
 
-// ===== بقیه توابع (سطح، ویجت، آزمون، ژانر، تم) =====
 function renderLevelPath(currentLevel) {
   var list = document.getElementById('levelPathList');
   if (!list) return;
@@ -277,9 +235,10 @@ function renderLevelPath(currentLevel) {
   });
 }
 
+// ===== رندر نشان‌ها (برگرداندن تعداد باز شده) =====
 function renderBadges(totalMinutes) {
   var list = document.getElementById('badgesList');
-  if (!list) return;
+  if (!list) return 0;
   var badgesData = [
     { id: 'min100', name: '۱۰۰ دقیقه', unlocked: totalMinutes >= 100 },
     { id: 'min500', name: '۵۰۰ دقیقه', unlocked: totalMinutes >= 500 },
@@ -298,12 +257,15 @@ function renderBadges(totalMinutes) {
     { id: 'firstmsg', name: 'اولین پیام', unlocked: false }
   ];
   list.innerHTML = '';
+  var unlockedCount = 0;
   badgesData.forEach(function(b) {
     var span = document.createElement('span');
     span.className = 'badge' + (b.unlocked ? '' : ' locked');
     span.textContent = b.unlocked ? b.name : '؟؟؟';
     list.appendChild(span);
+    if (b.unlocked) unlockedCount++;
   });
+  return unlockedCount;
 }
 
 function loadCupLogic(uid) {
@@ -369,40 +331,22 @@ function updateCupVisuals() {
   var smartTextEl = document.getElementById('smartText');
   var percent = Math.min(Math.round((todayMinutes / currentTarget) * 100), 100);
 
-  var cupLiquid = document.getElementById('cupLiquid');
-  if(cupLiquid) cupLiquid.style.height = percent + '%';
-
-  var galaxyLiquid = document.getElementById('galaxyLiquid');
-  if(galaxyLiquid) galaxyLiquid.style.height = percent + '%';
-
-  var simpleBar = document.getElementById('simpleBarFill');
-  if(simpleBar) simpleBar.style.width = percent + '%';
+  var cupLiquid = document.getElementById('cupLiquid'); if(cupLiquid) cupLiquid.style.height = percent + '%';
+  var galaxyLiquid = document.getElementById('galaxyLiquid'); if(galaxyLiquid) galaxyLiquid.style.height = percent + '%';
+  var simpleBar = document.getElementById('simpleBarFill'); if(simpleBar) simpleBar.style.width = percent + '%';
 
   document.querySelectorAll('.blossom').forEach(function(b) {
     var val = parseInt(b.getAttribute('data-val'));
-    if (percent >= val) {
-      b.style.opacity = '1';
-      b.style.transform = 'scale(1)';
-    } else {
-      b.style.opacity = '0';
-      b.style.transform = 'scale(0)';
-    }
+    if (percent >= val) { b.style.opacity = '1'; b.style.transform = 'scale(1)'; } 
+    else { b.style.opacity = '0'; b.style.transform = 'scale(0)'; }
   });
   
-  if (percent >= 100) {
-    statusEl.textContent = '🎉 آفرین! هدف امروزت پر شد.';
-    statusEl.style.color = 'var(--green)';
-  } else {
-    statusEl.textContent = todayMinutes + ' از ' + currentTarget + ' دقیقه';
-    statusEl.style.color = 'var(--text)';
-  }
+  if (percent >= 100) { statusEl.textContent = '🎉 آفرین! هدف امروزت پر شد.'; statusEl.style.color = 'var(--green)'; }
+  else { statusEl.textContent = todayMinutes + ' از ' + currentTarget + ' دقیقه'; statusEl.style.color = 'var(--text)'; }
 
   smartTextEl.style.display = 'block';
-  if (yesterdayMinutes === 0) {
-    smartTextEl.textContent = 'امروز روز خوبی برای شروع هست! یکی از هدف‌های بالا رو انتخاب کن.';
-  } else {
-    smartTextEl.textContent = 'دیروز ' + yesterdayMinutes + ' دقیقه مطالعه کردی. برای پیشرفت، یکی از هدف‌های بالا رو انتخاب کن!';
-  }
+  if (yesterdayMinutes === 0) smartTextEl.textContent = 'امروز روز خوبی برای شروع هست! یکی از هدف‌های بالا رو انتخاب کن.';
+  else smartTextEl.textContent = 'دیروز ' + yesterdayMinutes + ' دقیقه مطالعه کردی. برای پیشرفت، یکی از هدف‌های بالا رو انتخاب کن!';
 }
 
 function toShamsi(dateStr) {
@@ -419,8 +363,7 @@ function loadExams() {
     var uid = res.data.user.id;
     supabaseClient.from('exams').select('*').or('is_public.eq.true,user_id.eq.' + uid).order('exam_date', { ascending: true }).then(function(examRes) {
       var rows = examRes.data || [];
-      var today = new Date();
-      today.setHours(0, 0, 0, 0);
+      var today = new Date(); today.setHours(0, 0, 0, 0);
       var upcoming = rows.filter(function(e) {
         if (new Date(e.exam_date) < today) return false;
         if (e.is_public && e.class_name !== 'همه' && userClassName.indexOf(e.class_name) === -1) return false;
@@ -429,8 +372,7 @@ function loadExams() {
       if (upcoming.length === 0) { listEl.innerHTML = '<p class="lock-note">هیچ آزمونی پیش رو نداری 😎</p>'; return; }
       listEl.innerHTML = '';
       upcoming.forEach(function(exam) {
-        var examDate = new Date(exam.exam_date);
-        examDate.setHours(0, 0, 0, 0);
+        var examDate = new Date(exam.exam_date); examDate.setHours(0, 0, 0, 0);
         var diffDays = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
         var div = document.createElement('div');
         div.className = 'admin-row';
