@@ -14,21 +14,39 @@ if (signupBtn) {
   signupBtn.addEventListener('click', function(e) {
     e.preventDefault();
     
-    // گرفتن مقادیر
-    var username = document.getElementById('username').value.trim();
-    var email = document.getElementById('email').value.trim();
-    var password = document.getElementById('password').value;
-    var class_name = document.getElementById('className').value;
-    var inviteCode = inviteCodeInput ? inviteCodeInput.value.trim() : '';
-
-    if (!username || !email || !password || !class_name) {
-      msgEl.textContent = 'همه فیلدها رو پر کن!';
-      msgEl.style.color = '#e74c3c';
+    // چک کردن وجود فیلدها (برای جلوگیری از خطای null)
+    var userEl = document.getElementById('username');
+    var emailEl = document.getElementById('email');
+    var passEl = document.getElementById('password');
+    var classEl = document.getElementById('className');
+    
+    if (!userEl || !emailEl || !passEl || !classEl) {
+      if (msgEl) {
+        msgEl.textContent = 'خطا: فیلدهای فرم پیدا نشدند. صفحه را رفرش کنید.';
+        msgEl.style.color = '#e74c3c';
+      }
       return;
     }
 
-    msgEl.textContent = 'در حال ثبت‌نام...';
-    msgEl.style.color = 'var(--text-dim)';
+    // گرفتن مقادیر
+    var username = userEl.value.trim();
+    var email = emailEl.value.trim();
+    var password = passEl.value;
+    var class_name = classEl.value;
+    var inviteCode = inviteCodeInput ? inviteCodeInput.value.trim() : '';
+
+    if (!username || !email || !password || !class_name) {
+      if (msgEl) {
+        msgEl.textContent = 'همه فیلدها (به جز کد دعوت) را پر کنید!';
+        msgEl.style.color = '#e74c3c';
+      }
+      return;
+    }
+
+    if (msgEl) {
+      msgEl.textContent = 'در حال ثبت‌نام...';
+      msgEl.style.color = 'var(--text-dim)';
+    }
     signupBtn.disabled = true;
 
     // ۱. ساخت کاربر در Supabase Auth
@@ -37,8 +55,10 @@ if (signupBtn) {
       password: password,
     }).then(function(res) {
       if (res.error) {
-        msgEl.textContent = 'خطا: ' + res.error.message;
-        msgEl.style.color = '#e74c3c';
+        if (msgEl) {
+          msgEl.textContent = 'خطا: ' + res.error.message;
+          msgEl.style.color = '#e74c3c';
+        }
         signupBtn.disabled = false;
         return;
       }
@@ -57,14 +77,16 @@ if (signupBtn) {
         username: username,
         class_name: class_name,
         role: 'student',
-        status: 'approved',
+        status: 'approved', // برای اینکه مستقیم بتونه وارد بشه
         xp: 0,
         total_minutes: 0,
-        invite_code: generatedInviteCode // ثبت کد ساخته شده
+        invite_code: generatedInviteCode
       }).then(function(profileRes) {
         if (profileRes.error) {
-          msgEl.textContent = 'خطا در ساخت پروفایل: ' + profileRes.error.message;
-          msgEl.style.color = '#e74c3c';
+          if (msgEl) {
+            msgEl.textContent = 'خطا در ساخت پروفایل: ' + profileRes.error.message;
+            msgEl.style.color = '#e74c3c';
+          }
           signupBtn.disabled = false;
           return;
         }
@@ -75,9 +97,7 @@ if (signupBtn) {
             new_user_id: userId,
             code: inviteCode
           }).then(function(inviteRes) {
-            if (inviteRes.error) {
-              console.error('خطا در ثبت دعوت:', inviteRes.error);
-            }
+            if (inviteRes.error) console.error('خطا در ثبت دعوت:', inviteRes.error);
             finishSignup();
           });
         } else {
@@ -89,8 +109,10 @@ if (signupBtn) {
 }
 
 function finishSignup() {
-  msgEl.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
-  msgEl.style.color = 'var(--green)';
+  if (msgEl) {
+    msgEl.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
+    msgEl.style.color = 'var(--green)';
+  }
   setTimeout(function() {
     window.location.href = 'index.html';
   }, 1500);
