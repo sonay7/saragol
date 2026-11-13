@@ -482,3 +482,92 @@ if (document.getElementById('logoutBtn')) {
     }
   });
 }
+// ===== نمودار مطالعه ۷ روز اخیر =====
+function loadWeeklyChart(uid) {
+  var canvas = document.getElementById('weeklyChart');
+  if (!canvas) return;
+
+  // ۱. ساخت برچسب‌های ۷ روز اخیر (به شمسی)
+  var dayNames = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+  var labels = [];
+  var dateKeys = []; 
+  var today = new Date();
+
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date();
+    d.setDate(today.getDate() - i);
+    var dayName = dayNames[d.getDay()];
+    labels.push(dayName);
+    // کلید برای تطبیق با دیتابیس (مثل 2023-10-25)
+    dateKeys.push(d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
+  }
+
+  // ۲. گرفتن داده‌ها از دیتابیس
+  supabaseClient.from('study_sessions')
+    .select('minutes, created_at')
+    .eq('user_id', uid)
+    .then(function(res) {
+      var rows = res.data || [];
+      var dataByDate = {};
+      
+      // جمع کردن دقایق هر روز
+      rows.forEach(function(r) {
+        var d = new Date(r.created_at);
+        var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+        if (!dataByDate[key]) dataByDate[key] = 0;
+        dataByDate[key] += r.minutes;
+      });
+
+      // ۳. ساخت آرایه نهایی داده‌ها
+      var chartData = dateKeys.map(function(key) {
+        return dataByDate[key] || 0;
+      });
+
+      // ۴. رنگ‌ها و تنظیمات نمودار
+      var ctx = canvas.getContext('2d');
+      
+      // گرادیانت برای میله‌ها
+      var gradient = ctx.createLinearGradient(0, 0, 0, 220);
+      gradient.addColorStop(0, '#2ecc71'); // سبز
+      gradient.addColorStop(1, '#3498db'); // آبی
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'دقیقه مطالعه',
+            data: chartData,
+            backgroundColor: gradient,
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.parsed.y + ' دقیقه';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#888', stepSize: 30 }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#888', font: { family: 'Vazirmatn, sans-serif' } }
+            }
+          }
+        }
+      });
+    });
+}
