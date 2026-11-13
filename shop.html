@@ -114,6 +114,7 @@
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
 <script src="theme.js"></script>
+<script src="notifications.js"></script>
 
 <script>
   var currentUser = null;
@@ -154,19 +155,16 @@
     var grid = document.getElementById('itemsGrid');
     grid.innerHTML = '<p class="lock-note" style="grid-column: span 2;">در حال بارگذاری...</p>';
     
-    // تب چت و استیکر
     if (category === 'chat') {
       loadChatAndStickers();
       return;
     }
 
-    // تب کوله‌پشتی
     if (category === 'inventory') {
       loadInventoryTab();
       return;
     }
     
-    // بقیه تب‌ها
     supabaseClient.from('user_inventory').select('item_id').eq('user_id', currentUser.id).then(invRes => {
       var boughtIds = (invRes.data || []).map(i => String(i.item_id));
       
@@ -224,7 +222,6 @@
     });
   }
 
-  // ===== تب ترکیبی چت و استیکر =====
   function loadChatAndStickers() {
     var grid = document.getElementById('itemsGrid');
     
@@ -307,7 +304,6 @@
     });
   }
 
-  // ===== تب کوله‌پشتی =====
   function loadInventoryTab() {
     var grid = document.getElementById('itemsGrid');
     
@@ -331,7 +327,6 @@
         
         grid.innerHTML = '';
 
-        // ۱. آیتم‌های معمولی
         items.forEach(item => {
           var div = document.createElement('div');
           div.className = 'shop-card';
@@ -361,7 +356,6 @@
           grid.appendChild(div);
         });
 
-        // ۲. پک‌های استیکر
         packs.forEach(pack => {
           var div = document.createElement('div');
           div.className = 'shop-card';
@@ -379,7 +373,6 @@
           grid.appendChild(div);
         });
 
-        // ۳. جایزه‌های گردونه (Buff)
         buffs.forEach(buff => {
           var div = document.createElement('div');
           div.className = 'shop-card';
@@ -399,7 +392,6 @@
     });
   }
 
-  // ===== توابع خرید =====
   window.buyItem = function(itemId, price, type, name) {
     if (isBuying) return;
     isBuying = true;
@@ -472,7 +464,6 @@
     });
   };
 
-  // ===== استفاده از آیتم =====
   window.applyItem = function(type, effectValue) {
     if (!effectValue || effectValue.trim() === '') { 
       alert('❌ این آیتم مقدار افکت ندارد!'); 
@@ -495,7 +486,6 @@
     }
   };
 
-  // ===== توابع ادمین =====
   window.openAddItemModal = function() {
     editingItemId = null;
     document.getElementById('modalTitle').textContent = '➕ افزودن آیتم جدید';
