@@ -16,32 +16,33 @@
 .m-player.dead{opacity:.4;text-decoration:line-through}
 .m-player.self{border-color:var(--green)}
 .m-player.deputy{border-color:#f1c40f}
+.m-player.silenced{background:rgba(231,76,60,.2)}
 .m-chat{max-height:250px;overflow-y:auto;background:var(--bg);border-radius:10px;padding:12px;margin-top:12px}
 .m-msg{margin-bottom:6px;font-size:.85rem;line-height:1.5}
 .m-msg strong{color:var(--green)}
+.phase-bar{text-align:center;font-size:1.2rem;font-weight:bold;padding:14px;border-radius:10px;margin-bottom:12px}
 .phase-day{background:rgba(241,196,15,.15);color:#f1c40f}
 .phase-night{background:rgba(155,89,182,.15);color:#9b59b6}
 .phase-voting{background:rgba(231,76,60,.15);color:#e74c3c}
 .phase-res{background:rgba(46,204,113,.15);color:#2ecc71}
-.phase-bar{text-align:center;font-size:1.3rem;font-weight:bold;padding:14px;border-radius:10px;margin-bottom:12px}
 .flip-card{background:transparent;width:230px;height:320px;perspective:1000px;margin:20px auto;cursor:pointer}
 .flip-inner{position:relative;width:100%;height:100%;transition:transform .8s;transform-style:preserve-3d}
 .flip-card.flipped .flip-inner{transform:rotateY(180deg)}
 .flip-front,.flip-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;box-sizing:border-box}
 .flip-front{background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #e74c3c;color:#fff}
 .flip-back{background:linear-gradient(135deg,#2c3e50,#000);border:2px solid #f1c40f;color:#fff;transform:rotateY(180deg)}
-.flip-back h2{color:#f1c40f;font-size:1.8rem;margin-bottom:10px;text-align:center}
-.flip-back p{font-size:.9rem;line-height:1.6;color:#ddd;text-align:center}
+.flip-back h2{color:#f1c40f;font-size:1.6rem;margin-bottom:10px;text-align:center}
+.flip-back p{font-size:.85rem;line-height:1.6;color:#ddd;text-align:center}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;justify-content:center;align-items:center;z-index:9999;padding:20px}
 .modal.hidden{display:none}
-.modal-box{background:var(--bg-card);border:2px solid var(--green);border-radius:16px;padding:24px;max-width:400px;width:100%;text-align:center}
-.modal-box h3{font-size:1.2rem;margin-bottom:16px;color:var(--text)}
-.target-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;max-height:200px;overflow-y:auto}
+.modal-box{background:var(--bg-card);border:2px solid var(--green);border-radius:16px;padding:24px;max-width:400px;width:100%;text-align:center;max-height:90vh;overflow-y:auto}
+.modal-box h3{font-size:1.1rem;margin-bottom:16px;color:var(--text)}
+.target-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
 .target-btn{background:var(--bg);color:var(--text);border:1px solid var(--border);padding:10px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.9rem}
 .target-btn:hover{border-color:var(--green)}
 .sticker-btn{background:transparent!important;color:var(--text)!important;font-size:1.3rem!important;width:auto!important;height:auto!important;padding:0 8px!important;margin:0!important}
 .chat-area{display:flex;gap:8px;align-items:center}
-.badge-icon{display:inline-block;margin-right:4px}
+.notify-box{background:rgba(155,89,182,.2);border:1px solid #9b59b6;padding:10px;border-radius:8px;font-size:.8rem;margin-top:8px}
 </style>
 </head>
 <body>
@@ -51,8 +52,8 @@
 <div id="lobbyView">
   <div class="mafia-card">
     <h2>🎭 مافیا</h2>
-    <p style="font-size:.85rem;color:var(--text-dim);margin-top:8px;">این بازی دقیقاً با <strong>۱۲ نفر</strong> شروع می‌شه.</p>
-    <button class="mafia-btn" id="createRoomBtn" style="display:none;">➕ ساخت اتاق (ادمین)</button>
+    <p style="font-size:.85rem;color:var(--text-dim);margin-top:8px;">بازی دقیقاً با <strong>۱۲ نفر</strong> شروع می‌شه.</p>
+    <button class="mafia-btn" id="createRoomBtn" style="display:none;">➕ ساخت اتاق</button>
     <input class="mafia-input" id="joinCode" placeholder="کد اتاق" maxlength="6">
     <button class="mafia-btn blue" id="joinRoomBtn">🚪 ورود به اتاق</button>
   </div>
@@ -63,7 +64,7 @@
   <div class="mafia-card">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <strong>اتاق: <span id="roomCode"></span></strong>
-      <button class="mafia-btn danger" style="width:auto;padding:6px 12px;font-size:.8rem;margin:0;" onclick="location.reload()">خروج</button>
+      <button class="mafia-btn danger" style="width:auto;padding:6px 12px;font-size:.8rem;margin:0;" onclick="leaveGame()">خروج</button>
     </div>
     <button id="hostBtn" class="mafia-btn gold" style="display:none;margin-top:10px;" onclick="hostAdvance()">▶ مرحله بعد</button>
     <button id="soundToggle" class="mafia-btn" style="width:auto;padding:6px 12px;font-size:.8rem;margin-top:8px;display:none;" onclick="toggleSound()">🔊 صدا: روشن</button>
@@ -81,6 +82,16 @@
   <div class="mafia-card">
     <h3>بازیکنان (<span id="playerCount">0</span>/۱۲):</h3>
     <div class="m-players" id="playersList"></div>
+  </div>
+  
+  <div id="notifyBox" class="notify-box" style="display:none;"></div>
+  
+  <!-- پنل رأی‌گیری -->
+  <div id="votingCard" class="mafia-card" style="display:none;">
+    <h3 style="color:#e74c3c;">🗳️ رأی‌گیری</h3>
+    <p style="font-size:.85rem;color:var(--text-dim);margin:8px 0;">به کی رأی می‌دی؟</p>
+    <div class="m-players" id="voteTargets"></div>
+    <button id="mayorVetoBtn" class="mafia-btn gold" style="display:none;margin-top:12px;" onclick="useMayorVeto()">🛑 وتوی امروز (فقط ۱ بار)</button>
   </div>
   
   <div id="mafiaChatCard" class="mafia-card" style="display:none;">
@@ -111,7 +122,7 @@
   <div class="modal-box">
     <h3 id="ynQuestion"></h3>
     <button class="mafia-btn" onclick="ynYes()">✅ بله</button>
-    <button class="mafia-btn danger" onclick="ynNo()">❌ خیر</button>
+    <button class="mafia-btn danger" style="margin-top:8px;" onclick="ynNo()">❌ خیر</button>
   </div>
 </div>
 
@@ -155,19 +166,18 @@ const ROLE_DESCS = {
   gunner:'۳ تیر داری. به دیگران می‌دی تا اونا شلیک کنن.',
   helper:'هر شب می‌تونی یک یار جدید اضافه کنی یا با یاران مشورت کنی.'
 };
-
-// Blocked words in public chat
-const BLOCKED = ['مافیا','مافیای','پدرخوانده','ناتاشا','دکتر','کارآگاه','شهردار','تیرانداز','تفنگدار','یاور','شهروند','نجاتم داد','نجات داده','نجات داد','استعلام کردم','استعلام کرده','شلیک کردم','تیر دادم'];
-
+const BLOCKED = ['مافیا','مافیای','پدرخوانده','ناتاشا','دکتر','کارآگاه','شهردار','تیرانداز','تفنگدار','یاور','شهروند','نجاتم داد','نجات داده','استعلام کردم','شلیک کردم','تیر دادم'];
 const DURATIONS = {day:0,voting:30,mafia:60,doctor:30,sniper:30,helper:60,gunner:30,resolution:5};
+const NIGHT_ORDER = ['mafia','doctor','sniper','helper','gunner','resolution'];
 
 var myUid=null, myName='', myRole='student', myRoomId=null, myPlayerId=null, myGameRole=null, isHost=false;
-var myInventory=[], hasDeleteItem=false, myChatColor=null;
+var myInventory=[], myChatColor=null;
 var pollTimer=null, tickTimer=null, phaseEndTime=null, soundOn=true;
 var ynCallbackYes=null, ynCallbackNo=null;
-var mafiaKillTarget=null;
+var hasDoneActionThisPhase=false, lastPhaseKey='';
+var myData=null;
+var currentPlayers=[];
 
-// ===== Init =====
 supabaseClient.auth.getUser().then(res=>{
   if(!res.data.user){window.location.href='login.html';return;}
   myUid=res.data.user.id;
@@ -180,24 +190,21 @@ supabaseClient.auth.getUser().then(res=>{
       document.querySelector('.avatar').textContent=myName.charAt(0);
       if(myRole==='admin'||myRole==='superadmin')document.getElementById('createRoomBtn').style.display='block';
     }
-    if(r[1].data){myInventory=r[1].data;hasDeleteItem=myInventory.some(i=>i.effect_value==='delete_message');}
+    if(r[1].data){myInventory=r[1].data;}
   });
 });
 
-// ===== Audio =====
 function playPhaseAudio(phase){
   if(!soundOn)return;
   var map={mafia:'mafia_wake',doctor:'doctor_wake',sniper:'sniper_wake',helper:'helper_wake',gunner:'gunner_wake',resolution:'morning'};
-  var file=map[phase];
-  if(!file)return;
+  var file=map[phase];if(!file)return;
   var s=document.getElementById('sfx');
-  s.src='audio/'+file+'.mp3';
-  s.play().catch(()=>{});
+  s.src='audio/'+file+'.mp3';s.play().catch(()=>{});
 }
 function startBgMusic(){
   if(!soundOn)return;
   var bg=document.getElementById('bgMusic');
-  bg.src='audio/night_bg.mp3';bg.volume=.3;
+  if(!bg.src){bg.src='audio/night_bg.mp3';bg.volume=.3;}
   bg.play().catch(()=>{});
 }
 function stopBgMusic(){document.getElementById('bgMusic').pause();}
@@ -207,7 +214,6 @@ function toggleSound(){
   if(!soundOn)stopBgMusic();
 }
 
-// ===== Room =====
 document.getElementById('createRoomBtn').onclick=()=>{
   var code=Math.random().toString(36).substring(2,8).toUpperCase();
   supabaseClient.from('mafia_rooms').insert({code,host_id:myUid,status:'waiting',phase:'day',day_count:1,night_phase:'mafia'}).select().single().then(r=>{
@@ -223,6 +229,7 @@ document.getElementById('joinRoomBtn').onclick=()=>{
     joinRoom(r.data.id,code);
   });
 };
+window.leaveGame=function(){if(pollTimer)clearInterval(pollTimer);if(tickTimer)clearInterval(tickTimer);location.reload();};
 
 function joinRoom(roomId,code){
   myRoomId=roomId;
@@ -245,7 +252,6 @@ function joinRoom(roomId,code){
   poll();
 }
 
-// ===== Poll =====
 function poll(){
   if(!myRoomId)return;
   supabaseClient.from('mafia_rooms').select('*').eq('id',myRoomId).single().then(r=>{
@@ -256,62 +262,90 @@ function poll(){
     loadPlayers(room);
     loadRole(room);
     loadChats(room);
-    if(isHost&&phaseEndTime&&Date.now()>phaseEndTime.getTime()&&room.status==='playing'){
-      hostAdvance();
-    }
+    if(myPlayerId)supabaseClient.from('mafia_players').select('*').eq('id',myPlayerId).single().then(pr=>{myData=pr.data;});
+    if(isHost&&phaseEndTime&&Date.now()>phaseEndTime.getTime()&&room.status==='playing')hostAdvance();
   });
 }
 
 function tick(){
   if(!phaseEndTime)return;
   var diff=Math.max(0,Math.floor((phaseEndTime.getTime()-Date.now())/1000));
-  var bar=document.getElementById('phaseBar');
-  if(!bar)return;
+  var bar=document.getElementById('phaseBar');if(!bar)return;
   var name=bar.getAttribute('data-name')||'';
   bar.textContent=name+' | ⏱ '+String(Math.floor(diff/60)).padStart(2,'0')+':'+String(diff%60).padStart(2,'0');
 }
 
-// ===== Render phase =====
-var lastPhaseKey='';
 function renderPhase(room){
   var bar=document.getElementById('phaseBar');
-  var key=room.status+'_'+room.phase+'_'+room.night_phase;
-  var phaseText='',phaseClass='',name='';
+  var key=room.status+'_'+room.phase+'_'+room.night_phase+'_'+room.day_count;
+  var name='',cls='';
 
-  if(room.status==='waiting'){name='⏳ در انتظار بازیکنان';phaseClass='phase-day';}
+  if(room.status==='waiting'){name='⏳ در انتظار بازیکنان';cls='phase-day';}
   else if(room.status==='playing'){
-    if(room.phase==='day'){name='☀️ روز '+room.day_count+' - بحث آزاد';phaseClass='phase-day';}
-    else if(room.phase==='voting'){name='🗳️ رأی‌گیری روز '+room.day_count;phaseClass='phase-voting';}
+    if(room.phase==='day'){name='☀️ روز '+room.day_count+' - بحث آزاد';cls='phase-day';}
+    else if(room.phase==='voting'){name='🗳️ رأی‌گیری روز '+room.day_count;cls='phase-voting';}
     else if(room.phase==='night'){
       var map={mafia:'مافیا بیدارن',doctor:'دکتر بیدار شه',sniper:'تیرانداز بیدار شه',helper:'یاور بیدار شه',gunner:'تفنگدار بیدار شه',resolution:'نتیجه شب'};
       name='🌙 شب '+room.day_count+' - '+(map[room.night_phase]||'');
-      phaseClass='phase-night';
+      cls='phase-night';
     }
-    else if(room.phase==='resolution'){name='☀️ نتیجه شب';phaseClass='phase-day';}
-    else if(room.phase==='ended'){name='🏁 بازی تموم شد';phaseClass='phase-res';}
+    else if(room.phase==='ended'){name='🏁 بازی تموم شد';cls='phase-res';}
   }
-  bar.className='phase-bar '+phaseClass;
+  bar.className='phase-bar '+cls;
   bar.setAttribute('data-name',name);
   bar.textContent=name;
 
+  // Vote card visibility
+  var vc=document.getElementById('votingCard');
+  if(room.phase==='voting'&&myData&&myData.is_alive){vc.style.display='block';showVoteTargets();}
+  else vc.style.display='none';
+
   if(key!==lastPhaseKey){
-    lastPhaseKey=key;
-    if(room.status==='playing'&&room.phase==='night'){playPhaseAudio(room.night_phase);if(room.night_phase!=='resolution')startBgMusic();}
-    else if(room.phase==='resolution'){stopBgMusic();playPhaseAudio('resolution');}
+    lastPhaseKey=key;hasDoneActionThisPhase=false;
+    if(room.phase==='night'){playPhaseAudio(room.night_phase);if(room.night_phase!=='resolution')startBgMusic();}
     else stopBgMusic();
-    handlePhaseAction(room);
+    setTimeout(function(){handleNightPhase(room.night_phase);},500);
   }
 }
 
-// ===== Players =====
+function showVoteTargets(){
+  var box=document.getElementById('voteTargets');box.innerHTML='';
+  currentPlayers.filter(p=>p.is_alive).forEach(p=>{
+    var b=document.createElement('button');
+    b.className='mafia-btn'+(p.user_id===myUid?' danger':'');
+    b.style.width='auto';b.style.margin='4px';b.style.padding='8px 16px';
+    b.textContent=p.username+(p.user_id===myUid?' (تو)':'');
+    b.onclick=()=>{
+      supabaseClient.from('mafia_players').update({voted_for:p.id}).eq('id',myPlayerId).then(()=>{
+        alert('✅ رأی ثبت شد به '+p.username);
+      });
+    };
+    box.appendChild(b);
+  });
+  var mayorBtn=document.getElementById('mayorVetoBtn');
+  if(myData&&myData.role==='mayor'&&myData.has_veto){
+    mayorBtn.style.display='block';
+  } else mayorBtn.style.display='none';
+}
+
+window.useMayorVeto=function(){
+  if(!myData||myData.role!=='mayor'||!myData.has_veto)return;
+  if(!confirm('از وتو استفاده می‌کنی؟ فقط ۱ بار در کل بازیه!'))return;
+  supabaseClient.from('mafia_players').update({has_veto:false}).eq('id',myPlayerId).then(()=>{
+    supabaseClient.from('mafia_rooms').update({mayor_veto_used:true}).eq('id',myRoomId);
+    alert('🛑 وتو فعال شد! پر رأی‌ترین نفر امروز زنده می‌مونه.');
+  });
+};
+
 function loadPlayers(room){
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).then(r=>{
     var ps=r.data||[];
+    currentPlayers=ps;
     var list=document.getElementById('playersList');
     list.innerHTML='';
     ps.forEach(p=>{
       var sp=document.createElement('span');
-      sp.className='m-player'+(p.is_alive?'':' dead')+(p.user_id===myUid?' self':'')+(p.is_deputy?' deputy':'');
+      sp.className='m-player'+(p.is_alive?'':' dead')+(p.user_id===myUid?' self':'')+(p.is_deputy?' deputy':'')+(p.is_silenced?' silenced':'');
       var icon='';
       if(p.is_silenced)icon+=' 🔇';
       if(p.is_deputy)icon+=' ⭐';
@@ -330,23 +364,21 @@ function loadPlayers(room){
   });
 }
 
-// ===== Role =====
 function loadRole(room){
   if(!myPlayerId)return;
   supabaseClient.from('mafia_players').select('*').eq('id',myPlayerId).single().then(r=>{
     if(!r.data||!r.data.role)return;
-    myGameRole=r.data.role;
+    myGameRole=r.data.role;myData=r.data;
     document.getElementById('roleCardWrap').style.display='block';
-    document.getElementById('roleName').textContent=(ROLE_NAMES[myGameRole]||myGameRole);
-    document.getElementById('roleDesc').textContent=(ROLE_DESCS[myGameRole]||'');
+    document.getElementById('roleName').textContent=ROLE_NAMES[myGameRole]||myGameRole;
+    document.getElementById('roleDesc').textContent=ROLE_DESCS[myGameRole]||'';
   });
 }
 
-// ===== Chats =====
 function loadChats(room){
   var isMafia=['godfather','natasha','mafia'].includes(myGameRole);
-  var isHelperTeam=myGameRole==='helper'||(myPlayer&&myPlayer.is_deputy);
-  var isDay=room.phase==='day'||room.phase==='voting';
+  var isHelperTeam=myGameRole==='helper'||(myData&&myData.is_deputy);
+  var isDay=room.phase==='day';
   var isNight=room.phase==='night';
 
   document.getElementById('mafiaChatCard').style.display=(isMafia&&isNight)?'block':'none';
@@ -355,12 +387,9 @@ function loadChats(room){
 
   supabaseClient.from('mafia_messages').select('*').eq('room_id',myRoomId).then(r=>{
     var msgs=r.data||[];
-    var pub=msgs.filter(m=>m.chat_type==='public');
-    var maf=msgs.filter(m=>m.chat_type==='mafia');
-    var hlp=msgs.filter(m=>m.chat_type==='helper');
-    renderChat('publicChat',pub);
-    if(isMafia)renderChat('mafiaChat',maf);
-    if(isHelperTeam)renderChat('helperChat',hlp);
+    renderChat('publicChat',msgs.filter(m=>m.chat_type==='public'));
+    if(isMafia)renderChat('mafiaChat',msgs.filter(m=>m.chat_type==='mafia'));
+    if(isHelperTeam)renderChat('helperChat',msgs.filter(m=>m.chat_type==='helper'));
   });
 }
 
@@ -368,8 +397,7 @@ function renderChat(id,msgs){
   var box=document.getElementById(id);if(!box)return;
   box.innerHTML='';
   msgs.forEach(m=>{
-    var d=document.createElement('div');
-    d.className='m-msg';
+    var d=document.createElement('div');d.className='m-msg';
     var style=(m.user_id===myUid&&myChatColor)?'style="background:'+myChatColor+';color:#fff;padding:4px 8px;border-radius:6px;"':'';
     var st=renderStickerInChat(m.message);
     d.innerHTML='<strong>'+m.username+':</strong> <span '+style+'>'+(st||m.message)+'</span>';
@@ -379,30 +407,27 @@ function renderChat(id,msgs){
 }
 
 window.sendChat=function(type){
+  if(!myData)return;
+  if(myData.is_silenced&&type==='public')return alert('🔇 شما ساکت هستید و نمی‌تونید حرف بزنید!');
+  if(!myData.is_alive)return alert('شما مرده‌اید!');
   var inputId=type==='mafia'?'mafiaChatInput':type==='helper'?'helperChatInput':'publicChatInput';
   var input=document.getElementById(inputId);
-  var text=input.value.trim();
-  if(!text||!myRoomId)return;
-  
+  var text=input.value.trim();if(!text)return;
   if(type==='public'){
-    var blocked=BLOCKED.some(w=>text.includes(w));
-    if(blocked){alert('⚠️ صحبت درباره نقش‌ها یا لو دادن اطلاعات ممنوعه!');return;}
+    if(BLOCKED.some(w=>text.includes(w)))return alert('⚠️ صحبت درباره نقش‌ها ممنوعه!');
   }
   input.value='';
   supabaseClient.from('mafia_messages').insert({room_id:myRoomId,user_id:myUid,username:myName,message:text,chat_type:type});
 };
 
-// ===== Yes/No Modal =====
-function askYesNo(question,onYes,onNo){
-  document.getElementById('ynQuestion').textContent=question;
-  ynCallbackYes=onYes;ynCallbackNo=onNo;
+function askYesNo(q,onY,onN){
+  document.getElementById('ynQuestion').textContent=q;
+  ynCallbackYes=onY;ynCallbackNo=onN;
   document.getElementById('yesNoModal').classList.remove('hidden');
 }
-window.ynYes=function(){document.getElementById('yesNoModal').classList.add('hidden');if(ynCallbackYes)ynCallbackYes();};
-window.ynNo=function(){document.getElementById('yesNoModal').classList.add('hidden');if(ynCallbackNo)ynCallbackNo();};
+window.ynYes=()=>{document.getElementById('yesNoModal').classList.add('hidden');if(ynCallbackYes)ynCallbackYes();};
+window.ynNo=()=>{document.getElementById('yesNoModal').classList.add('hidden');if(ynCallbackNo)ynCallbackNo();};
 
-// ===== Target Modal =====
-var tgtCallback=null;
 function askTarget(title,players,onSelect){
   document.getElementById('tgtTitle').textContent=title;
   var list=document.getElementById('tgtList');list.innerHTML='';
@@ -416,60 +441,82 @@ function askTarget(title,players,onSelect){
 }
 window.closeTarget=()=>document.getElementById('targetModal').classList.add('hidden');
 
-// ===== Handle phase-specific UI =====
-function handlePhaseAction(room){
-  if(room.status!=='playing')return;
-  var ph=room.phase;
-  if(ph==='night')handleNightPhase(room.night_phase);
+function handleNightPhase(phase){
+  if(!myData||!myData.is_alive)return;
+  if(hasDoneActionThisPhase)return;
+  var r=myGameRole;
+  if(phase==='mafia'&&(r==='godfather'||r==='natasha'||r==='mafia'))doMafiaAction(r);
+  else if(phase==='doctor'&&r==='doctor')doDoctorAction();
+  else if(phase==='sniper'&&(r==='sniper'||(myData.bullets&&myData.bullets>0)))doSniperAction();
+  else if(phase==='helper'&&r==='helper')doHelperAction();
+  else if(phase==='gunner'&&r==='gunner')doGunnerAction();
 }
 
-function handleNightPhase(nightPhase){
-  var me=myGameRole;
-  // Auto: shoot buttons for citizens with bullets
-  if(nightPhase==='doctor'&&me==='doctor')doDoctorAction();
-  else if(nightPhase==='sniper'&&me==='sniper')doSniperAction();
-  else if(nightPhase==='helper'&&me==='helper')doHelperAction();
-  else if(nightPhase==='gunner'&&me==='gunner')doGunnerAction();
+function doMafiaAction(role){
+  hasDoneActionThisPhase=true;
+  if(role==='godfather'){
+    supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(r=>{
+      var alive=(r.data||[]).filter(p=>p.user_id!==myUid);
+      askTarget('👑 قتل نهایی: کی رو می‌کشی؟',alive,p=>{
+        supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'kill',day_count:1});
+      });
+    });
+  } else if(role==='natasha'){
+    supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(r=>{
+      var alive=(r.data||[]).filter(p=>p.user_id!==myUid);
+      askYesNo('💃 آیا می‌خوای یک نفر رو ساکت کنی؟',()=>{
+        askTarget('کی رو ساکت کنی؟',alive,p=>{
+          supabaseClient.from('mafia_players').update({is_silenced:true}).eq('id',p.id);
+          supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'silence',day_count:1});
+        });
+      },()=>{});
+    });
+  } else {
+    supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(r=>{
+      var alive=(r.data||[]).filter(p=>p.user_id!==myUid);
+      askTarget('🕵️ پیشنهاد قتل: کی رو بکشیم؟',alive,p=>{
+        supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'kill_suggest',day_count:1});
+      });
+    });
+  }
 }
 
-// ===== Doctor =====
 function doDoctorAction(){
+  hasDoneActionThisPhase=true;
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(r=>{
     var alive=r.data||[];
     askYesNo('💊 آیا می‌خوای یک نفر رو نجات بدی؟',()=>{
-      askTarget('کی رو نجات بدی؟',alive.filter(p=>p.user_id!==myUid||true),p=>{
+      askTarget('کی رو نجات بدی؟',alive,p=>{
         supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'save',day_count:1});
       });
     },()=>{});
   });
 }
 
-// ===== Sniper =====
 function doSniperAction(){
-  supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('user_id',myUid).single().then(r=>{
-    var shots=(r.data.shots_used||0);
-    if(shots>=3){return;}
-    var left=3-shots;
-    supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(rs=>{
-      var alive=(rs.data||[]).filter(p=>p.user_id!==myUid);
-      askYesNo('🎯 تیر باقی‌مونده: '+left+'/۳ | شلیک می‌کنی؟',()=>{
-        askTarget('شلیک به کی؟',alive,p=>{
-          supabaseClient.from('mafia_players').update({shots_used:shots+1}).eq('id',myPlayerId);
-          supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'sniper_shot',day_count:1});
-        });
-      },()=>{});
-    });
+  hasDoneActionThisPhase=true;
+  var shots=(myData.shots_used||0);
+  if(shots>=3)return;
+  var left=3-shots;
+  supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(r=>{
+    var alive=(r.data||[]).filter(p=>p.user_id!==myUid);
+    askYesNo('🎯 تیر: '+left+'/۳ | شلیک می‌کنی؟',()=>{
+      askTarget('شلیک به کی؟',alive,p=>{
+        supabaseClient.from('mafia_players').update({shots_used:shots+1,bullets:Math.max(0,(myData.bullets||0)-1)}).eq('id',myPlayerId);
+        supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'sniper_shot',day_count:1});
+      });
+    },()=>{});
   });
 }
 
-// ===== Helper =====
 function doHelperAction(){
+  hasDoneActionThisPhase=true;
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(r=>{
     var alive=r.data||[];
-    var notDeputies=alive.filter(p=>!p.is_deputy&&p.user_id!==myUid);
+    var nonDep=(alive||[]).filter(p=>!p.is_deputy&&p.user_id!==myUid);
     askYesNo('🤝 آیا می‌خوای یک یار جدید اضافه کنی؟',()=>{
-      if(notDeputies.length===0)return alert('همه یار شدن!');
-      askTarget('کی رو به یارها اضافه کنی؟',notDeputies,p=>{
+      if(nonDep.length===0)return alert('همه یار شدن!');
+      askTarget('کی رو به یارها اضافه کنی؟',nonDep,p=>{
         supabaseClient.from('mafia_players').update({is_deputy:true}).eq('id',p.id);
         supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'add_deputy',day_count:1});
       });
@@ -477,78 +524,57 @@ function doHelperAction(){
   });
 }
 
-// ===== Gunner =====
 function doGunnerAction(){
-  supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('user_id',myUid).single().then(r=>{
-    var shots=(r.data.shots_used||0);
-    if(shots>=3){return;}
-    var left=3-shots;
-    supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(rs=>{
-      var alive=(rs.data||[]).filter(p=>p.user_id!==myUid);
-      askYesNo('🔫 تیر باقی‌مونده: '+left+'/۳ | به کسی تیر میدی؟',()=>{
-        askTarget('به کی تیر بدی؟',alive,p=>{
-          supabaseClient.from('mafia_players').update({shots_used:shots+1}).eq('id',myPlayerId);
-          supabaseClient.from('mafia_players').select('bullets').eq('id',p.id).single().then(pb=>{
-            supabaseClient.from('mafia_players').update({bullets:(pb.data.bullets||0)+1}).eq('id',p.id);
-          });
-          supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'give_gun',day_count:1});
+  hasDoneActionThisPhase=true;
+  var shots=(myData.shots_used||0);
+  if(shots>=3)return;
+  var left=3-shots;
+  supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).eq('is_alive',true).then(r=>{
+    var alive=(r.data||[]).filter(p=>p.user_id!==myUid);
+    askYesNo('🔫 تیر: '+left+'/۳ | به کسی تیر می‌دی؟',()=>{
+      askTarget('به کی تیر بدی؟',alive,p=>{
+        supabaseClient.from('mafia_players').update({shots_used:shots+1}).eq('id',myPlayerId);
+        supabaseClient.from('mafia_players').select('bullets').eq('id',p.id).single().then(pb=>{
+          supabaseClient.from('mafia_players').update({bullets:(pb.data.bullets||0)+1}).eq('id',p.id);
         });
-      },()=>{});
-    });
+        supabaseClient.from('mafia_actions').insert({room_id:myRoomId,actor_id:myUid,target_id:p.id,action:'give_gun',day_count:1});
+      });
+    },()=>{});
   });
 }
 
-// ===== Game start =====
 function startGame(){
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).then(r=>{
     var ps=r.data||[];
     if(ps.length<MIN_PLAYERS)return alert('حداقل ۱۲ نفر!');
     var roles=['godfather','natasha','mafia','mafia','citizen','citizen','doctor','detective','mayor','sniper','gunner','helper'];
     roles.sort(()=>Math.random()-.5);
-    Promise.all(ps.map((p,i)=>supabaseClient.from('mafia_players').update({role:roles[i],bullets:0,shots_used:0,is_deputy:false,has_veto:true}).eq('id',p.id))).then(()=>{
+    Promise.all(ps.map((p,i)=>supabaseClient.from('mafia_players').update({role:roles[i],bullets:0,shots_used:0,is_deputy:false,has_veto:true,is_silenced:false}).eq('id',p.id))).then(()=>{
       supabaseClient.from('mafia_rooms').update({status:'playing',phase:'day',day_count:1,night_phase:'mafia'}).eq('id',myRoomId);
     });
   });
 }
 
-// ===== Host advance =====
 window.hostAdvance=function(){
   if(!isHost)return;
   supabaseClient.from('mafia_rooms').select('*').eq('id',myRoomId).single().then(r=>{
     var room=r.data;if(!room)return;
-    if(room.status==='waiting'){
-      // start handled by button
-      return;
-    }
+    if(room.status==='waiting')return;
     if(room.phase==='day'){
       supabaseClient.from('mafia_rooms').update({phase:'voting',phase_end_time:new Date(Date.now()+30*1000).toISOString()}).eq('id',myRoomId);
-      return;
-    }
-    if(room.phase==='voting'){
-      // Resolve vote
+    } else if(room.phase==='voting'){
       resolveVote(room);
-      return;
-    }
-    if(room.phase==='night'){
+    } else if(room.phase==='night'){
       advanceNight(room);
-      return;
-    }
-    if(room.phase==='resolution'){
-      supabaseClient.from('mafia_rooms').update({phase:'day',phase_end_time:null}).eq('id',myRoomId);
     }
   });
 };
 
 function advanceNight(room){
-  var order=['mafia','doctor','sniper','helper','gunner','resolution'];
-  var idx=order.indexOf(room.night_phase);
+  var idx=NIGHT_ORDER.indexOf(room.night_phase);
   if(idx<0)idx=0;
-  if(room.night_phase==='gunner'){
-    // Resolve night
-    resolveNight(room);
-    return;
-  }
-  var next=order[idx+1];
+  if(room.night_phase==='gunner'){resolveNight(room);return;}
+  var next=NIGHT_ORDER[idx+1];
   var dur=DURATIONS[next]||30;
   supabaseClient.from('mafia_rooms').update({night_phase:next,phase_end_time:new Date(Date.now()+dur*1000).toISOString()}).eq('id',myRoomId);
 }
@@ -560,60 +586,76 @@ function resolveVote(room){
     ps.forEach(p=>{if(p.voted_for)votes[p.voted_for]=(votes[p.voted_for]||0)+1;});
     var maxId=null,maxV=0;
     for(var k in votes){if(votes[k]>maxV){maxV=votes[k];maxId=k;}}
-    if(maxId){
-      // Check if mayor wants to veto (simple: skip for now, just execute)
-      supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',maxId);
+    
+    // Check veto
+    if(room.mayor_veto_used){
+      if(maxId){
+        var votedPlayer=ps.find(p=>p.id===maxId);
+        if(votedPlayer){
+          supabaseClient.from('mafia_messages').insert({room_id:myRoomId,user_id:myUid,username:'سیستم',message:'🛑 شهردار رأی‌گیری رو وتو کرد! '+votedPlayer.username+' زنده موند.',chat_type:'public'});
+        }
+      }
+      supabaseClient.from('mafia_rooms').update({mayor_veto_used:false}).eq('id',myRoomId);
+    } else if(maxId){
+      var target=ps.find(p=>p.id===maxId);
+      if(target){
+        supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',maxId);
+        supabaseClient.from('mafia_messages').insert({room_id:myRoomId,user_id:myUid,username:'سیستم',message:'🗳️ '+target.username+' با رأی اکثریت حذف شد.',chat_type:'public'});
+      }
     }
     supabaseClient.from('mafia_players').update({voted_for:null}).eq('room_id',myRoomId);
+    // Lift silence
+    supabaseClient.from('mafia_players').update({is_silenced:false}).eq('room_id',myRoomId);
     supabaseClient.from('mafia_rooms').update({phase:'night',night_phase:'mafia',phase_end_time:new Date(Date.now()+60*1000).toISOString()}).eq('id',myRoomId);
-    checkWin(room.day_count+1);
+    checkWin();
   });
 }
 
 function resolveNight(room){
-  var killTarget=null,saveTarget=null,sniperTarget=null;
-  var sniperActor=null;
   supabaseClient.from('mafia_actions').select('*').eq('room_id',myRoomId).eq('day_count',room.day_count).then(r=>{
     var acts=r.data||[];
+    var killTarget=null,saveTarget=null,sniperTarget=null,sniperActor=null;
     acts.forEach(a=>{
       if(a.action==='kill')killTarget=a.target_id;
       if(a.action==='save')saveTarget=a.target_id;
       if(a.action==='sniper_shot'){sniperTarget=a.target_id;sniperActor=a.actor_id;}
     });
     var updates=[];
-    // Mafia kill
-    if(killTarget&&killTarget!==saveTarget)updates.push(supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',killTarget));
-    // Sniper shot
+    if(killTarget&&killTarget!==saveTarget){
+      updates.push(supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',killTarget));
+    }
     if(sniperTarget){
       supabaseClient.from('mafia_players').select('role').eq('id',sniperTarget).single().then(tg=>{
         var isMafia=['godfather','natasha','mafia'].includes(tg.data.role);
-        if(isMafia)supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperTarget);
-        else supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperActor);
+        if(isMafia){
+          supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperTarget);
+        } else {
+          supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperActor);
+        }
       });
     }
     Promise.all(updates).then(()=>{
-      supabaseClient.from('mafia_rooms').update({phase:'resolution',phase_end_time:new Date(Date.now()+5*1000).toISOString()}).eq('id',myRoomId);
+      supabaseClient.from('mafia_rooms').update({phase:'night',night_phase:'resolution',phase_end_time:new Date(Date.now()+5*1000).toISOString()}).eq('id',myRoomId);
+      setTimeout(()=>{
+        supabaseClient.from('mafia_rooms').update({phase:'day',day_count:room.day_count+1,phase_end_time:null}).eq('id',myRoomId);
+        checkWin();
+      },5000);
     });
   });
 }
 
-function checkWin(nextDay){
+function checkWin(){
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).then(r=>{
     var alive=(r.data||[]).filter(p=>p.is_alive);
     var mafias=alive.filter(p=>['godfather','natasha','mafia'].includes(p.role)).length;
     var citizens=alive.length-mafias;
     if(mafias===0){
       supabaseClient.from('mafia_rooms').update({phase:'ended',status:'ended'}).eq('id',myRoomId);
-      alert('🎉 شهروندها بردن!');
     } else if(mafias>=citizens){
       supabaseClient.from('mafia_rooms').update({phase:'ended',status:'ended'}).eq('id',myRoomId);
-      alert('🐺 مافیا بردن!');
     }
   });
 }
-
-// ===== Voting =====
-// (simplified - use public chat for discussion, host resolves)
 </script>
 </body>
 </html>
