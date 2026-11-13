@@ -145,9 +145,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
-  <script src="notifications.js"></script>
 <script src="theme.js"></script>
 <script src="script.js"></script>
+<script src="notifications.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadLeaderboard();
   loadMissionData();
 
-  // ===== منطق تولد (جدید و قطعی) =====
+  // ===== منطق تولد (قطعی) =====
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
@@ -178,24 +178,25 @@ document.addEventListener('DOMContentLoaded', function() {
       var bDay = parseInt(parts[2], 10);
       var currentYear = today.getFullYear();
       
-      // چک کردن تولد
       var isTodayBirthday = (today.getMonth() === bMonth && today.getDate() === bDay);
+      var firstName = profile.username.split(' ')[0]; // فقط اسم کوچک
       
-      if (isTodayBirthday && profile.last_birthday_year !== currentYear) {
-        // ثبت اینکه امسال جشن گرفته شد
+      // استفاده از localStorage برای جلوگیری از نمایش مجدد
+      var bdayKey = 'bday_seen_' + currentYear + '_' + uid;
+      
+      if (isTodayBirthday && !localStorage.getItem(bdayKey)) {
+        // ثبت در لوکال استوریج و دیتابیس
+        localStorage.setItem(bdayKey, 'true');
         supabaseClient.from('profiles').update({ last_birthday_year: currentYear }).eq('id', uid);
         
-        // نمایش پیام
-        document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + profile.username + ' جان! 🌟';
+        document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + firstName + ' جان! 🌟';
         document.getElementById('birthdayModal').classList.remove('hidden');
       }
     });
   });
   
-  // دکمه بستن تولد (و بعدش بادکنک‌ها)
   document.getElementById('closeBirthdayBtn').addEventListener('click', function() {
     document.getElementById('birthdayModal').classList.add('hidden');
-    // بادکنک‌ها حالا اجرا میشن (نه همزمان با پیام)
     playCelebration();
   });
 });
