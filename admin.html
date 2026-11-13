@@ -63,7 +63,10 @@
           <option value="پیشتاز مطالعه">🚀 پیشتاز مطالعه</option>
           <option value="قهرمان لیگ">🏆 قهرمان لیگ</option>
         </select>
-        <button onclick="giveBadge()" class="btn btn-green btn-full">اهدا نشان</button>
+        <button onclick="giveBadge()" class="btn btn-green btn-full" style="margin-bottom:16px;">اهدا نشان</button>
+        
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">نشان‌های اهدا شده:</h4>
+        <div id="adminBadgesList"></div>
       </div>
     </details>
 
@@ -74,8 +77,11 @@
         <input id="cinemaDesc" class="input" placeholder="توضیحات کوتاه" style="margin-bottom: 8px;">
         <input id="cinemaUrl" class="input" placeholder="لینک Embed آپارات" style="margin-bottom: 8px;">
         <input id="cinemaPrice" type="number" class="input" placeholder="قیمت بلیط (XP)" style="margin-bottom: 8px;">
-        <button onclick="addCinemaVideo()" class="btn btn-green btn-full">➕ افزودن به سینما</button>
+        <button onclick="addCinemaVideo()" class="btn btn-green btn-full" style="margin-bottom:16px;">➕ افزودن به سینما</button>
         <p id="cinemaMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
+        
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">فیلم‌های موجود:</h4>
+        <div id="adminCinemaList"></div>
       </div>
     </details>
 
@@ -117,7 +123,6 @@
       </div>
     </details>
 
-    <!-- بخش جدید: پایش کاربران -->
     <details class="accordion">
       <summary class="accordion-header">👁️ پایش کاربران (غیبت و غیرفعال)</summary>
       <div class="accordion-content">
@@ -125,10 +130,8 @@
           <button class="btn btn-blue btn-sm" onclick="loadUserMonitoring()" style="flex:1;">🔄 رفرش لیست</button>
           <button class="btn btn-dim btn-sm" onclick="deactivateInactive()" style="flex:1; color:#e74c3c; border-color:#e74c3c;">⚠️ غیرفعال کردن ۱۰ روز به بالا</button>
         </div>
-        
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">😴 کاربران غیرفعال (نیاز به فعال‌سازی):</h4>
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">😴 کاربران غیرفعال:</h4>
         <div id="inactiveUsersList"></div>
-        
         <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">💤 کاربران نیازمند توجه (۳ روز به بالا):</h4>
         <div id="wanderingUsersList"></div>
       </div>
