@@ -92,47 +92,10 @@
         </div>
 
         <div class="widget-container" style="text-align: center; padding: 10px;">
-          
-          <div class="w-cup">
-            <div class="cup-container">
-              <div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div>
-              <div class="cup-handle"></div>
-            </div>
-          </div>
-
-          <div class="w-tree">
-            <div class="tree-container">
-              <svg class="tree-svg" viewBox="0 0 100 120">
-                <path d="M50,120 Q48,80 50,50 M50,85 Q30,70 20,45 M50,75 Q70,60 80,40 M50,60 Q35,45 30,25 M50,55 Q65,40 70,20 M50,50 Q50,30 50,15" stroke="#5D4037" stroke-width="5" stroke-linecap="round" fill="none" />
-              </svg>
-              <div class="blossom b1" data-val="5"></div>
-              <div class="blossom b2" data-val="10"></div>
-              <div class="blossom b3" data-val="20"></div>
-              <div class="blossom b4" data-val="30"></div>
-              <div class="blossom b5" data-val="40"></div>
-              <div class="blossom b6" data-val="50"></div>
-              <div class="blossom b7" data-val="60"></div>
-              <div class="blossom b8" data-val="70"></div>
-              <div class="blossom b9" data-val="80"></div>
-              <div class="blossom b10" data-val="90"></div>
-              <div class="blossom b11" data-val="95"></div>
-              <div class="blossom b12" data-val="100"></div>
-            </div>
-          </div>
-
-          <div class="w-planet">
-            <div class="planet-container">
-              <div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div>
-              <div class="planet-ring"></div>
-            </div>
-          </div>
-
-          <div class="w-bar">
-            <div class="simple-bar-container">
-              <div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div>
-            </div>
-          </div>
-
+          <div class="w-cup"><div class="cup-container"><div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div><div class="cup-handle"></div></div></div>
+          <div class="w-tree"><div class="tree-container"><svg class="tree-svg" viewBox="0 0 100 120"><path d="M50,120 Q48,80 50,50 M50,85 Q30,70 20,45 M50,75 Q70,60 80,40 M50,60 Q35,45 30,25 M50,55 Q65,40 70,20 M50,50 Q50,30 50,15" stroke="#5D4037" stroke-width="5" stroke-linecap="round" fill="none" /></svg><div class="blossom b1" data-val="5"></div><div class="blossom b2" data-val="10"></div><div class="blossom b3" data-val="20"></div><div class="blossom b4" data-val="30"></div><div class="blossom b5" data-val="40"></div><div class="blossom b6" data-val="50"></div><div class="blossom b7" data-val="60"></div><div class="blossom b8" data-val="70"></div><div class="blossom b9" data-val="80"></div><div class="blossom b10" data-val="90"></div><div class="blossom b11" data-val="95"></div><div class="blossom b12" data-val="100"></div></div></div>
+          <div class="w-planet"><div class="planet-container"><div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div><div class="planet-ring"></div></div></div>
+          <div class="w-bar"><div class="simple-bar-container"><div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div></div></div>
         </div>
         
         <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold; text-align: center;">در حال بارگذاری...</p>
@@ -149,15 +112,12 @@
           <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دقیقه مطالعه</div></div>
           <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">XP</div></div>
           <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">سؤال حل‌شده</div></div>
-          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دستاورد</div></div>
+          <div class="stat-card"><div class="stat-value" id="statAchievements">۰</div><div class="stat-label">دستاورد</div></div>
         </div>
 
-        <!-- نمودار مطالعه هفتگی -->
         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px;">
           <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📈 مطالعه ۷ روز اخیر (دقیقه)</h3>
-          <div style="position: relative; height: 220px; width: 100%;">
-            <canvas id="weeklyChart"></canvas>
-          </div>
+          <div style="position: relative; height: 220px; width: 100%;"><canvas id="weeklyChart"></canvas></div>
         </div>
 
       </div>
@@ -165,9 +125,7 @@
 
     <details class="accordion">
       <summary class="accordion-header">🗺️ مسیر پیشرفت (سطح ۱ تا ۱۰)</summary>
-      <div class="accordion-content">
-        <div id="levelPathList" style="display:flex; flex-direction:column; gap:8px; margin-top: 10px;"></div>
-      </div>
+      <div class="accordion-content"><div id="levelPathList" style="display:flex; flex-direction:column; gap:8px; margin-top: 10px;"></div></div>
     </details>
 
     <details class="accordion">
@@ -182,19 +140,14 @@
     <details class="accordion">
       <summary class="accordion-header">🎭 ژانر کتاب‌خوانی من</summary>
       <div class="accordion-content">
-        <div class="class-box" style="margin-top: 10px;">
-          <div class="class-info"><span class="class-name" id="myGenresList">در حال بارگذاری...</span></div>
-          <button id="selectGenreBtn" class="btn btn-blue btn-sm" style="margin-top:10px; width:100%;">تغییر ژانر</button>
-        </div>
+        <div class="class-box" style="margin-top: 10px;"><div class="class-info"><span class="class-name" id="myGenresList">در حال بارگذاری...</span></div><button id="selectGenreBtn" class="btn btn-blue btn-sm" style="margin-top:10px; width:100%;">تغییر ژانر</button></div>
       </div>
     </details>
 
     <details class="accordion">
       <summary class="accordion-header">⏳ روزشمار آزمون‌ها</summary>
       <div class="accordion-content">
-        <div id="examCountdownList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-          <p class="lock-note">در حال بارگذاری...</p>
-        </div>
+        <div id="examCountdownList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"><p class="lock-note">در حال بارگذاری...</p></div>
         <div style="margin-top: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
           <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--text-dim);">افزودن آزمون شخصی:</p>
           <input id="myExamSubject" type="text" class="input" placeholder="نام درس (مثلاً ریاضی)">
@@ -207,49 +160,25 @@
     <details class="accordion">
       <summary class="accordion-header">⚙️ تنظیمات و راهنما</summary>
       <div class="accordion-content">
-        
         <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 15px; margin-top: 10px;">
           <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎂 تاریخ تولدت رو ثبت کن:</p>
           <input type="date" id="userBirthday" class="input" style="margin-bottom: 8px;">
           <button onclick="saveBirthday()" class="btn btn-green btn-full">ذخیره تاریخ تولد</button>
           <p id="birthdayMsg" style="font-size: 0.8rem; margin-top: 8px;"></p>
         </div>
-
         <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 15px;">
           <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎁 دعوت از دوستان:</p>
           <p style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">با هر دعوت ۵ XP بگیر و به دوستت ۲ XP هدیه بده!</p>
-          <div style="display: flex; gap: 8px;">
-            <input id="myInviteCode" class="input" readonly style="text-align: center; font-weight: bold; background: var(--bg-card);">
-            <button onclick="copyInviteLink()" class="btn btn-blue btn-sm" style="white-space: nowrap;">کپی لینک</button>
-          </div>
+          <div style="display: flex; gap: 8px;"><input id="myInviteCode" class="input" readonly style="text-align: center; font-weight: bold; background: var(--bg-card);"><button onclick="copyInviteLink()" class="btn btn-blue btn-sm" style="white-space: nowrap;">کپی لینک</button></div>
         </div>
-
-        <div class="guide-box">
-          <p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، به آیدی زیر پیام بدی:</p>
-          <p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 <a href="https://t.me/Aysonaizadi" target="_blank" style="color:var(--blue);">@Aysonaizadi</a></p>
-        </div>
+        <div class="guide-box"><p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، به آیدی زیر پیام بدی:</p><p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 <a href="https://t.me/Aysonaizadi" target="_blank" style="color:var(--blue);">@Aysonaizadi</a></p></div>
         <button id="changeThemeBtn" class="btn btn-blue btn-full" style="margin-top: 15px;">🎨 تغییر سبک سایت</button>
         <button id="logoutBtn" class="btn btn-dim btn-full" style="margin-top: 10px; color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
       </div>
     </details>
 
-    <div id="themeModal" class="modal hidden">
-      <div class="modal-box">
-        <h2>سبک سایت رو انتخاب کن</h2>
-        <div id="themeList" class="theme-list"></div>
-        <button id="closeThemeBtn" class="btn btn-dim btn-full" style="margin-top: 12px;">بستن</button>
-      </div>
-    </div>
-
-    <div id="genreModal" class="modal hidden">
-      <div class="modal-box">
-        <h2>ژانرهای مورد علاقه‌ت</h2>
-        <div id="genreOptions" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;"></div>
-        <button id="saveGenreBtn" class="btn btn-green btn-full">ذخیره</button>
-        <button id="closeGenreBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button>
-      </div>
-    </div>
-
+    <div id="themeModal" class="modal hidden"><div class="modal-box"><h2>سبک سایت رو انتخاب کن</h2><div id="themeList" class="theme-list"></div><button id="closeThemeBtn" class="btn btn-dim btn-full" style="margin-top: 12px;">بستن</button></div></div>
+    <div id="genreModal" class="modal hidden"><div class="modal-box"><h2>ژانرهای مورد علاقه‌ت</h2><div id="genreOptions" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;"></div><button id="saveGenreBtn" class="btn btn-green btn-full">ذخیره</button><button id="closeGenreBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button></div></div>
   </main>
 
   <nav class="bottom-nav">
@@ -260,15 +189,13 @@
     <a href="profile.html" class="nav-item active">👤 پروفایل</a>
   </nav>
 
-  <!-- کتابخانه Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
-  <script src="notifications.js"></script>
   <script src="theme.js"></script>
   <script src="themes.js?v=2"></script>
+  <script src="notifications.js"></script>
   <script src="profile.js"></script>
 </body>
 </html>
