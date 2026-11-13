@@ -53,7 +53,7 @@
   <div class="mafia-card">
     <h2>🎭 مافیا</h2>
     <p style="font-size:.85rem;color:var(--text-dim);margin-top:8px;">بازی دقیقاً با <strong>۱۲ نفر</strong> شروع می‌شه.</p>
-    <button class="mafia-btn" id="createRoomBtn" style="display:none;">➕ ساخت اتاق</button>
+    <button class="mafia-btn" id="createRoomBtn" style="display:none;">➕ ساخت اتاق (ادمین)</button>
     <input class="mafia-input" id="joinCode" placeholder="کد اتاق" maxlength="6">
     <button class="mafia-btn blue" id="joinRoomBtn">🚪 ورود به اتاق</button>
   </div>
@@ -86,7 +86,6 @@
   
   <div id="notifyBox" class="notify-box" style="display:none;"></div>
   
-  <!-- پنل رأی‌گیری -->
   <div id="votingCard" class="mafia-card" style="display:none;">
     <h3 style="color:#e74c3c;">🗳️ رأی‌گیری</h3>
     <p style="font-size:.85rem;color:var(--text-dim);margin:8px 0;">به کی رأی می‌دی؟</p>
@@ -148,7 +147,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
-  <script src="notifications.js"></script>
 <script src="theme.js"></script>
 <script src="stickers.js"></script>
 
@@ -164,7 +162,7 @@ const ROLE_DESCS = {
   detective:'هر شب یک نفر رو استعلام کن. پدرخوانده رو شهروند می‌بینی.',
   mayor:'یک بار در کل بازی می‌تونی رأی‌گیری رو وتو کنی.',
   sniper:'۳ تیر داری. اگه به شهروند بزنی، خودت می‌میری.',
-  gunner:'۳ تیر داری. به دیگران می‌دی تا اونا شلیک کنن.',
+  gunner:'۳ تیر داری. به دیگران می‌دی تا اونا شب بعد شلیک کنن.',
   helper:'هر شب می‌تونی یک یار جدید اضافه کنی یا با یاران مشورت کنی.'
 };
 const BLOCKED = ['مافیا','مافیای','پدرخوانده','ناتاشا','دکتر','کارآگاه','شهردار','تیرانداز','تفنگدار','یاور','شهروند','نجاتم داد','نجات داده','استعلام کردم','شلیک کردم','تیر دادم'];
@@ -296,7 +294,6 @@ function renderPhase(room){
   bar.setAttribute('data-name',name);
   bar.textContent=name;
 
-  // Vote card visibility
   var vc=document.getElementById('votingCard');
   if(room.phase==='voting'&&myData&&myData.is_alive){vc.style.display='block';showVoteTargets();}
   else vc.style.display='none';
@@ -324,9 +321,8 @@ function showVoteTargets(){
     box.appendChild(b);
   });
   var mayorBtn=document.getElementById('mayorVetoBtn');
-  if(myData&&myData.role==='mayor'&&myData.has_veto){
-    mayorBtn.style.display='block';
-  } else mayorBtn.style.display='none';
+  if(myData&&myData.role==='mayor'&&myData.has_veto) mayorBtn.style.display='block';
+  else mayorBtn.style.display='none';
 }
 
 window.useMayorVeto=function(){
@@ -342,8 +338,7 @@ function loadPlayers(room){
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).then(r=>{
     var ps=r.data||[];
     currentPlayers=ps;
-    var list=document.getElementById('playersList');
-    list.innerHTML='';
+    var list=document.getElementById('playersList');list.innerHTML='';
     ps.forEach(p=>{
       var sp=document.createElement('span');
       sp.className='m-player'+(p.is_alive?'':' dead')+(p.user_id===myUid?' self':'')+(p.is_deputy?' deputy':'')+(p.is_silenced?' silenced':'');
@@ -561,13 +556,9 @@ window.hostAdvance=function(){
   supabaseClient.from('mafia_rooms').select('*').eq('id',myRoomId).single().then(r=>{
     var room=r.data;if(!room)return;
     if(room.status==='waiting')return;
-    if(room.phase==='day'){
-      supabaseClient.from('mafia_rooms').update({phase:'voting',phase_end_time:new Date(Date.now()+30*1000).toISOString()}).eq('id',myRoomId);
-    } else if(room.phase==='voting'){
-      resolveVote(room);
-    } else if(room.phase==='night'){
-      advanceNight(room);
-    }
+    if(room.phase==='day') supabaseClient.from('mafia_rooms').update({phase:'voting',phase_end_time:new Date(Date.now()+30*1000).toISOString()}).eq('id',myRoomId);
+    else if(room.phase==='voting') resolveVote(room);
+    else if(room.phase==='night') advanceNight(room);
   });
 };
 
@@ -582,30 +573,22 @@ function advanceNight(room){
 
 function resolveVote(room){
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).then(r=>{
-    var ps=r.data||[];
-    var votes={};
+    var ps=r.data||[];var votes={};
     ps.forEach(p=>{if(p.voted_for)votes[p.voted_for]=(votes[p.voted_for]||0)+1;});
     var maxId=null,maxV=0;
     for(var k in votes){if(votes[k]>maxV){maxV=votes[k];maxId=k;}}
     
-    // Check veto
     if(room.mayor_veto_used){
-      if(maxId){
-        var votedPlayer=ps.find(p=>p.id===maxId);
-        if(votedPlayer){
-          supabaseClient.from('mafia_messages').insert({room_id:myRoomId,user_id:myUid,username:'سیستم',message:'🛑 شهردار رأی‌گیری رو وتو کرد! '+votedPlayer.username+' زنده موند.',chat_type:'public'});
-        }
-      }
+      if(maxId){var vp=ps.find(p=>p.id===maxId);if(vp)supabaseClient.from('mafia_messages').insert({room_id:myRoomId,user_id:myUid,username:'سیستم',message:'🛑 شهردار رأی‌گیری رو وتو کرد! '+vp.username+' زنده موند.',chat_type:'public'});}
       supabaseClient.from('mafia_rooms').update({mayor_veto_used:false}).eq('id',myRoomId);
     } else if(maxId){
       var target=ps.find(p=>p.id===maxId);
       if(target){
-        supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',maxId);
+        supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',maxId).then(()=>checkSecondChance(maxId));
         supabaseClient.from('mafia_messages').insert({room_id:myRoomId,user_id:myUid,username:'سیستم',message:'🗳️ '+target.username+' با رأی اکثریت حذف شد.',chat_type:'public'});
       }
     }
     supabaseClient.from('mafia_players').update({voted_for:null}).eq('room_id',myRoomId);
-    // Lift silence
     supabaseClient.from('mafia_players').update({is_silenced:false}).eq('room_id',myRoomId);
     supabaseClient.from('mafia_rooms').update({phase:'night',night_phase:'mafia',phase_end_time:new Date(Date.now()+60*1000).toISOString()}).eq('id',myRoomId);
     checkWin();
@@ -623,16 +606,13 @@ function resolveNight(room){
     });
     var updates=[];
     if(killTarget&&killTarget!==saveTarget){
-      updates.push(supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',killTarget));
+      updates.push(supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',killTarget).then(()=>checkSecondChance(killTarget)));
     }
     if(sniperTarget){
       supabaseClient.from('mafia_players').select('role').eq('id',sniperTarget).single().then(tg=>{
         var isMafia=['godfather','natasha','mafia'].includes(tg.data.role);
-        if(isMafia){
-          supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperTarget);
-        } else {
-          supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperActor);
-        }
+        if(isMafia)updates.push(supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperTarget).then(()=>checkSecondChance(sniperTarget)));
+        else updates.push(supabaseClient.from('mafia_players').update({is_alive:false}).eq('id',sniperActor).then(()=>checkSecondChance(sniperActor)));
       });
     }
     Promise.all(updates).then(()=>{
@@ -645,16 +625,27 @@ function resolveNight(room){
   });
 }
 
+function checkSecondChance(playerId){
+  return supabaseClient.from('mafia_players').select('user_id').eq('id',playerId).single().then(pRes=>{
+    if(!pRes.data)return;
+    return supabaseClient.from('user_inventory').select('id').eq('user_id',pRes.data.user_id).eq('effect_value','second_chance').then(invRes=>{
+      if(invRes.data&&invRes.data.length>0){
+        supabaseClient.from('user_inventory').delete().eq('id',invRes.data[0].id);
+        return supabaseClient.from('mafia_players').update({is_alive:true}).eq('id',playerId).then(()=>{
+          supabaseClient.from('mafia_messages').insert({room_id:myRoomId,user_id:myUid,username:'سیستم',message:'💖 یک نفر با آیتم «جان دوباره» زنده موند!',chat_type:'public'});
+        });
+      }
+    });
+  });
+}
+
 function checkWin(){
   supabaseClient.from('mafia_players').select('*').eq('room_id',myRoomId).then(r=>{
     var alive=(r.data||[]).filter(p=>p.is_alive);
     var mafias=alive.filter(p=>['godfather','natasha','mafia'].includes(p.role)).length;
     var citizens=alive.length-mafias;
-    if(mafias===0){
-      supabaseClient.from('mafia_rooms').update({phase:'ended',status:'ended'}).eq('id',myRoomId);
-    } else if(mafias>=citizens){
-      supabaseClient.from('mafia_rooms').update({phase:'ended',status:'ended'}).eq('id',myRoomId);
-    }
+    if(mafias===0) supabaseClient.from('mafia_rooms').update({phase:'ended',status:'ended'}).eq('id',myRoomId);
+    else if(mafias>=citizens) supabaseClient.from('mafia_rooms').update({phase:'ended',status:'ended'}).eq('id',myRoomId);
   });
 }
 </script>
