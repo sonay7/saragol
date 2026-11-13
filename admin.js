@@ -50,40 +50,45 @@ adminTabs.forEach(function(tab) {
   });
 });
 
-// ===== منوی کشویی کتاب‌ها =====
+// ===== منوی کشویی کتاب‌ها (رفع باگ null) =====
 if (document.getElementById('toggleBooksBtn')) {
   var toggleBooksBtn = document.getElementById('toggleBooksBtn');
   var booksContainer = document.getElementById('booksContainer');
-  var booksArrow = document.getElementById('booksArrow');
 
   toggleBooksBtn.addEventListener('click', function() {
     if (booksContainer.classList.contains('hidden')) {
       booksContainer.classList.remove('hidden');
-      booksArrow.style.transform = 'rotate(180deg)';
       loadBookClubUsers();
     } else {
       booksContainer.classList.add('hidden');
-      booksArrow.style.transform = 'rotate(0deg)';
     }
   });
 }
 
-// ===== اعلان‌ها =====
+// ===== اعلان جدید =====
 if (document.getElementById('addNoticeBtn')) {
   document.getElementById('addNoticeBtn').addEventListener('click', function() {
     var text = document.getElementById('noticeText').value.trim();
     var type = document.getElementById('noticeType').value;
     var msg = document.getElementById('noticeMsg');
 
-    if (text.length < 3) { msg.textContent = 'متن کوتاهه'; msg.style.color = '#e74c3c'; return; }
+    if (text.length < 3) { 
+      msg.textContent = 'متن کوتاهه'; 
+      msg.style.color = '#e74c3c'; 
+      return; 
+    }
 
-    msg.textContent = '⏳ در حال ثبت...'; msg.style.color = 'var(--text-dim)';
+    msg.textContent = '⏳ در حال ثبت...'; 
+    msg.style.color = 'var(--text-dim)';
 
     supabaseClient.from('notices').insert({ text: text, type: type }).then(function(res) {
       if (res.error) { 
-        msg.textContent = '❌ ' + res.error.message; msg.style.color = '#e74c3c'; return;
+        msg.textContent = '❌ ' + res.error.message;
+        msg.style.color = '#e74c3c';
+        return;
       }
-      msg.textContent = '✅ ثبت شد'; msg.style.color = '#2ecc71';
+      msg.textContent = '✅ ثبت شد'; 
+      msg.style.color = '#2ecc71';
       document.getElementById('noticeText').value = '';
       loadAdminNotices();
     });
@@ -101,7 +106,7 @@ function loadAdminNotices() {
     
     rows.forEach(function(n) {
       var div = document.createElement('div');
-      div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px;';
+      div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; margin-bottom:8px;';
       var typeStr = (n.type || '').toLowerCase();
       var typeLabel = typeStr.includes('فوری') ? 'فوری' : (typeStr.includes('مهم') ? 'مهم' : 'عادی');
       
@@ -146,7 +151,6 @@ function loadUsers() {
   var box = document.getElementById('usersList');
   if (!box) return;
   
-  // فقط کاربران تایید شده
   supabaseClient.from('profiles').select('*').eq('status', 'approved').order('created_at', { ascending: false }).then(function(res) {
     var rows = res.data || [];
     if (rows.length === 0) { box.innerHTML = '<p class="lock-note">کاربر تایید شده‌ای وجود ندارد.</p>'; return; }
@@ -573,68 +577,3 @@ window.delWheelSlice = function(id) {
   if (!confirm('حذف بشه؟')) return;
   supabaseClient.from('wheel_config').delete().eq('id', id).then(function() { loadAdminWheel(); });
 };
-// ===== پایش کاربران =====
-window.loadUserMonitoring = function() {
-  var inactiveList = document.getElementById('inactiveUsersList');
-  var wanderingList = document.getElementById('wanderingUsersList');
-  if (!inactiveList || !wanderingList) return;
-  
-  inactiveList.innerHTML = '<p class="lock-note">در حال بارگذاری...</p>';
-  wanderingList.innerHTML = '<p class="lock-note">در حال بارگذاری...</p>';
-  
-  // کاربران غیرفعال
-  supabaseClient.from('profiles').select('*').eq('status', 'inactive').then(function(res) {
-    inactiveList.innerHTML = '';
-    var rows = res.data || [];
-    if (rows.length === 0) { inactiveList.innerHTML = '<p class="lock-note">کاربر غیرفعالی وجود ندارد.</p>'; return; }
-    rows.forEach(function(u) {
-      var daysAgo = u.last_seen ? Math.floor((Date.now() - new Date(u.last_seen).getTime()) / (1000*60*60*24)) : '?';
-      var div = document.createElement('div');
-      div.className = 'admin-row';
-      div.innerHTML = '<div><strong>😴 ' + u.username + '</strong><span class="admin-sub">' + u.class_name + ' - ' + daysAgo + ' روز غیرفعال</span></div><button class="btn btn-green btn-sm" onclick="reactivateUser(\'' + u.id + '\')">فعال‌سازی مجدد</button>';
-      inactiveList.appendChild(div);
-    });
-  });
-  
-  // کاربران غایب 3-9 روز
-  supabaseClient.from('profiles').select('*').eq('status', 'approved').then(function(res) {
-    wanderingList.innerHTML = '';
-    var rows = (res.data || []).filter(function(u) {
-      if (!u.last_seen) return false;
-      var days = Math.floor((Date.now() - new Date(u.last_seen).getTime()) / (1000*60*60*24));
-      return days >= 3;
-    }).sort(function(a, b) { return new Date(a.last_seen) - new Date(b.last_seen); });
-    
-    if (rows.length === 0) { wanderingList.innerHTML = '<p class="lock-note">همه کاربران فعال هستند ✅</p>'; return; }
-    
-    rows.forEach(function(u) {
-      var daysAgo = Math.floor((Date.now() - new Date(u.last_seen).getTime()) / (1000*60*60*24));
-      var div = document.createElement('div');
-      div.className = 'admin-row';
-      div.innerHTML = '<div><strong>💤 ' + u.username + '</strong><span class="admin-sub">' + u.class_name + ' - ' + daysAgo + ' روز غیبت</span></div>';
-      wanderingList.appendChild(div);
-    });
-  });
-};
-
-window.reactivateUser = function(id) {
-  if (!confirm('این کاربر دوباره فعال بشه؟')) return;
-  supabaseClient.from('profiles').update({ status: 'approved', last_seen: new Date().toISOString() }).eq('id', id).then(function() {
-    loadUserMonitoring();
-  });
-};
-
-window.deactivateInactive = function() {
-  if (!confirm('کاربرانی که بیش از ۱۰ روز غیرفعال هستند، غیرفعال شوند؟')) return;
-  var tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
-  supabaseClient.from('profiles').update({ status: 'inactive' }).eq('status', 'approved').lt('last_seen', tenDaysAgo).then(function(res) {
-    if (res.error) { alert('خطا: ' + res.error.message); return; }
-    alert('✅ کاربران ۱۰ روز به بالا غیرفعال شدند.');
-    loadUserMonitoring();
-  });
-};
-
-// لود اولیه
-if (document.getElementById('inactiveUsersList')) {
-  loadUserMonitoring();
-}
