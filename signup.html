@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ثبت‌نام | ساراگل</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-container { max-width: 400px; margin: 60px auto; padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .auth-container h2 { text-align: center; color: var(--green); margin-bottom: 20px; }
+    .auth-container .input { margin-bottom: 12px; width: 100%; box-sizing: border-box; }
+    .auth-container .label { font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
+    .auth-container .btn { margin-top: 10px; }
+    .login-link { text-align: center; margin-top: 20px; font-size: 0.85rem; }
+    .login-link a { color: var(--blue); text-decoration: none; }
+  </style>
 </head>
 <body>
 
@@ -13,52 +22,36 @@
   </header>
 
   <main class="container">
+    <div class="auth-container">
+      <h2>📝 ثبت‌نام</h2>
+      
+      <label class="label">نام کاربری</label>
+      <input id="username" type="text" class="input" placeholder="نام و فامیل خود را وارد کنید">
 
-    <section class="profile-card">
-      <h2 class="profile-name">ثبت‌نام</h2>
-      <p class="profile-class">اطلاعاتت رو وارد کن</p>
-    </section>
-
-    <section>
-      <label class="label">نام (فارسی)</label>
-      <input id="firstName" type="text" class="input" placeholder="مثلاً علی">
-
-      <label class="label" style="margin-top: 12px;">نام خانوادگی (فارسی)</label>
-      <input id="lastName" type="text" class="input" placeholder="مثلاً رضایی">
-
-      <label class="label" style="margin-top: 12px;">کلاس</label>
-      <select id="class" class="select">
-        <option value="هفتم ۱">هفتم ۱</option>
-        <option value="هفتم ۲">هفتم ۲</option>
-        <option value="هفتم ۳">هفتم ۳</option>
-        <option value="هفتم ۴">هفتم ۴</option>
-        <option value="هفتم ۵">هفتم ۵</option>
-        <option value="هشتم ۱">هشتم ۱</option>
-        <option value="هشتم ۲">هشتم ۲</option>
-        <option value="هشتم ۳">هشتم ۳</option>
-        <option value="هشتم ۴">هشتم ۴</option>
-        <option value="هشتم ۵">هشتم ۵</option>
-        <option value="نهم ۱">نهم ۱</option>
-        <option value="نهم ۲">نهم ۲</option>
-        <option value="نهم ۳">نهم ۳</option>
-        <option value="نهم ۴">نهم ۴</option>
+      <label class="label">ایمیل</label>
+      <input id="email" type="email" class="input" placeholder="example@email.com">
+      
+      <label class="label">رمز عبور</label>
+      <input id="password" type="password" class="input" placeholder="حداقل ۶ کاراکتر">
+      
+      <label class="label">کلاس</label>
+      <select id="className" class="input">
+        <option value="">انتخاب کنید...</option>
+        <option value="هفتم">هفتم</option>
+        <option value="هشتم">هشتم</option>
+        <option value="نهم">نهم</option>
       </select>
 
-      <label class="label" style="margin-top: 12px;">رمز (حداقل ۶ کاراکتر)</label>
-      <input id="password" type="password" class="input" placeholder="حداقل ۶ کاراکتر">
-<div style="margin-top: 12px;">
-  <label class="label" style="font-size:0.85rem;">کد دعوت (اختیاری)</label>
-  <input id="inviteCodeInput" type="text" class="input" placeholder="مثلاً SARAGOL-A3F2">
-</div>
-      <button id="signupBtn" class="btn btn-green btn-full" style="margin-top: 16px;">ثبت‌نام</button>
-
-      <p id="signupMsg" style="margin-top: 12px; text-align: center; font-size: 0.85rem;"></p>
-
-      <p style="margin-top: 16px; text-align: center; font-size: 0.85rem; color: var(--text-dim);">
-        قبلاً ثبت‌نام کردی؟ <a href="login.html" style="color: var(--green);">وارد شو</a>
-      </p>
-    </section>
-
+      <label class="label">کد دعوت (اختیاری)</label>
+      <input id="inviteCodeInput" type="text" class="input" placeholder="مثلاً sara847">
+      
+      <button id="signupBtn" class="btn btn-green btn-full">ثبت‌نام</button>
+      <p id="signupMsg" style="text-align: center; margin-top: 12px; font-size: 0.85rem;"></p>
+      
+      <div class="login-link">
+        قبلاً ثبت‌نام کردی؟ <a href="login.html">وارد شو</a>
+      </div>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
