@@ -50,7 +50,7 @@ adminTabs.forEach(function(tab) {
   });
 });
 
-// ===== منوی کشویی کتاب‌ها (رفع باگ null) =====
+// ===== منوی کشویی کتاب‌ها =====
 if (document.getElementById('toggleBooksBtn')) {
   var toggleBooksBtn = document.getElementById('toggleBooksBtn');
   var booksContainer = document.getElementById('booksContainer');
@@ -393,6 +393,15 @@ window.giveBadge = function() {
       user_id: user.id, badge_name: badgeName, badge_icon: badgeIcon
     }).then(function(res) {
       if (res.error) { alert('خطا: ' + res.error.message); return; }
+      
+      // ارسال اعلان
+      supabaseClient.from('notifications').insert({
+        user_id: user.id,
+        title: '🌟 نشان جدید!',
+        body: 'ادمین به شما نشان «' + badgeName + '» را اهدا کرد.',
+        link: 'profile.html'
+      });
+
       alert('🌟 نشان با موفقیت به ' + user.username + ' اهدا شد!');
       document.getElementById('badgeUsername').value = '';
     });
