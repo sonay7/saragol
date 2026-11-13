@@ -18,6 +18,7 @@ function saveStudySession(subject, minutes, questions) {
 
 var currentUser = null;
 var currentLevel = 1;
+var hasDeleteItem = false; // آیا کاربر پاک‌کننده پیام داره؟
 
 var chatBox = document.getElementById('chatBox');
 var chatInput = document.getElementById('chatInput');
@@ -49,20 +50,31 @@ supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   currentUser = res.data.user;
 
-  supabaseClient.from('profiles').select('total_minutes').eq('id', currentUser.id).single().then(function(p) {
-    if (!p.data) return;
-    
-    var minutes = p.data.total_minutes || 0;
-    var hours = minutes / 60;
-    var LEVEL_HOURS = [0, 3, 8, 16, 30, 50, 80, 120, 170, 250];
-    for (var i = 0; i < LEVEL_HOURS.length; i++) {
-      if (hours >= LEVEL_HOURS[i]) currentLevel = i + 1;
+  // گرفتن اطلاعات کاربر و چک کردن آیتم پاک‌کننده پیام
+  Promise.all([
+    supabaseClient.from('profiles').select('total_minutes').eq('id', currentUser.id).single(),
+    supabaseClient.from('user_inventory').select('*').eq('user_id', currentUser.id)
+  ]).then(function(results) {
+    var p = results[0];
+    var inv = results[1];
+
+    if (p.data) {
+      var minutes = p.data.total_minutes || 0;
+      var hours = minutes / 60;
+      var LEVEL_HOURS = [0, 3, 8, 16, 30, 50, 80, 120, 170, 250];
+      for (var i = 0; i < LEVEL_HOURS.length; i++) {
+        if (hours >= LEVEL_HOURS[i]) currentLevel = i + 1;
+      }
+
+      if (currentLevel >= 2) {
+        if(shelfLocked) shelfLocked.classList.add('hidden');
+        if(shelfUnlocked) shelfUnlocked.classList.remove('hidden');
+        loadMyShelf();
+      }
     }
 
-    if (currentLevel >= 2) {
-      if(shelfLocked) shelfLocked.classList.add('hidden');
-      if(shelfUnlocked) shelfUnlocked.classList.remove('hidden');
-      loadMyShelf();
+    if (inv.data) {
+      hasDeleteItem = inv.data.some(function(i) { return i.effect_value === 'delete_message' || i.effect_value === 'پاک‌کننده پیام'; });
     }
 
     loadChat();
@@ -71,10 +83,9 @@ supabaseClient.auth.getUser().then(function(res) {
   });
 });
 
-// ===== چت (با پشتیبانی از رنگ و استیکر) =====
+// ===== چت (با پشتیبانی از رنگ، استیکر و پاک کردن) =====
 function loadChat() {
   if(!chatBox) return;
-  // گرفتن chat_color از پروفایل کاربران
   supabaseClient.from('book_chat').select('*, profiles(username, chat_color)').order('created_at', { ascending: true }).then(function(res) {
     chatBox.innerHTML = '';
     var rows = res.data || [];
@@ -93,11 +104,22 @@ function loadChat() {
       }
       
       var stickerHtml = renderStickerInChat(msg.message);
+      
+      // محتوای پیام
+      var contentHtml = '';
       if (stickerHtml) {
-        div.innerHTML = '<span class="sender">' + senderName + '</span><span style="' + bubbleStyle + '">' + stickerHtml + '</span>';
+        contentHtml = '<span style="' + bubbleStyle + '">' + stickerHtml + '</span>';
       } else {
-        div.innerHTML = '<span class="sender">' + senderName + '</span><span style="' + bubbleStyle + '">' + msg.message + '</span>';
+        contentHtml = '<span style="' + bubbleStyle + '">' + msg.message + '</span>';
       }
+
+      // دکمه حذف (فقط برای پیام‌های خودم و اگر آیتم پاک‌کننده داشته باشم)
+      var deleteBtn = '';
+      if (isMe && hasDeleteItem && msg.message !== '[پیام پاک شد]') {
+        deleteBtn = `<button onclick="deleteMyMessage(${msg.id})" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:0.7rem; margin-right:8px;" title="پاک کردن پیام">🗑️</button>`;
+      }
+      
+      div.innerHTML = '<span class="sender">' + senderName + ' ' + deleteBtn + '</span>' + contentHtml;
       
       chatBox.appendChild(div);
     });
@@ -105,12 +127,23 @@ function loadChat() {
   });
 }
 
+// ===== تابع حذف پیام =====
+window.deleteMyMessage = function(msgId) {
+  if (!confirm('این پیام پاک بشه؟ (آیتم پاک‌کننده مصرف می‌شه)')) return;
+  
+  // آپدیت پیام توی دیتابیس
+  supabaseClient.from('book_chat').update({ message: '[پیام پاک شد]' }).eq('id', msgId).then(function(res) {
+    if (res.error) { alert('خطا: ' + res.error.message); return; }
+    alert('✅ پیام پاک شد.');
+    loadChat(); // رفرش چت
+  });
+};
+
 if(chatSendBtn) {
   chatSendBtn.addEventListener('click', function() {
     var text = chatInput.value.trim();
     if (text.length < 1) return;
     
-    // اگر استیکر بود، مستقیم بفرست
     if (text.startsWith('[STICKER]')) {
        chatInput.value = '';
        supabaseClient.from('book_chat').insert({ user_id: currentUser.id, message: text }).then(function(res) {
@@ -119,7 +152,6 @@ if(chatSendBtn) {
        return;
     }
 
-    // فیلتر کلمات رکیک
     supabaseClient.from('banned_words').select('word').then(function(res) {
       var banned = (res.data || []).map(function(w) { return w.word; });
       var cleanedText = text.replace(/[\/\-\.\_\s]/g, '');
@@ -138,7 +170,7 @@ if(chatSendBtn) {
   chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') chatSendBtn.click(); });
 }
 
-// ===== ردیاب مطالعه =====
+// ===== بقیه بخش‌های کتاب‌خوانی (ردیاب، قفسه، امانت) =====
 if(document.getElementById('addProgressBtn')) {
   document.getElementById('addProgressBtn').addEventListener('click', function() {
     var title = document.getElementById('newBookTitle').value.trim();
@@ -209,7 +241,6 @@ window.delProgress = function(id) {
   }
 }
 
-// ===== قفسه کتاب =====
 if(document.getElementById('addBookBtn')) {
   document.getElementById('addBookBtn').addEventListener('click', function() {
     var title = document.getElementById('bookTitle').value.trim();
@@ -262,7 +293,6 @@ function loadMyShelf() {
 }
 window.deleteBook = function(id) { if(confirm('حذف بشه؟')) supabaseClient.from('book_shelf').delete().eq('id', id).then(loadMyShelf); }
 
-// ===== امانت =====
 if(document.getElementById('addLoanBtn')) {
   document.getElementById('addLoanBtn').addEventListener('click', function() {
     var title = document.getElementById('loanTitle').value.trim();
