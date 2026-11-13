@@ -30,6 +30,7 @@
 <header class="header">
   <div class="logo">ساراگل</div>
   <div class="user-area">
+    <span class="user-name">—</span>
     <span id="myXp" style="color:#f1c40f; font-weight:bold; font-size:0.9rem;">... XP</span>
     <div class="avatar">—</div>
   </div>
@@ -38,7 +39,6 @@
 <main class="container">
   <h2 style="text-align:center; margin-bottom:20px;">🎁 ارسال هدیه</h2>
 
-  <!-- بخش جستجوی کاربر -->
   <div class="gift-section">
     <h3>۱. دوستت رو پیدا کن</h3>
     <div class="gift-search-box">
@@ -48,7 +48,6 @@
     <div id="searchResult"></div>
   </div>
 
-  <!-- بخش انتخاب کادو (بعد از پیدا شدن کاربر فعال میشه) -->
   <div class="gift-section" id="giftForm" style="display: none;">
     <h3>۲. کادوت رو انتخاب کن (هزینه: ۱۰ XP)</h3>
     
@@ -81,7 +80,6 @@
     <p id="giftMsg" style="margin-top: 8px; font-size: 0.85rem; text-align: center;"></p>
   </div>
 
-  <!-- بخش هدایای دریافتی -->
   <div class="gift-section">
     <h3>📥 هدایای دریافتی من</h3>
     <div id="receivedGiftsList" style="margin-top: 12px;">
@@ -107,25 +105,32 @@
 <script>
   var currentUser = null;
   var myXp = 0;
-  var selectedReceiver = null; // کسی که قراره کادو بگیره
-  var selectedGift = null; // کادوی انتخاب شده
-  var GIFT_COST = 10; // هزینه هر کادو
+  var selectedReceiver = null;
+  var selectedGift = null;
+  var GIFT_COST = 10;
 
   supabaseClient.auth.getUser().then(res => {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
     currentUser = res.data.user;
     
     supabaseClient.from('profiles').select('xp, username').eq('id', currentUser.id).single().then(p => {
+      if (!p.data) return;
       myXp = p.data.xp || 0;
-      document.getElementById('myXp').textContent = myXp + ' XP';
-      document.querySelector('.user-name').textContent = p.data.username;
-      document.querySelector('.avatar').textContent = p.data.username.charAt(0);
+      
+      // با چک ایمنی
+      var xpEl = document.getElementById('myXp');
+      if (xpEl) xpEl.textContent = myXp + ' XP';
+      
+      var nameEl = document.querySelector('.user-name');
+      if (nameEl) nameEl.textContent = p.data.username;
+      
+      var avatarEl = document.querySelector('.avatar');
+      if (avatarEl) avatarEl.textContent = p.data.username.charAt(0);
       
       loadReceivedGifts();
     });
   });
 
-  // ===== جستجوی کاربر =====
   window.searchUser = function() {
     var query = document.getElementById('searchUsername').value.trim();
     var resultBox = document.getElementById('searchResult');
@@ -144,7 +149,7 @@
       }
       
       users.forEach(user => {
-        if (user.id === currentUser.id) return; // خودت رو نشون نده
+        if (user.id === currentUser.id) return;
         
         var div = document.createElement('div');
         div.className = 'user-found-card';
@@ -158,7 +163,6 @@
     });
   };
 
-  // ===== انتخاب گیرنده =====
   window.selectReceiver = function(id, name) {
     selectedReceiver = { id: id, name: name };
     document.getElementById('giftForm').style.display = 'block';
@@ -166,7 +170,6 @@
     document.getElementById('giftForm').scrollIntoView({ behavior: 'smooth' });
   };
 
-  // ===== انتخاب کادو =====
   window.selectGift = function(el) {
     document.querySelectorAll('.gift-option').forEach(opt => opt.classList.remove('selected'));
     el.classList.add('selected');
@@ -176,7 +179,6 @@
     };
   };
 
-  // ===== ارسال هدیه =====
   window.sendGift = function() {
     var msgEl = document.getElementById('giftMsg');
     
@@ -191,11 +193,9 @@
 
     msgEl.textContent = 'در حال ارسال...'; msgEl.style.color = 'var(--text-dim)';
 
-    // ۱. کم کردن XP از فرستنده
     supabaseClient.from('profiles').update({ xp: myXp - GIFT_COST }).eq('id', currentUser.id).then(updateRes => {
       if (updateRes.error) { msgEl.textContent = 'خطا در کم کردن XP'; msgEl.style.color = '#e74c3c'; return; }
       
-      // ۲. ثبت هدیه در دیتابیس
       supabaseClient.from('gifts').insert({
         sender_id: currentUser.id,
         receiver_id: selectedReceiver.id,
@@ -203,12 +203,11 @@
         gift_icon: selectedGift.icon,
         message: message,
         is_anonymous: isAnonymous,
-        is_claimed: false // یعنی هنوز گیرنده ندیده
+        is_claimed: false
       }).then(insertRes => {
         if (insertRes.error) { 
           msgEl.textContent = 'خطا: ' + insertRes.error.message; 
           msgEl.style.color = '#e74c3c';
-          // برگردوندن XP
           supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
           return; 
         }
@@ -216,17 +215,16 @@
         msgEl.textContent = '🎉 هدیه با موفقیت ارسال شد!';
         msgEl.style.color = 'var(--green)';
         
-        // ریست کردن فرم
         setTimeout(() => {
-          location.reload(); // رفرش برای آپدیت XP
+          location.reload();
         }, 2000);
       });
     });
   };
 
-  // ===== لود کردن هدایای دریافتی =====
   function loadReceivedGifts() {
     var list = document.getElementById('receivedGiftsList');
+    if (!list) return;
     
     supabaseClient.from('gifts')
       .select('*, sender:sender_id(username)')
