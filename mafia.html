@@ -94,7 +94,6 @@
       <h3 id="actionTitle">اقدام شب:</h3>
       <div class="mafia-players" id="actionTargets"></div>
       
-      <!-- بخش آیتم‌های شب -->
       <div id="nightItemsSection" style="display:none; margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 12px;">
         <p style="font-size:0.85rem; font-weight:bold; color:var(--gold); margin-bottom:8px;">استفاده از آیتم ویژه:</p>
         <button class="mafia-btn mafia-btn-purple" id="poisonKnifeBtn" style="display:none;" onclick="useItem('poison_knife')">🔪 استفاده از چاقوی مسموم</button>
@@ -158,7 +157,7 @@
 
 <script>
 var myUid = null, myName = '', myRole = 'student', myRoomId = null, myPlayerId = null, myGameRole = null;
-var myInventory = [], myChatColor = null;
+var myInventory = [], myChatColor = null, hasDeleteItem = false;
 var pollInterval = null;
 
 function filterBadWords(text) {
@@ -194,6 +193,7 @@ supabaseClient.auth.getUser().then(res => {
 
     if (inv.data) {
       myInventory = inv.data;
+      hasDeleteItem = myInventory.some(function(i) { return i.effect_value === 'delete_message' || i.effect_value === 'پاک‌کننده پیام'; });
       renderItemBag();
     }
   });
@@ -351,21 +351,33 @@ function loadChat(room) {
       const div = document.createElement('div');
       div.className = 'mafia-msg' + (m.is_night ? ' night' : '');
       
-      // اعمال رنگ چت (اگر کاربر رنگ داشت)
       var bubbleStyle = '';
       if (m.user_id === myUid && myChatColor) {
         bubbleStyle = 'style="background: ' + myChatColor + '; color: #fff; padding: 6px 10px; border-radius: 8px;"';
       }
       
       var stickerHtml = renderStickerInChat(m.message);
-      if (stickerHtml) div.innerHTML = '<strong>' + m.username + ':</strong> <span ' + bubbleStyle + '>' + stickerHtml + '</span>';
-      else div.innerHTML = '<strong>' + m.username + ':</strong> <span ' + bubbleStyle + '>' + m.message + '</span>';
+      var msgContent = stickerHtml ? stickerHtml : m.message;
       
+      var deleteBtn = '';
+      if (m.user_id === myUid && hasDeleteItem && m.message !== '[پیام پاک شد]') {
+        deleteBtn = `<button onclick="deleteMyMessage(${m.id})" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size:0.7rem; margin-right:8px;" title="پاک کردن">🗑️</button>`;
+      }
+      
+      div.innerHTML = '<strong>' + m.username + ' ' + deleteBtn + ':</strong> <span ' + bubbleStyle + '>' + msgContent + '</span>';
       box.appendChild(div);
     });
     box.scrollTop = box.scrollHeight;
   });
 }
+
+window.deleteMyMessage = function(msgId) {
+  if (!confirm('این پیام پاک بشه؟')) return;
+  supabaseClient.from('mafia_messages').update({ message: '[پیام پاک شد]' }).eq('id', msgId).then(function(res) {
+    if (res.error) { alert('خطا: ' + res.error.message); return; }
+    loadChat();
+  });
+};
 
 document.getElementById('sendMsgBtn').addEventListener('click', sendMsg);
 document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendMsg(); });
@@ -433,7 +445,6 @@ function showNightAction(players) {
     targets.appendChild(btn);
   });
 
-  // نمایش دکمه‌های آیتم
   itemsSec.style.display = 'block';
   document.getElementById('poisonKnifeBtn').style.display = 'none';
   document.getElementById('shieldBtn').style.display = 'none';
