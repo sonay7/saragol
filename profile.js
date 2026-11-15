@@ -120,36 +120,52 @@ supabaseClient.auth.getUser().then(function(res) {
   });
 });
 
-// ===== نمودار هفتگی =====
+// ===== نمودار هفتگی (شنبه تا جمعه) + تفکیک درس =====
 function loadWeeklyChart(uid) {
   var canvas = document.getElementById('weeklyChart');
   if (!canvas) return;
 
-  var dayNames = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+  var dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
   var labels = [];
   var dateKeys = []; 
+  
   var today = new Date();
+  var day = today.getDay(); // 0=یکشنبه, 6=شنبه
+  var diff = (day + 1) % 7; // فاصله از شنبه
+  var startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - diff);
 
-  for (var i = 6; i >= 0; i--) {
-    var d = new Date();
-    d.setDate(today.getDate() - i);
-    labels.push(dayNames[d.getDay()]);
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    labels.push(dayNames[i]);
     dateKeys.push(d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
   }
 
-  supabaseClient.from('study_sessions').select('minutes, created_at').eq('user_id', uid).then(function(res) {
+  supabaseClient.from('study_sessions').select('subject, minutes, questions, created_at').eq('user_id', uid).then(function(res) {
     var rows = res.data || [];
     var dataByDate = {};
+    var subjectData = {};
+
     rows.forEach(function(r) {
       var d = new Date(r.created_at);
       var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+      
+      // جمع کردن برای نمودار
       if (!dataByDate[key]) dataByDate[key] = 0;
       dataByDate[key] += r.minutes;
+
+      // جمع کردن برای تفکیک درس (فقط در محدوده همین هفته)
+      if (dateKeys.includes(key)) {
+        var subj = r.subject || 'عمومی';
+        if (!subjectData[subj]) subjectData[subj] = { minutes: 0, questions: 0 };
+        subjectData[subj].minutes += r.minutes;
+        subjectData[subj].questions += (r.questions || 0);
+      }
     });
 
+    // ۱. رسم نمودار
     var chartData = dateKeys.map(function(key) { return dataByDate[key] || 0; });
     var ctx = canvas.getContext('2d');
-    
     var gradient = ctx.createLinearGradient(0, 0, 0, 220);
     gradient.addColorStop(0, '#2ecc71');
     gradient.addColorStop(1, '#3498db');
@@ -168,6 +184,29 @@ function loadWeeklyChart(uid) {
           x: { grid: { display: false }, ticks: { color: '#888', font: { family: 'Vazirmatn, sans-serif' } } }
         }
       }
+    });
+
+    // ۲. نمایش تفکیک درس
+    var sbBox = document.getElementById('subjectBreakdown');
+    sbBox.innerHTML = '';
+    var subjects = Object.keys(subjectData);
+    if (subjects.length === 0) {
+      sbBox.innerHTML = '<p class="lock-note">این هفته مطالعه‌ای ثبت نکردی.</p>';
+      return;
+    }
+
+    subjects.forEach(function(subj) {
+      var data = subjectData[subj];
+      var div = document.createElement('div');
+      div.className = 'subject-row';
+      div.innerHTML = `
+        <div style="font-weight:bold; font-size:0.9rem;">📖 ${subj}</div>
+        <div style="display:flex; gap:16px; font-size:0.8rem;">
+          <span>⏱ ${data.minutes} دقیقه</span>
+          <span>✍️ ${data.questions} تست</span>
+        </div>
+      `;
+      sbBox.appendChild(div);
     });
   });
 }
@@ -195,7 +234,7 @@ window.saveBirthday = function() {
   });
 };
 
-// ===== لود نشان‌های ویژه (با برگرداندن تعداد) =====
+// ===== لود نشان‌های ویژه =====
 function loadSpecialBadges(uid) {
   return new Promise(function(resolve) {
     supabaseClient.from('user_badges').select('*').eq('user_id', uid).then(function(badgeRes) {
