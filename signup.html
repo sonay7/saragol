@@ -6,13 +6,14 @@
   <title>ثبت‌نام | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .auth-container { max-width: 400px; margin: 60px auto; padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     .auth-container h2 { text-align: center; color: var(--green); margin-bottom: 20px; }
     .auth-container .input { margin-bottom: 12px; width: 100%; box-sizing: border-box; }
     .auth-container .label { font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
     .auth-container .btn { margin-top: 10px; }
     .login-link { text-align: center; margin-top: 20px; font-size: 0.85rem; }
     .login-link a { color: var(--blue); text-decoration: none; }
+    .password-hint { font-size: 0.75rem; color: #e74c3c; margin-top: 4px; display: block; }
   </style>
 </head>
 <body>
@@ -25,27 +26,31 @@
     <div class="auth-container">
       <h2>📝 ثبت‌نام</h2>
       
-      <label class="label">نام کاربری</label>
-      <input id="username" type="text" class="input" placeholder="نام و فامیل خود را وارد کنید">
+      <label class="label">نام</label>
+      <input id="firstName" type="text" class="input" placeholder="مثلاً سارا">
 
-      <label class="label">ایمیل</label>
-      <input id="email" type="email" class="input" placeholder="example@email.com">
-      
-      <label class="label">رمز عبور</label>
-      <input id="password" type="password" class="input" placeholder="حداقل ۶ کاراکتر">
+      <label class="label">نام خانوادگی</label>
+      <input id="lastName" type="text" class="input" placeholder="مثلاً ایزدی">
       
       <label class="label">کلاس</label>
       <select id="className" class="input">
         <option value="">انتخاب کنید...</option>
-        <option value="هفتم">هفتم</option>
-        <option value="هشتم">هشتم</option>
-        <option value="نهم">نهم</option>
+        <option value="هفتم ۱">هفتم ۱</option>
+        <option value="هفتم ۲">هفتم ۲</option>
+        <option value="هشتم ۱">هشتم ۱</option>
+        <option value="هشتم ۲">هشتم ۲</option>
+        <option value="نهم ۱">نهم ۱</option>
+        <option value="نهم ۲">نهم ۲</option>
       </select>
 
       <label class="label">کد دعوت (اختیاری)</label>
       <input id="inviteCodeInput" type="text" class="input" placeholder="مثلاً sara847">
       
-      <button id="signupBtn" class="btn btn-green btn-full">ثبت‌نام</button>
+      <label class="label">رمز عبور</label>
+      <input id="password" type="password" class="input" placeholder="حداقل ۶ کاراکتر">
+      <span class="password-hint">⚠️ این رمز رو یه جای امن (مثل دفترچه) ذخیره کن که یادت نره!</span>
+      
+      <button id="signupBtn" class="btn btn-green btn-full" style="margin-top: 16px;">ثبت‌نام</button>
       <p id="signupMsg" style="text-align: center; margin-top: 12px; font-size: 0.85rem;"></p>
       
       <div class="login-link">
