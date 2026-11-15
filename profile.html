@@ -61,6 +61,9 @@
     .badges { display: flex; flex-wrap: wrap; gap: 8px; }
     .badge { background: var(--bg); border: 1px solid var(--green); color: var(--green); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
     .badge.locked { border-color: var(--border); color: var(--text-dim); opacity: 0.5; }
+    
+    /* استایل تفکیک درس */
+    .subject-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px 12px; border-radius:10px; border:1px solid var(--border); margin-bottom:8px; }
   </style>
 </head>
 <body>
@@ -115,9 +118,18 @@
           <div class="stat-card"><div class="stat-value" id="statAchievements">۰</div><div class="stat-label">دستاورد</div></div>
         </div>
 
+        <!-- نمودار هفتگی (شنبه تا جمعه) -->
         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px;">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📈 مطالعه ۷ روز اخیر (دقیقه)</h3>
+          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📈 مطالعه هفته (شنبه تا جمعه)</h3>
           <div style="position: relative; height: 220px; width: 100%;"><canvas id="weeklyChart"></canvas></div>
+        </div>
+
+        <!-- تفکیک درس به درس -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px;">
+          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📊 عملکرد درسی (این هفته)</h3>
+          <div id="subjectBreakdown">
+            <p class="lock-note">در حال بارگذاری...</p>
+          </div>
         </div>
 
       </div>
@@ -184,8 +196,8 @@
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
     <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="gift.html" class="nav-item">🎁 هدیه</a>
     <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+    <a href="admin.html" class="nav-item">🛠 ادمین</a>
     <a href="profile.html" class="nav-item active">👤 پروفایل</a>
   </nav>
 
