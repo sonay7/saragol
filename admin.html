@@ -84,7 +84,25 @@
         <div id="adminCinemaList"></div>
       </div>
     </details>
-
+<details class="accordion">
+  <summary class="accordion-header">🎯 مدیریت ماموریت‌های روزانه</summary>
+  <div class="accordion-content">
+    <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
+      <h4 style="font-size: 0.9rem; margin-bottom: 8px;">افزودن ماموریت:</h4>
+      <input id="questTitle" class="input" placeholder="عنوان ماموریت (مثلاً ۲۰ تست ریاضی)" style="margin-bottom: 8px;">
+      <select id="questType" class="input" style="margin-bottom: 8px;">
+        <option value="study">مطالعه (دقیقه)</option>
+        <option value="questions">تست (تعداد)</option>
+        <option value="streak">حفظ استریک</option>
+      </select>
+      <input id="questTarget" type="number" class="input" placeholder="هدف (مثلاً 20)" style="margin-bottom: 8px;">
+      <input id="questXp" type="number" class="input" placeholder="جایزه XP" style="margin-bottom: 8px;">
+      <button onclick="addQuest()" class="btn btn-green btn-full">➕ افزودن ماموریت</button>
+    </div>
+    <h4 style="font-size: 0.9rem; margin-bottom: 8px;">لیست ماموریت‌ها:</h4>
+    <div id="adminQuestsList"></div>
+  </div>
+</details>
     <details class="accordion">
       <summary class="accordion-header">🎨 مدیریت پک‌های استیکر</summary>
       <div class="accordion-content">
