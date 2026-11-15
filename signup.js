@@ -14,13 +14,13 @@ if (signupBtn) {
   signupBtn.addEventListener('click', function(e) {
     e.preventDefault();
     
-    // چک کردن وجود فیلدها (برای جلوگیری از خطای null)
-    var userEl = document.getElementById('username');
-    var emailEl = document.getElementById('email');
+    // چک کردن فیلدها
+    var firstNameEl = document.getElementById('firstName');
+    var lastNameEl = document.getElementById('lastName');
     var passEl = document.getElementById('password');
     var classEl = document.getElementById('className');
     
-    if (!userEl || !emailEl || !passEl || !classEl) {
+    if (!firstNameEl || !lastNameEl || !passEl || !classEl) {
       if (msgEl) {
         msgEl.textContent = 'خطا: فیلدهای فرم پیدا نشدند. صفحه را رفرش کنید.';
         msgEl.style.color = '#e74c3c';
@@ -29,15 +29,24 @@ if (signupBtn) {
     }
 
     // گرفتن مقادیر
-    var username = userEl.value.trim();
-    var email = emailEl.value.trim();
+    var firstName = firstNameEl.value.trim();
+    var lastName = lastNameEl.value.trim();
+    var fullName = firstName + ' ' + lastName;
     var password = passEl.value;
     var class_name = classEl.value;
     var inviteCode = inviteCodeInput ? inviteCodeInput.value.trim() : '';
 
-    if (!username || !email || !password || !class_name) {
+    if (!firstName || !lastName || !password || !class_name) {
       if (msgEl) {
         msgEl.textContent = 'همه فیلدها (به جز کد دعوت) را پر کنید!';
+        msgEl.style.color = '#e74c3c';
+      }
+      return;
+    }
+
+    if (password.length < 6) {
+      if (msgEl) {
+        msgEl.textContent = 'رمز عبور باید حداقل ۶ کاراکتر باشه!';
         msgEl.style.color = '#e74c3c';
       }
       return;
@@ -49,9 +58,12 @@ if (signupBtn) {
     }
     signupBtn.disabled = true;
 
+    // ⬇️ ساخت ایمیل فیک (چون Supabase به ایمیل نیاز داره ولی ما نمی‌خوایم از کاربر بپرسیم)
+    var fakeEmail = 'user_' + Math.floor(Math.random() * 1000000) + '@saragol.local';
+
     // ۱. ساخت کاربر در Supabase Auth
     supabaseClient.auth.signUp({
-      email: email,
+      email: fakeEmail,
       password: password,
     }).then(function(res) {
       if (res.error) {
@@ -66,7 +78,7 @@ if (signupBtn) {
       var userId = res.data.user.id;
 
       // ۲. ساخت کد دعوت هوشمند (اسم + ۳ عدد)
-      var cleanUsername = username.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+      var cleanUsername = firstName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
       if (cleanUsername === '') cleanUsername = 'user';
       var randomNum = Math.floor(100 + Math.random() * 900);
       var generatedInviteCode = cleanUsername + randomNum;
@@ -74,10 +86,10 @@ if (signupBtn) {
       // ۳. ساخت پروفایل توی دیتابیس
       supabaseClient.from('profiles').insert({
         id: userId,
-        username: username,
+        username: fullName, // اسم و فامیل با هم
         class_name: class_name,
         role: 'student',
-        status: 'approved', // برای اینکه مستقیم بتونه وارد بشه
+        status: 'approved',
         xp: 0,
         total_minutes: 0,
         invite_code: generatedInviteCode
