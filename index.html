@@ -12,38 +12,35 @@
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
+    
     .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; }
+    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); }
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
+
     .quick-access-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
     .quick-access-wrapper .forum-card { padding: 14px 8px; }
-    @media (max-width: 480px) { .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); } }
+    
+    /* ماموریت‌ها */
+    .quest-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .quest-title { font-size: 0.9rem; font-weight: bold; }
+    .quest-reward { font-size: 0.8rem; color: #f1c40f; }
+    .quest-btn { background: var(--green); color: #fff; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 0.8rem; }
+    .quest-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+    
     .notice { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 0.95rem; }
     .notice-badge { background: var(--green); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
-    .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
-    .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
-    .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
-    .welcome-content p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
-    .welcome-content button { margin-top: 24px; }
-    .welcome-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
-    .birthday-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; backdrop-filter: blur(5px); }
-    .birthday-modal.hidden { display: none; }
-    .birthday-box { background: var(--bg-card); border: 2px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(46, 204, 113, 0.3); position: relative; z-index: 2001; }
-    .birthday-box h2 { color: var(--green); margin-bottom: 12px; font-size: 1.5rem; }
-    .birthday-box p { color: var(--text); line-height: 1.6; font-size: 1rem; }
-    .balloon { position: fixed; bottom: -100px; width: 40px; height: 50px; border-radius: 50%; z-index: 1999; pointer-events: none; animation: floatUp 4s linear forwards; }
-    .balloon::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(0,0,0,0.3); }
-    @keyframes floatUp { to { transform: translateY(-120vh) rotate(10deg); } }
-    .confetti { position: fixed; top: -10px; width: 10px; height: 10px; z-index: 1999; pointer-events: none; animation: fall 3s linear forwards; }
-    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+    @media (max-width: 480px) { .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="logo">ساراگل</div>
+<header class="header" style="display:flex; justify-content:space-between; align-items:center;">
+  <div style="display:flex; align-items:center;">
+    <div class="logo">ساراگل</div>
+    <!-- زنگوله اینجا قرار می‌گیره -->
+  </div>
   <div class="user-area">
     <span class="user-name">—</span>
     <div class="avatar">—</div>
@@ -58,26 +55,10 @@
     <div id="noticesList"><p class="lock-note">در حال بارگذاری...</p></div>
   </section>
 
-  <section id="missionSection" class="big-league-card" style="display:none;">
-    <h2><span>🎯 مأموریت بزرگ ساراگل</span></h2>
-    <div style="font-size: 0.85rem; line-height: 1.8; color: var(--text); margin-bottom: 12px;">
-      <div style="background: var(--bg-card); padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; align-items: flex-start; gap: 8px;">
-        <span>👤</span><div><strong>جایزه دعوت:</strong> هر نفر که دعوت کنی ۵ XP بگیر. اگه ۳ نفر رو دعوت کنی، ۱۰ XP جایزه اضافه بگیر!</div>
-      </div>
-      <div style="background: var(--bg-card); padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; align-items: flex-start; gap: 8px;">
-        <span>🏫</span><div><strong>جنگ کلاس‌ها:</strong> کلاسی که بیشترین کاربر رو بیاره، نشان طلایی «کلاس برتر» می‌گیره.</div>
-      </div>
-      <div style="background: var(--bg-card); padding: 10px; border-radius: 10px; border: 1px solid var(--border); display: flex; align-items: flex-start; gap: 8px;">
-        <span>🎁</span><div><strong>هدیه نهایی:</strong> وقتی به ۱۰ نفر برسیم، به همه کاربران فعال ۱۰ XP + نشان «پیشگام» هدیه داده می‌شه.</div>
-      </div>
-    </div>
-    <div style="margin-top: 12px; font-size: 0.8rem; text-align: center; color: var(--text-dim);">
-      تا رسیدن به ۱۰ نفر، فقط <strong id="remainingUsers" style="color:var(--green); font-size: 1.1rem;">...</strong> نفر مونده!
-    </div>
-    <div style="width: 100%; height: 14px; background: var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden;">
-      <div id="missionProgressBar" style="height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; width: 0%; transition: width 0.5s;"></div>
-    </div>
-    <button onclick="copyInviteLinkFromHome()" class="btn btn-green btn-full" style="padding: 14px; font-size: 1rem; margin-top: 8px;">📢 دعوت از همکلاسی‌ها (کپی لینک)</button>
+  <!-- ماموریت‌های روزانه -->
+  <section class="big-league-card">
+    <h2><span>🎯 ماموریت‌های امروز</span></h2>
+    <div id="questsList"><p class="lock-note">در حال بارگذاری...</p></div>
   </section>
 
   <section class="big-league-card">
@@ -89,7 +70,7 @@
     <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
     <div class="forum-grid">
       <a href="books.html" class="forum-card"><span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span></a>
-      <a href="#" class="forum-card"><span class="forum-icon">🎨</span><span class="forum-name">هنری</span></a>
+      <a href="gift.html" class="forum-card"><span class="forum-icon">🎁</span><span class="forum-name">ارسال هدیه</span></a>
     </div>
   </section>
 
@@ -106,162 +87,138 @@
   </section>
 </main>
 
+<!-- منوی ۴ دکمه‌ای (بدون هدیه) -->
 <nav class="bottom-nav">
   <a href="index.html" class="nav-item active">🏠 خانه</a>
   <a href="study.html" class="nav-item">⏱ مطالعه</a>
-  <a href="gift.html" class="nav-item">🎁 هدیه</a>
   <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+  <a href="admin.html" class="nav-item">🛠 ادمین</a>
   <a href="profile.html" class="nav-item">👤 پروفایل</a>
 </nav>
-
-<div id="welcomeModal" class="welcome-modal hidden">
-  <div class="welcome-content">
-    <span class="welcome-emoji">🌸</span>
-    <h2>سلام! به ساراگل خوش اومدی 👋</h2>
-    <p>اینجا قراره با هم درس بخونیم، رقابت کنیم، بازی کنیم و پیشرفت کنیم.</p>
-    <button id="closeWelcomeBtn" class="btn btn-green btn-full">بزن بریم! 🚀</button>
-  </div>
-</div>
-
-<div id="birthdayModal" class="birthday-modal hidden">
-  <div class="birthday-box">
-    <div style="font-size: 4rem; margin-bottom: 10px;">🎂</div>
-    <h2>تولدت مبارک! 🎉</h2>
-    <p id="birthdayText"></p>
-    <button id="closeBirthdayBtn" class="btn btn-green btn-full" style="margin-top: 20px;">مرسی! 🥳</button>
-  </div>
-</div>
-
-<div id="giftsModal" class="birthday-modal hidden">
-  <div class="birthday-box" style="max-width: 450px;">
-    <div style="font-size: 4rem; margin-bottom: 10px;">🎁</div>
-    <h2>سورپرایز! 🎉</h2>
-    <p style="margin-bottom: 15px;">این کادوهای تولدت هستن که دوستات برات فرستادن:</p>
-    <div id="giftsListModal" style="max-height: 250px; overflow-y: auto; text-align: right;"></div>
-    <button id="claimGiftsBtn" class="btn btn-green btn-full" style="margin-top: 15px;">دریافت همه هدایا ✨</button>
-  </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
 <script src="theme.js"></script>
-<script src="script.js"></script>
 <script src="notifications.js"></script>
 
 <script>
-// متغیر سراسری برای جلوگیری از نمایش دوباره
-window.birthdayShownThisSession = false;
-
 document.addEventListener('DOMContentLoaded', function() {
-  if (!localStorage.getItem('hasSeenWelcome')) {
-    document.getElementById('welcomeModal').classList.remove('hidden');
-  }
-  document.getElementById('closeWelcomeBtn').addEventListener('click', function() {
-    document.getElementById('welcomeModal').classList.add('hidden');
-    localStorage.setItem('hasSeenWelcome', 'true');
-  });
-
   loadNotices();
   loadLeaderboard();
-  loadMissionData();
+  loadQuests();
+});
 
-  // ===== منطق تولد (با ۳ لایه امنیتی) =====
+// ===== سیستم ماموریت‌ها =====
+function loadQuests() {
+  supabaseClient.auth.getUser().then(function(res) {
+    if (!res.data.user) return;
+    var uid = res.data.user.id;
+    var today = new Date().toISOString().split('T')[0];
+
+    // ۱. چک کن آیا کاربر برای امروز ماموریت داره یا نه
+    supabaseClient.from('user_quests').select('*, daily_quests(*)').eq('user_id', uid).eq('quest_date', today).then(function(qRes) {
+      if (qRes.data && qRes.data.length > 0) {
+        renderQuests(qRes.data, uid);
+      } else {
+        // اگه نداره، ۳ تا ماموریت فعال از جدول بردار و براش بساز
+        supabaseClient.from('daily_quests').select('*').eq('is_active', true).limit(3).then(function(activeRes) {
+          var quests = activeRes.data || [];
+          if (quests.length === 0) { document.getElementById('questsList').innerHTML = '<p class="lock-note">ماموریتی تعریف نشده.</p>'; return; }
+          
+          var inserts = quests.map(function(q) {
+            return { user_id: uid, quest_id: q.id, quest_date: today };
+          });
+          
+          supabaseClient.from('user_quests').insert(inserts).select('*, daily_quests(*)').then(function(insRes) {
+            renderQuests(insRes.data, uid);
+          });
+        });
+      }
+    });
+  });
+}
+
+function renderQuests(quests, uid) {
+  var box = document.getElementById('questsList');
+  box.innerHTML = '';
+  if (!quests || quests.length === 0) { box.innerHTML = '<p class="lock-note">ماموریتی موجود نیست.</p>'; return; }
+
+  // محاسبه پیشرفت امروز
+  var today = new Date().toISOString().split('T')[0];
+  supabaseClient.from('study_sessions').select('minutes, questions, created_at').eq('user_id', uid).then(function(sRes) {
+    var rows = sRes.data || [];
+    var todayMinutes = 0;
+    var todayQuestions = 0;
+    var hasSessionToday = false;
+    
+    rows.forEach(function(r) {
+      var d = new Date(r.created_at).toISOString().split('T')[0];
+      if (d === today) {
+        todayMinutes += r.minutes;
+        todayQuestions += (r.questions || 0);
+        hasSessionToday = true;
+      }
+    });
+
+    quests.forEach(function(uq) {
+      var q = uq.daily_quests;
+      if (!q) return;
+      
+      var currentProgress = 0;
+      var target = q.target_value;
+      
+      if (q.type === 'study') currentProgress = todayMinutes;
+      else if (q.type === 'questions') currentProgress = todayQuestions;
+      else if (q.type === 'streak') currentProgress = hasSessionToday ? 1 : 0;
+
+      var isCompleted = currentProgress >= target || uq.is_completed;
+      var isClaimed = uq.is_claimed;
+
+      var div = document.createElement('div');
+      div.className = 'quest-card';
+      
+      var btnHtml = '';
+      if (isClaimed) {
+        btnHtml = '<button class="quest-btn" disabled>✅ دریافت شد</button>';
+      } else if (isCompleted) {
+        btnHtml = `<button class="quest-btn" onclick="claimQuest('${uq.id}', ${q.xp_reward})">🎁 دریافت جایزه</button>`;
+      } else {
+        btnHtml = `<button class="quest-btn" disabled>${currentProgress} / ${target}</button>`;
+      }
+
+      div.innerHTML = `
+        <div>
+          <div class="quest-title">${q.title}</div>
+          <div class="quest-reward">جایزه: ${q.xp_reward} XP</div>
+        </div>
+        ${btnHtml}
+      `;
+      box.appendChild(div);
+    });
+  });
+}
+
+window.claimQuest = function(uqId, xpReward) {
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
     
-    supabaseClient.from('profiles').select('username, birthday, last_birthday_year').eq('id', uid).single().then(function(p) {
-      if (!p.data || !p.data.birthday) return;
-      var profile = p.data;
-      
-      var today = new Date();
-      var parts = profile.birthday.split('-');
-      var bMonth = parseInt(parts[1], 10) - 1;
-      var bDay = parseInt(parts[2], 10);
-      var currentYear = today.getFullYear();
-      
-      var isTodayBirthday = (today.getMonth() === bMonth && today.getDate() === bDay);
-      
-      // برش اسم (فقط کلمه اول)
-      var firstName = profile.username.split(' ')[0]; 
-      
-      var bdayKey = 'bday_seen_' + currentYear + '_' + uid;
-      
-      // لایه اول: چک دیتابیس | لایه دوم: چک لوکال استوریج | لایه سوم: چک متغیر سراسری
-      if (isTodayBirthday && profile.last_birthday_year !== currentYear && !localStorage.getItem(bdayKey) && !window.birthdayShownThisSession) {
-        
-        // تنظیم فلگ‌ها
-        window.birthdayShownThisSession = true;
-        localStorage.setItem(bdayKey, 'true');
-        
-        // آپدیت دیتابیس
-        supabaseClient.from('profiles').update({ last_birthday_year: currentYear }).eq('id', uid);
-        
-        // نمایش پیام
-        document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + firstName + ' جان! 🌟';
-        document.getElementById('birthdayModal').classList.remove('hidden');
-      }
-    });
-  });
-  
-  document.getElementById('closeBirthdayBtn').addEventListener('click', function() {
-    document.getElementById('birthdayModal').classList.add('hidden');
-    playCelebration();
-  });
-});
-
-function playCelebration() {
-  var colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
-  for (var i = 0; i < 20; i++) {
-    var balloon = document.createElement('div');
-    balloon.className = 'balloon';
-    balloon.style.left = Math.random() * 100 + 'vw';
-    balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    balloon.style.animationDelay = (Math.random() * 2) + 's';
-    balloon.style.animationDuration = (Math.random() * 2 + 3) + 's';
-    document.body.appendChild(balloon);
-    setTimeout(function(b) { return function() { b.remove(); } }(balloon), 6000);
-  }
-  for (var j = 0; j < 50; j++) {
-    var confetti = document.createElement('div');
-    confetti.className = 'confetti';
-    confetti.style.left = Math.random() * 100 + 'vw';
-    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    confetti.style.animationDelay = (Math.random() * 1) + 's';
-    confetti.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
-    document.body.appendChild(confetti);
-    setTimeout(function(c) { return function() { c.remove(); } }(confetti), 5000);
-  }
-}
-
-function loadMissionData() {
-  supabaseClient.rpc('get_total_users_count').then(function(res) {
-    if (res.error) return;
-    var count = res.data || 0;
-    var target = 10;
-    document.getElementById('missionSection').style.display = 'block';
-    if (count >= target) {
-      document.getElementById('remainingUsers').textContent = '0';
-      document.getElementById('missionProgressBar').style.width = '100%';
-    } else {
-      document.getElementById('remainingUsers').textContent = target - count;
-      document.getElementById('missionProgressBar').style.width = ((count / target) * 100) + '%';
-    }
-  });
-}
-
-window.copyInviteLinkFromHome = function() {
-  supabaseClient.auth.getUser().then(function(res) {
-    if (!res.data.user) return;
-    supabaseClient.from('profiles').select('invite_code').eq('id', res.data.user.id).single().then(function(p) {
-      if (!p.data || !p.data.invite_code) { alert('کد دعوت شما در حال ساخته شدنه.'); return; }
-      var link = 'https://sonay7.github.io/saragol/signup.html?ref=' + p.data.invite_code;
-      navigator.clipboard.writeText(link).then(function() { alert('✅ لینک دعوت کپی شد!'); }).catch(function() { prompt('لینک دعوت:', link); });
+    // مارک کردن به عنوان دریافت شده
+    supabaseClient.from('user_quests').update({ is_claimed: true, is_completed: true }).eq('id', uqId).then(function() {
+      // اضافه کردن XP
+      supabaseClient.from('profiles').select('xp').eq('id', uid).single().then(function(p) {
+        var newXp = (p.data.xp || 0) + xpReward;
+        supabaseClient.from('profiles').update({ xp: newXp }).eq('id', uid).then(function() {
+          alert('🎉 ' + xpReward + ' XP دریافت کردی!');
+          loadQuests(); // رفرش ماموریت‌ها
+        });
+      });
     });
   });
 };
 
+// ===== بقیه توابع =====
 function loadNotices() {
   supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
     var container = document.getElementById('noticesList');
