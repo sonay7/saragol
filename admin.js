@@ -645,3 +645,49 @@ if (document.getElementById('wheelSlicesList')) loadAdminWheel();
 if (document.getElementById('inactiveUsersList')) loadUserMonitoring();
 if (document.getElementById('adminCinemaList')) loadAdminCinema();
 if (document.getElementById('adminBadgesList')) loadAdminBadges();
+// ===== مدیریت ماموریت‌ها =====
+window.addQuest = function() {
+  var title = document.getElementById('questTitle').value.trim();
+  var type = document.getElementById('questType').value;
+  var target = parseInt(document.getElementById('questTarget').value) || 0;
+  var xp = parseInt(document.getElementById('questXp').value) || 5;
+
+  if (!title || target < 1) { alert('عنوان و هدف رو درست وارد کن'); return; }
+
+  supabaseClient.from('daily_quests').insert({
+    title: title, type: type, target_value: target, xp_reward: xp
+  }).then(function(res) {
+    if (res.error) { alert('خطا: ' + res.error.message); return; }
+    document.getElementById('questTitle').value = '';
+    document.getElementById('questTarget').value = '';
+    document.getElementById('questXp').value = '';
+    loadAdminQuests();
+  });
+};
+
+function loadAdminQuests() {
+  var list = document.getElementById('adminQuestsList');
+  if (!list) return;
+
+  supabaseClient.from('daily_quests').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    var rows = res.data || [];
+    if (rows.length === 0) { list.innerHTML = '<p class="lock-note">ماموریتی وجود ندارد.</p>'; return; }
+    rows.forEach(function(q) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>' + q.title + '</strong><span class="admin-sub">' + q.type + ' - هدف: ' + q.target_value + ' - ' + q.xp_reward + ' XP</span></div>' +
+        '<button class="btn btn-dim btn-sm" style="color:#e74c3c;" onclick="delQuest(' + q.id + ')">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+
+window.delQuest = function(id) {
+  if (confirm('حذف شود؟')) {
+    supabaseClient.from('daily_quests').delete().eq('id', id).then(function() { loadAdminQuests(); });
+  }
+};
+
+// لود اولیه در ادمین
+if (document.getElementById('adminQuestsList')) loadAdminQuests();
