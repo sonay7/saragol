@@ -1,0 +1,266 @@
+mbti.html<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تست شخصیت‌شناسی | ساراگل</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .test-container { max-width: 600px; margin: 40px auto; padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .test-title { text-align: center; color: var(--green); margin-bottom: 8px; font-size: 1.4rem; }
+    .test-subtitle { text-align: center; color: var(--text-dim); font-size: 0.9rem; margin-bottom: 24px; }
+    
+    .progress-bar { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-bottom: 24px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); width: 0%; transition: width 0.3s; border-radius: 10px; }
+    
+    .question-text { font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; line-height: 1.6; text-align: center; }
+    .option-btn { width: 100%; padding: 16px; margin-bottom: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: inherit; font-size: 0.95rem; text-align: right; cursor: pointer; transition: 0.2s; }
+    .option-btn:hover { border-color: var(--green); background: rgba(46, 204, 113, 0.05); transform: translateX(-4px); }
+    
+    .result-box { text-align: center; animation: fadeIn 0.5s ease; }
+    .result-icon { font-size: 4rem; margin-bottom: 12px; }
+    .result-name { font-size: 1.8rem; font-weight: bold; color: var(--green); margin-bottom: 16px; }
+    .result-desc { font-size: 0.95rem; line-height: 1.8; text-align: right; background: var(--bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+    .result-desc strong { color: var(--blue); display: block; margin-top: 12px; margin-bottom: 4px; }
+    
+    .continue-box { background: rgba(52,152,219,0.1); border: 1px dashed var(--blue); padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center; }
+    .continue-box p { margin-bottom: 12px; font-size: 0.9rem; color: var(--text); }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="test-container">
+    
+    <!-- صفحه شروع -->
+    <div id="startScreen">
+      <h2 class="test-title">🎭 تست شخصیت‌شناسی</h2>
+      <p class="test-subtitle">با جواب دادن به چند سوال ساده، خودت رو بهتر بشناس!</p>
+      <div style="text-align: center; font-size: 4rem; margin: 20px 0;">🧠</div>
+      <button class="btn btn-green btn-full" onclick="startTest()" style="padding: 16px;">شروع تست (۱۶ سوال)</button>
+    </div>
+
+    <!-- صفحه سوالات -->
+    <div id="quizScreen" style="display: none;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem; color: var(--text-dim);">
+        <span>سوال <span id="qNumber">1</span> از <span id="qTotal">16</span></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="question-text" id="questionText">...</div>
+      <div id="optionsContainer">
+        <button class="option-btn" id="optA" onclick="answer('A')">...</button>
+        <button class="option-btn" id="optB" onclick="answer('B')">...</button>
+      </div>
+    </div>
+
+    <!-- صفحه نتیجه (16 سوال) -->
+    <div id="interimScreen" style="display: none;" class="result-box">
+      <div class="result-icon" id="interimIcon">✨</div>
+      <h2 class="result-name" id="interimName">...</h2>
+      <p class="result-subtitle">نتیجه تقریبی تو تا اینجا!</p>
+      <div class="continue-box">
+        <p>می‌خوای مطمئن‌تر بشی؟ با جواب دادن به ۸ سوال دیگه، دقیق‌ترین نتیجه رو بهت می‌دیم!</p>
+        <button class="btn btn-blue btn-full" onclick="continueTest()">ادامه تست (۸ سوال)</button>
+        <button class="btn btn-dim btn-full" style="margin-top: 8px;" onclick="showFinalResult()">همین خوبه، نتیجه رو نشون بده</button>
+      </div>
+    </div>
+
+    <!-- صفحه نتیجه نهایی -->
+    <div id="finalScreen" style="display: none;" class="result-box">
+      <div class="result-icon" id="finalIcon">✨</div>
+      <h2 class="result-name" id="finalName">...</h2>
+      <div class="result-desc" id="finalDesc"></div>
+      <button class="btn btn-green btn-full" onclick="saveAndReturn()">ذخیره در پروفایل و بازگشت</button>
+      <button class="btn btn-dim btn-full" style="margin-top: 8px;" onclick="restartTest()">🔄 تست مجدد</button>
+    </div>
+
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="gift.html" class="nav-item">🎁 هدیه</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+
+<script>
+  // ===== دیتای سوالات (۱۶ سوال اول) =====
+  const questionsPhase1 = [
+    { q: "وقتی وارد یه محیط جدید (مثل یه کلاس تازه یا یه جمع ناشناس) می‌شی، اول چیکار می‌کنی؟", a: { text: "می‌رم جلو، با بقیه سلام و احوال‌پرسی می‌کنم و شروع می‌کنم به حرف زدن.", type: "E" }, b: { text: "اول یه گوشه می‌شینم، همه رو نگاه می‌کنم تا ببینم چه خبره، بعد شروع می‌کنم.", type: "I" } },
+    { q: "بعد از یه روز طولانی و خسته‌کننده، چطوری واقعاً استراحت می‌کنی و انرژی می‌گیری؟", a: { text: "با دوستام حرف می‌زنم یا می‌رم بیرون تا حالم عوض شه.", type: "E" }, b: { text: "می‌رم تو اتاقم، تنها می‌مونم و به کارهای خودم می‌رسم.", type: "I" } },
+    { q: "وقتی می‌خوای یه درس جدید رو یاد بگیری، کدوم روش برات بهتره؟", a: { text: "اول مثال‌های زیاد حل می‌کنم و جزئیات رو دقیق یاد می‌گیرم.", type: "S" }, b: { text: "اول کلیت مطلب رو می‌فهمم و می‌بینم به چه دردی می‌خوره.", type: "N" } },
+    { q: "توی درس خوندن، بیشتر دوست داری چه جوری باشه؟", a: { text: "حفظ کردن و تمرین کردن نکات دقیق.", type: "S" }, b: { text: "درک کردن مفهوم کلی و ربطش به بقیه چیزا.", type: "N" } },
+    { q: "اگه دوستت بیاد و مشکلش رو بهت بگه، تو چیکار می‌کنی؟", a: { text: "سعی می‌کنم راه‌حل منطقی بهش پیشنهاد بدم.", type: "T" }, b: { text: "سعی می‌کنم دلداریش بدم و بگم که درکش می‌کنم.", type: "F" } },
+    { q: "وقتی یه تصمیم مهم داری، بیشتر به چی فکر می‌کنی؟", a: { text: "به اینکه منطقی‌ترین و درست‌ترین کار چیه.", type: "T" }, b: { text: "به اینکه این تصمیم چه تاثیری روی احساسات بقیه می‌ذاره.", type: "F" } },
+    { q: "وقتی یه پروژه یا تکلیف بزرگ داری، چطوری انجامش می‌دی؟", a: { text: "از روزای اول شروع می‌کنم و کم‌کم تمومش می‌کنم.", type: "J" }, b: { text: "معمولاً می‌ذارم برای شب آخر و یهو تمومش می‌کنم.", type: "P" } },
+    { q: "اتاق یا میز مطالعه‌ت بیشتر چه شکلیه؟", a: { text: "تمیز و مرتب و همه چیز سر جای خودشه.", type: "J" }, b: { text: "یه کم شلوغه، ولی هر چیزی رو که بخوام می‌دونم کجاست.", type: "P" } },
+    { q: "وقتی می‌خوای با یه نفر جدید دوست بشی، معمولاً چطوری شروع می‌کنی؟", a: { text: "خودم پیش‌قدم می‌شم و شروع می‌کنم به حرف زدن.", type: "E" }, b: { text: "صبر می‌کنم تا طرف مقابل شروع کنه یا یه موقعیت طبیعی پیش بیاد.", type: "I" } },
+    { q: "توی کارهای گروهی (مثل پروژه مدرسه)، معمولاً چه نقشی رو دوست داری داشته باشی؟", a: { text: "دوست دارم با بقیه بحث کنم و ایده‌ها رو هدایت کنم.", type: "E" }, b: { text: "دوست دارم بخشی از کار رو که بهم سپرده شده، تنهایی و با تمرکز انجام بدم.", type: "I" } },
+    { q: "وقتی یه داستان یا فیلم می‌خونی/می‌بینی، بیشتر چی برات مهمه؟", a: { text: "اینکه داستانش چیه و چه اتفاقایی می‌افته.", type: "S" }, b: { text: "اینکه پیامش چیه و چه معنی پنهانی داره.", type: "N" } },
+    { q: "وقتی می‌خوای یه مهارت جدید یاد بگیری (مثل یه بازی جدید)، چطوری شروع می‌کنی؟", a: { text: "اول دستورالعمل و راهنماش رو دقیق می‌خونم و مرحله به مرحله انجام می‌دم.", type: "S" }, b: { text: "خودم شروع می‌کنم به ور رفتن باهاش تا ببینم چه کارایی می‌شه کرد.", type: "N" } },
+    { q: "اگه یکی از دوستات یه کار اشتباهی انجام بده، معمولاً چیکار می‌کنی؟", a: { text: "رُک و مستقیم بهش می‌گم که کارش اشتباه بوده.", type: "T" }, b: { text: "سعی می‌کنم با آرامش و مهربونی بگم که شاید بهتره یه جور دیگه انجامش بده.", type: "F" } },
+    { q: "وقتی دو نفر از دوستات با هم دعواشون میشه، تو چیکار می‌کنی؟", a: { text: "سعی می‌کنم بفهمم حق با کیه و مشکل رو منطقی حل کنم.", type: "T" }, b: { text: "سعی می‌کنم بینشون آشتی بندازم و نذارم ناراحت شن.", type: "F" } },
+    { q: "اگه یه روز تعطیل داشته باشی که هیچ برنامه‌ای براش نداری، چه حسی داری؟", a: { text: "ناراحت می‌شم، دوست دارم از قبل بدونم چه کارهایی می‌خوام بکنم.", type: "J" }, b: { text: "خوشحال می‌شم، دوست دارم ببینم اون روز چی پیش میاد.", type: "P" } },
+    { q: "کدوم جمله بیشتر بهت نزدیکه؟", a: { text: "من آدم برنامه‌ریزی هستم و دوست دارم از قبل بدونم چه اتفاقی می‌افته.", type: "J" }, b: { text: "من آدم انعطاف‌پذیری هستم و دوست دارم خودجوش تصمیم بگیرم.", type: "P" } }
+  ];
+
+  // ===== دیتای سوالات (۸ سوال دوم) =====
+  const questionsPhase2 = [
+    { q: "وقتی می‌خوای درس بخونی، کدوم فضا رو ترجیح می‌دی؟", a: { text: "توی یه فضای شلوغ و پرجنب و جوش بهتر تمرکز می‌کنم.", type: "E" }, b: { text: "حتماً باید توی یه اتاق ساکت و تنها باشم تا بتونم تمرکز کنم.", type: "I" } },
+    { q: "وقتی یه ایده‌ی جدید به ذهنت می‌رسه، دوست داری چیکارش کنی؟", a: { text: "سریع به بقیه بگم و درباره‌ش با هم حرف بزنیم.", type: "E" }, b: { text: "اول خودم روش فکر کنم و کاملش کنم، بعد به بقیه بگم.", type: "I" } },
+    { q: "به نظر تو، آدم‌ها بیشتر باید به چی توجه کنن؟", a: { text: "به واقعیت‌های همین الان و چیزهایی که جلوی چشمشونه.", type: "S" }, b: { text: "به احتمالات آینده و رویاهایی که می‌تونن بسازن.", type: "N" } },
+    { q: "وقتی یه مشکل توی زندگی برات پیش میاد، چطوری حلش می‌کنی؟", a: { text: "دنبال یه راه‌حل عملی و امتحان شده می‌گردم.", type: "S" }, b: { text: "سعی می‌کنم از زوایای جدید بهش نگاه کنم و یه راه‌حل خلاقانه پیدا کنم.", type: "N" } },
+    { q: "وقتی معلم یه نمره‌ی بد بهت می‌ده، واکنشت چیه؟", a: { text: "سعی می‌کنم بفهمم کجای کارم اشتباه بوده و منطقی جبرانش کنم.", type: "T" }, b: { text: "اول یه کم ناراحت می‌شم، ولی بعد به این فکر می‌کنم که چطور می‌تونم بهتر بشم.", type: "F" } },
+    { q: "برای انتخاب یه دوست جدید، کدوم ویژگی برات مهم‌تره؟", a: { text: "اینکه آدم منطقی و باهوشی باشه و بشه باهاش بحث کرد.", type: "T" }, b: { text: "اینکه آدم مهربون و دلسوزی باشه و بشه بهش اعتماد کرد.", type: "F" } },
+    { q: "وقتی می‌خوای یه سفر (یا حتی یه گردش یه روزه) بری، چطوری برنامه‌ریزی می‌کنی؟", a: { text: "از قبل همه چیز رو مشخص می‌کنم (کجا بریم، کی بریم، چی بخوریم).", type: "J" }, b: { text: "دوست دارم خودجوش باشم و همون‌جا تصمیم بگیرم که چیکار کنیم.", type: "P" } },
+    { q: "اگه یه قانون توی مدرسه به نظرت مسخره بیاد، چیکار می‌کنی؟", a: { text: "سعی می‌کنم دلیلش رو بفهمم و اگه واقعاً مسخره باشه، برای تغییرش تلاش می‌کنم.", type: "J" }, b: { text: "ترجیح می‌دم سوال نکنم و ببینم چه پیش میاد، شاید بعداً بهتر شد.", type: "P" } }
+  ];
+
+  // ===== دیکشنری شخصیت‌ها =====
+  const personalities = {
+    "INTJ": { name: "معمار", icon: "🏛️", desc: "استراتژیست بزرگ", think: "خیلی عمیق و آینده‌نگر. قبل از هر کاری، نقشه و استراتژی دقیق می‌چینه. عاشق حل مسائل پیچیده‌ست.", strong: "مستقل، با اراده، منطقی و با اعتماد به نفس.", weak: "گاهی زیادی منتقد و کمال‌گراست و به احساسات بقیه کم توجه می‌کنه." },
+    "INTP": { name: "متفکر", icon: "🔬", desc: "فیلسوف", think: "ذهنش همیشه درگیر ایده‌ها و مفاهیم جدید. عاشق تحلیل کردنه و دنبال کشف حقایق پنهان است.", strong: "خلاق، باهوش، مستقل و تحلیل‌گر.", weak: "گاهی توی دنیای افکارش غرق میشه و از انجام کارهای عملی و روزمره عقب می‌مونه." },
+    "ENTJ": { name: "فرمانده", icon: "⚔️", desc: "رهبر", think: "ذاتاً رهبره. هدفش رو مشخص می‌کنه و بقیه رو برای رسیدن به اون هدف هدایت می‌کنه.", strong: "قاطع، پرانرژی، با اراده و کاریزماتیک.", weak: "ممکنه زیادی سخت‌گیر و بی‌حوصله باشه و به احساسات دیگران کم توجه کنه." },
+    "ENTP": { name: "مبتکر", icon: "💡", desc: "کاشف", think: "مغزش پر از ایده‌های دیوانه‌وار و باحاله. عاشق بحث و مناظره و پیدا کردن راه‌حل‌های عجیب برای مشکلاته.", strong: "باهوش، خلاق، شوخ‌طبع و انعطاف‌پذیر.", weak: "زود از کارهای تکراری خسته میشه و گاهی قوانین رو نادیده می‌گیره." },
+    "INFJ": { name: "مشاور", icon: "📜", desc: "پیشگو", think: "خیلی عمیق و آرمان‌گرا. به دنبال معنا و هدف بزرگ توی زندگیه و دوست داره به دیگران کمک کنه.", strong: "دلسوز، الهام‌بخش، با بصیرت و وفادار.", weak: "گاهی زیادی به فکر آینده و مشکلات دیگرانه که خودش رو خسته می‌کنه." },
+    "INFP": { name: "رویاپرداز", icon: "🌙", desc: "میانجی", think: "دنیای درونش پر از احساسات و رویاست. به هماهنگی و صلح علاقه داره و از درگیری متنفره.", strong: "خلاق، مهربان، وفادار و با حساسیت بالا.", weak: "ممکنه به راحتی ناراحت بشه و از قضاوت شدن بترسه." },
+    "ENFJ": { name: "الهام‌بخش", icon: "📣", desc: "قهرمان", think: "پرانرژی و کاریزماتیک. دوست داره بقیه رو به سمت کارهای مثبت هدایت کنه و الهام‌بخش باشه.", strong: "اجتماعی، مهربون، توانایی هدایت و تشویق دیگران.", weak: "گاهی برای جلب رضایت دیگران، خودش رو فراموش می‌کنه." },
+    "ENFP": { name: "قهرمان", icon: "🎉", desc: "ماجراجو", think: "عاشق هیجان و تجربه‌های جدیده. باانرژی و شاداب. دوست داره همه چیز رو امتحان کنه.", strong: "پرانرژی، خوش‌بین، خلاق و انعطاف‌پذیر.", weak: "تمرکز کردن روش سخته و زود خسته میشه." },
+    "ISTJ": { name: "بازرس", icon: "🛡️", desc: "مدیر", think: "مسئولیت‌پذیر و منظم. به وظیفه‌شناسی و انجام دادن کارها درست اعتقاد داره.", strong: "وظیفه‌شناس، قابل اعتماد، منطقی و پایبند به قوانین.", weak: "گاهی زیادی سخت‌گیر و کمال‌گراست و به انعطاف‌پذیری کم بها میده." },
+    "ISFJ": { name: "محافظ", icon: "🍀", desc: "مدافع", think: "مهربون و فداکار. همیشه به فکر امنیت و راحتی دیگرانه و ازشون مراقبت می‌کنه.", strong: "دلسوز، قابل اعتماد، صبور و دارای حس مسئولیت بالا.", weak: "گاهی از خودش بیش از حد مایه می‌گذاره و راحت فریب می‌خوره." },
+    "ESTJ": { name: "مجری", icon: "👑", desc: "مدیر اجرایی", think: "سازمان‌دهنده و نتیجه‌محور. دوست داره کارها رو به سرانجام برسونه و گروه رو رهبری کنه.", strong: "هدف‌مند، منظم، با اراده و دارای توانایی مدیریت قوی.", weak: "ممکنه زیادی به نتیجه فکر کنه و احساسات دیگران رو نادیده بگیره." },
+    "ESFJ": { name: "حامی", icon: "🤝", desc: "کنسول", think: "گرم و اجتماعی. دوست داره به دیگران کمک کنه و در ارتباط با جمعیت باشه.", strong: "اجتماعی، مهربون، وفادار و همدل.", weak: "ممکنه برای کمک به دیگران، از خودش غافل بشه و در برابر انتقاد حساس باشه." },
+    "ISTP": { name: "صنعتگر", icon: "🔧", desc: "ماهر", think: "آروم و خونسرد. عاشق کار کردن با دسته و حل مشکلات با روش‌های عملی. کمتر حرف می‌زنه و بیشتر عمل می‌کنه.", strong: "منطقی، خلاق، آروم و با تمرکز بالا.", weak: "ممکنه به احساسات دیگران کم توجه باشه و از قوانین طولانی خوشش نیاد." },
+    "ISFP": { name: "هنرمند", icon: "🎨", desc: "ماجراجو", think: "ذهن حساس و هنری. زندگیش پر از زیبایی و احساساته و با خلاقیت خودش رو بیان می‌کنه.", strong: "خلاق، مهربون، با ذوق و هماهنگ با محیط.", weak: "گاهی برای برنامه‌ریزی آینده مشکل داره و زود هیجان‌زده یا ناامید میشه." },
+    "ESTP": { name: "ماجراجو", icon: "🎯", desc: "کارآفرین", think: "پرانرژی و اهل عمل. عاشق ریسک و موقعیت‌های هیجان‌انگیزه و از هر فرصتی برای شروع یه کار جدید استفاده می‌کنه.", strong: "پرانرژی، باهوش، شجاع و قادر به حل مشکلات به صورت لحظه‌ای.", weak: "ممکنه بی‌حوصله و بی‌قرار باشه و از برنامه‌ریزی طولانی خوشش نیاد." },
+    "ESFP": { name: "سرگرم‌کننده", icon: "🎤", desc: "بازیگر", think: "شاد و پرانرژی. عاشق سرگرم کردن بقیه و بودن در مرکز توجهه.", strong: "پرانرژی، شاد، اجتماعی و با توانایی بالا در برقراری ارتباط.", weak: "ممکنه از خستگی و تنهایی بترسه و تمرکز کافی روی کارهای طولانی نداشته باشه." }
+  };
+
+  let currentQuestions = [];
+  let currentIndex = 0;
+  let scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+  let phase = 1;
+
+  window.startTest = function() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'block';
+    currentQuestions = questionsPhase1;
+    currentIndex = 0;
+    scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+    phase = 1;
+    renderQuestion();
+  };
+
+  function renderQuestion() {
+    const q = currentQuestions[currentIndex];
+    document.getElementById('qNumber').textContent = currentIndex + 1;
+    document.getElementById('qTotal').textContent = currentQuestions.length;
+    
+    let totalQ = (phase === 1) ? 16 : 24;
+    let globalIndex = (phase === 1) ? (currentIndex + 1) : (16 + currentIndex + 1);
+    document.getElementById('progressFill').style.width = (globalIndex / totalQ * 100) + '%';
+
+    document.getElementById('questionText').textContent = q.q;
+    document.getElementById('optA').textContent = q.a.text;
+    document.getElementById('optB').textContent = q.b.text;
+  }
+
+  window.answer = function(choice) {
+    const q = currentQuestions[currentIndex];
+    if (choice === 'A') scores[q.a.type]++;
+    else scores[q.b.type]++;
+
+    currentIndex++;
+    if (currentIndex < currentQuestions.length) {
+      renderQuestion();
+    } else {
+      if (phase === 1) showInterimResult();
+      else showFinalResult();
+    }
+  };
+
+  function getResultType() {
+    let type = "";
+    type += (scores.E >= scores.I) ? "E" : "I";
+    type += (scores.S >= scores.N) ? "S" : "N";
+    type += (scores.T >= scores.F) ? "T" : "F";
+    type += (scores.J >= scores.P) ? "J" : "P";
+    return type;
+  }
+
+  function showInterimResult() {
+    document.getElementById('quizScreen').style.display = 'none';
+    document.getElementById('interimScreen').style.display = 'block';
+    
+    let type = getResultType();
+    let p = personalities[type];
+    document.getElementById('interimIcon').textContent = p.icon;
+    document.getElementById('interimName').textContent = "شخصیت " + p.name;
+  }
+
+  window.continueTest = function() {
+    document.getElementById('interimScreen').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'block';
+    currentQuestions = questionsPhase2;
+    currentIndex = 0;
+    phase = 2;
+    renderQuestion();
+  };
+
+  window.showFinalResult = function() {
+    document.getElementById('interimScreen').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'none';
+    document.getElementById('finalScreen').style.display = 'block';
+    
+    let type = getResultType();
+    let p = personalities[type];
+    
+    document.getElementById('finalIcon').textContent = p.icon;
+    document.getElementById('finalName').textContent = p.name + " (" + p.desc + ")";
+    
+    let descHtml = `<strong>🧠 چطوری فکر می‌کنه؟</strong> ${p.think}`;
+    descHtml += `<strong>💪 نقاط قوت:</strong> ${p.strong}`;
+    descHtml += `<strong>🤏 نقاط ضعف:</strong> ${p.weak}`;
+    document.getElementById('finalDesc').innerHTML = descHtml;
+    
+    // ذخیره در متغیر سراسری برای استفاده بعدی
+    window.finalTypeCode = type;
+  };
+
+  window.saveAndReturn = function() {
+    if (!window.finalTypeCode) return;
+    
+    supabaseClient.auth.getUser().then(function(res) {
+      if (!res.data.user) return;
+      supabaseClient.from('profiles').update({ mbti_type: window.finalTypeCode }).eq('id', res.data.user.id).then(function() {
+        alert('✅ شخصیت شما در پروفایل ذخیره شد!');
+        window.location.href = 'index.html';
+      });
+    });
+  };
+
+  window.restartTest = function() {
+    document.getElementById('finalScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'block';
+  };
+
+</script>
+</body>
+</html>
