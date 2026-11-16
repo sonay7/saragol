@@ -1,19 +1,26 @@
+// ===== سیستم اعلان‌ها (زنگوله) =====
 document.addEventListener('DOMContentLoaded', function() {
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var myUid = res.data.user.id;
 
-    var header = document.querySelector('.header');
-    if (!header) return;
+    var logo = document.querySelector('.logo');
+    if (!logo) return;
 
+    // ۱. لوگو رو توی یه wrapper قرار می‌دیم تا زنگوله کنارش بشینه (نه روی متن)
+    var parent = logo.parentNode;
+    var logoWrap = document.createElement('div');
+    logoWrap.style.cssText = 'display: flex; align-items: center; gap: 12px;';
+    parent.insertBefore(logoWrap, logo);
+    logoWrap.appendChild(logo);
+
+    // ۲. ساخت زنگوله (چسبیده به سمت چپ لوگو)
     var bellContainer = document.createElement('div');
-    // قرار دادن زنگوله به صورت مطلق سمت راست هدر (دقیقاً کنار لوگو)
-    bellContainer.style.cssText = 'position: absolute; right: 80px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.3rem; z-index: 100;';
+    bellContainer.style.cssText = 'position: relative; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center;';
     bellContainer.innerHTML = `🔔<span id="notifBadge" style="display:none; position:absolute; top:-6px; right:-8px; background:#e74c3c; color:#fff; font-size:0.65rem; font-weight:bold; padding:2px 5px; border-radius:50%;"></span>`;
-    
-    header.style.position = 'relative'; // برای اینکه زنگوله نسبت به هدر موقعیت بگیره
-    header.appendChild(bellContainer);
+    logoWrap.appendChild(bellContainer);
 
+    // ۳. ساخت مودال اعلان‌ها
     var modalHTML = `
       <div id="notifModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:9999; padding:20px;">
         <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:20px; width:100%; max-width:400px; max-height:80vh; display:flex; flex-direction:column;">
