@@ -1,19 +1,18 @@
-// ===== سیستم اعلان‌ها (زنگوله) =====
 document.addEventListener('DOMContentLoaded', function() {
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var myUid = res.data.user.id;
 
     var header = document.querySelector('.header');
-    var logo = document.querySelector('.logo');
-    if (!header || !logo) return;
+    if (!header) return;
 
     var bellContainer = document.createElement('div');
-    bellContainer.style.cssText = 'position: relative; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; margin-left: 12px; margin-top: 4px;';
+    // قرار دادن زنگوله به صورت مطلق سمت راست هدر (دقیقاً کنار لوگو)
+    bellContainer.style.cssText = 'position: absolute; right: 80px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.3rem; z-index: 100;';
     bellContainer.innerHTML = `🔔<span id="notifBadge" style="display:none; position:absolute; top:-6px; right:-8px; background:#e74c3c; color:#fff; font-size:0.65rem; font-weight:bold; padding:2px 5px; border-radius:50%;"></span>`;
     
-    // قرار دادن زنگوله کنار لوگو
-    logo.parentNode.insertBefore(bellContainer, logo.nextSibling);
+    header.style.position = 'relative'; // برای اینکه زنگوله نسبت به هدر موقعیت بگیره
+    header.appendChild(bellContainer);
 
     var modalHTML = `
       <div id="notifModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:9999; padding:20px;">
