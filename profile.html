@@ -62,7 +62,6 @@
     .badge { background: var(--bg); border: 1px solid var(--green); color: var(--green); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
     .badge.locked { border-color: var(--border); color: var(--text-dim); opacity: 0.5; }
     
-    /* استایل تفکیک درس */
     .subject-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px 12px; border-radius:10px; border:1px solid var(--border); margin-bottom:8px; }
   </style>
 </head>
@@ -118,18 +117,21 @@
           <div class="stat-card"><div class="stat-value" id="statAchievements">۰</div><div class="stat-label">دستاورد</div></div>
         </div>
 
-        <!-- نمودار هفتگی (شنبه تا جمعه) -->
+        <!-- نمودار با فیلتر -->
         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px;">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📈 مطالعه هفته (شنبه تا جمعه)</h3>
+          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📈 مطالعه</h3>
+          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:12px;">
+            <button class="btn btn-green btn-sm" onclick="changeChartRange('this_week', this)">این هفته</button>
+            <button class="btn btn-dim btn-sm" onclick="changeChartRange('last_week', this)">هفته قبل</button>
+            <button class="btn btn-dim btn-sm" onclick="changeChartRange('this_month', this)">این ماه</button>
+          </div>
           <div style="position: relative; height: 220px; width: 100%;"><canvas id="weeklyChart"></canvas></div>
         </div>
 
-        <!-- تفکیک درس به درس -->
+        <!-- تفکیک درس -->
         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px;">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📊 عملکرد درسی (این هفته)</h3>
-          <div id="subjectBreakdown">
-            <p class="lock-note">در حال بارگذاری...</p>
-          </div>
+          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📊 عملکرد درسی</h3>
+          <div id="subjectBreakdown"><p class="lock-note">در حال بارگذاری...</p></div>
         </div>
 
       </div>
@@ -183,7 +185,7 @@
           <p style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">با هر دعوت ۵ XP بگیر و به دوستت ۲ XP هدیه بده!</p>
           <div style="display: flex; gap: 8px;"><input id="myInviteCode" class="input" readonly style="text-align: center; font-weight: bold; background: var(--bg-card);"><button onclick="copyInviteLink()" class="btn btn-blue btn-sm" style="white-space: nowrap;">کپی لینک</button></div>
         </div>
-        <div class="guide-box"><p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، به آیدی زیر پیام بدی:</p><p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 @aizadi94</p>
+        <div class="guide-box"><p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، به آیدی زیر پیام بدی:</p><p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 @Aysonaizadi</p></div>
         <button id="changeThemeBtn" class="btn btn-blue btn-full" style="margin-top: 15px;">🎨 تغییر سبک سایت</button>
         <button id="logoutBtn" class="btn btn-dim btn-full" style="margin-top: 10px; color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
       </div>
