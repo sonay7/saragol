@@ -58,7 +58,7 @@ if (signupBtn) {
     }
     signupBtn.disabled = true;
 
-    // ⬇️ ساخت ایمیل فیک (چون Supabase به ایمیل نیاز داره ولی ما نمی‌خوایم از کاربر بپرسیم)
+    // ⬇️ ساخت ایمیل فیک
     var fakeEmail = 'user_' + Math.floor(Math.random() * 1000000) + '@saragol.local';
 
     // ۱. ساخت کاربر در Supabase Auth
@@ -83,16 +83,17 @@ if (signupBtn) {
       var randomNum = Math.floor(100 + Math.random() * 900);
       var generatedInviteCode = cleanUsername + randomNum;
 
-      // ۳. ساخت پروفایل توی دیتابیس
+      // ۳. ساخت پروفایل توی دیتابیس (با ذخیره ایمیل فیک)
       supabaseClient.from('profiles').insert({
         id: userId,
-        username: fullName, // اسم و فامیل با هم
+        username: fullName,
         class_name: class_name,
         role: 'student',
         status: 'approved',
         xp: 0,
         total_minutes: 0,
-        invite_code: generatedInviteCode
+        invite_code: generatedInviteCode,
+        email: fakeEmail // ⬅️ ذخیره ایمیل فیک برای ورود
       }).then(function(profileRes) {
         if (profileRes.error) {
           if (msgEl) {
@@ -103,7 +104,7 @@ if (signupBtn) {
           return;
         }
 
-        // ۴. پردازش کد دعوت (اگر وارد شده بود)
+        // ۴. پردازش کد دعوت
         if (inviteCode) {
           supabaseClient.rpc('process_invite', {
             new_user_id: userId,
