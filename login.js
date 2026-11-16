@@ -1,49 +1,67 @@
+// ===== ورود با نام کاربری =====
 var loginBtn = document.getElementById('loginBtn');
-var loginMsg = document.getElementById('loginMsg');
+var msgEl = document.getElementById('loginMsg');
 
-// این تابع بررسی می‌کنه که کاربر "ایمیل" زده یا "اسم کاربری"
-function usernameToEmail(username) {
-  // اگه توش @ بود، یعنی ایمیل واقعیه (مثل اکانت مشاور یا ادمین)
-  if (username.includes('@')) {
-    return username;
-  }
-  
-  // اگه اسم کاربری بود (برای بچه‌ها)، به ایمیل ساختگی تبدیلش می‌کنه
-  var hex = '';
-  for (var i = 0; i < username.length; i++) {
-    hex += username.codePointAt(i).toString(16);
-  }
-  return 'user_' + hex + '@example.com';
-}
+if (loginBtn) {
+  loginBtn.addEventListener('click', function(e) {
+    e.preventDefault();
 
-loginBtn.addEventListener('click', function() {
-  var username = document.getElementById('username').value.trim();
-  var password = document.getElementById('password').value;
+    var usernameEl = document.getElementById('username');
+    var passwordEl = document.getElementById('password');
 
-  if (username.length < 3 || password.length < 6) {
-    loginMsg.textContent = 'اسم کاربری (یا ایمیل) و رمز رو کامل بزن';
-    loginMsg.style.color = '#e74c3c';
-    return;
-  }
+    if (!usernameEl || !passwordEl) return;
 
-  var email = usernameToEmail(username);
-  loginMsg.textContent = 'در حال ورود...';
-  loginMsg.style.color = '#8fa3b0';
+    var username = usernameEl.value.trim();
+    var password = passwordEl.value;
 
-  supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
-  }).then(function(res) {
-    if (res.error) {
-      loginMsg.textContent = '❌ اسم کاربری/ایمیل یا رمز اشتباهه';
-      loginMsg.style.color = '#e74c3c';
+    if (!username || !password) {
+      if (msgEl) {
+        msgEl.textContent = 'نام کاربری و رمز عبور را وارد کنید.';
+        msgEl.style.color = '#e74c3c';
+      }
       return;
     }
 
-    loginMsg.textContent = '✅ خوش اومدی!';
-    loginMsg.style.color = '#2ecc71';
-    setTimeout(function() {
-      window.location.href = 'index.html';
-    }, 1000);
+    if (msgEl) {
+      msgEl.textContent = 'در حال ورود...';
+      msgEl.style.color = 'var(--text-dim)';
+    }
+    loginBtn.disabled = true;
+
+    // ۱. پیدا کردن ایمیل فیکِ مربوط به این نام کاربری
+    supabaseClient.from('profiles').select('email').eq('username', username).single().then(function(res) {
+      if (res.error || !res.data || !res.data.email) {
+        if (msgEl) {
+          msgEl.textContent = 'کاربری با این نام پیدا نشد!';
+          msgEl.style.color = '#e74c3c';
+        }
+        loginBtn.disabled = false;
+        return;
+      }
+
+      var fakeEmail = res.data.email;
+
+      // ۲. ورود با ایمیل فیک و رمز عبور
+      supabaseClient.auth.signInWithPassword({
+        email: fakeEmail,
+        password: password
+      }).then(function(authRes) {
+        if (authRes.error) {
+          if (msgEl) {
+            msgEl.textContent = 'رمز عبور اشتباه است!';
+            msgEl.style.color = '#e74c3c';
+          }
+          loginBtn.disabled = false;
+          return;
+        }
+
+        // ورود موفق
+        if (msgEl) {
+          msgEl.textContent = '✅ ورود موفق! در حال انتقال...';
+          msgEl.style.color = 'var(--green)';
+        }
+        window.location.href = 'index.html';
+      });
+    });
   });
-});
+}
