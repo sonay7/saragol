@@ -1,24 +1,34 @@
 // ===== سیستم اعلان‌ها (زنگوله) =====
 document.addEventListener('DOMContentLoaded', function() {
+  // چک می‌کنیم که کاربر لاگین کرده یا نه
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var myUid = res.data.user.id;
 
-    var logo = document.querySelector('.logo');
-    if (!logo) return;
+    var header = document.querySelector('.header');
+    if (!header) return; // اگه هدر نبود، کاری نکن
 
-    // ۱. لوگو رو توی یه wrapper قرار می‌دیم تا زنگوله کنارش بشینه (نه روی متن)
-    var parent = logo.parentNode;
-    var logoWrap = document.createElement('div');
-    logoWrap.style.cssText = 'display: flex; align-items: center; gap: 12px;';
-    parent.insertBefore(logoWrap, logo);
-    logoWrap.appendChild(logo);
-
-    // ۲. ساخت زنگوله (چسبیده به سمت چپ لوگو)
+    // ۱. ساخت المان زنگوله
     var bellContainer = document.createElement('div');
-    bellContainer.style.cssText = 'position: relative; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center;';
+    bellContainer.style.cssText = 'position: relative; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; margin-right: 15px;';
     bellContainer.innerHTML = `🔔<span id="notifBadge" style="display:none; position:absolute; top:-6px; right:-8px; background:#e74c3c; color:#fff; font-size:0.65rem; font-weight:bold; padding:2px 5px; border-radius:50%;"></span>`;
-    logoWrap.appendChild(bellContainer);
+
+    // ۲. پیدا کردن لوگو و قرار دادن زنگوله کنارش
+    var logo = document.querySelector('.logo');
+    if (logo) {
+      // اگه لوگو بود، یه wrapper می‌سازیم که لوگو و زنگوله کنار هم باشن
+      var logoWrap = document.createElement('div');
+      logoWrap.style.cssText = 'display: flex; align-items: center;';
+      
+      // لوگو رو می‌بریم توی wrapper
+      logo.parentNode.insertBefore(logoWrap, logo);
+      logoWrap.appendChild(logo);
+      // زنگوله رو بعد از لوگو اضافه می‌کنیم
+      logoWrap.appendChild(bellContainer);
+    } else {
+      // اگه لوگو نبود (مثل بعضی صفحه‌ها)، زنگوله رو مستقیم به هدر اضافه می‌کنیم
+      header.appendChild(bellContainer);
+    }
 
     // ۳. ساخت مودال اعلان‌ها
     var modalHTML = `
@@ -41,21 +51,33 @@ document.addEventListener('DOMContentLoaded', function() {
     var list = document.getElementById('notifList');
     var closeBtn = document.getElementById('closeNotifBtn');
 
+    // ۴. تابع گرفتن تعداد اعلان‌های خونده نشده
     function loadBadge() {
       supabaseClient.from('notifications').select('id', { count: 'exact' }).eq('user_id', myUid).eq('is_read', false).then(function(res) {
         var count = res.count || 0;
-        if (count > 0) { badge.style.display = 'block'; badge.textContent = count; } 
-        else { badge.style.display = 'none'; }
+        if (count > 0) {
+          badge.style.display = 'block';
+          badge.textContent = count;
+        } else {
+          badge.style.display = 'none';
+        }
       });
     }
 
+    // ۵. تابع باز کردن مودال و نمایش لیست
     function openNotifications() {
       modal.style.display = 'flex';
       list.innerHTML = '<p style="text-align:center; color:var(--text-dim);">در حال بارگذاری...</p>';
+      
       supabaseClient.from('notifications').select('*').eq('user_id', myUid).order('created_at', { ascending: false }).then(function(res) {
         list.innerHTML = '';
         var notifs = res.data || [];
-        if (notifs.length === 0) { list.innerHTML = '<p style="text-align:center; color:var(--text-dim);">هیچ اعلانی ندارید.</p>'; return; }
+        
+        if (notifs.length === 0) {
+          list.innerHTML = '<p style="text-align:center; color:var(--text-dim);">هیچ اعلانی ندارید.</p>';
+          return;
+        }
+
         notifs.forEach(function(n) {
           var div = document.createElement('div');
           div.style.cssText = 'background:' + (n.is_read ? 'var(--bg)' : 'rgba(46,204,113,0.1)') + '; border:1px solid ' + (n.is_read ? 'var(--border)' : 'var(--green)') + '; border-radius:10px; padding:12px; cursor:pointer;';
@@ -64,16 +86,30 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="font-size:0.8rem; color:var(--text-dim); line-height:1.5;">${n.body}</div>
             <div style="font-size:0.65rem; color:var(--text-dim); margin-top:8px; text-align:left;">${new Date(n.created_at).toLocaleString('fa-IR')}</div>
           `;
-          div.onclick = function() { if (n.link) window.location.href = n.link; };
+          
+          // اگه لینک داشت، با کلیک برو به اون لینک
+          div.onclick = function() {
+            if (n.link) window.location.href = n.link;
+          };
+
           list.appendChild(div);
         });
-        supabaseClient.from('notifications').update({ is_read: true }).eq('user_id', myUid).eq('is_read', false).then(function() { badge.style.display = 'none'; });
+
+        // مارک کردن همه به عنوان خوانده شده
+        supabaseClient.from('notifications').update({ is_read: true }).eq('user_id', myUid).eq('is_read', false).then(function() {
+          badge.style.display = 'none';
+        });
       });
     }
 
+    // ۶. رویدادها
     bellContainer.onclick = openNotifications;
     closeBtn.onclick = function() { modal.style.display = 'none'; };
+
+    // شروع
     loadBadge();
+    
+    // هر ۳۰ ثانیه چک کن ببین اعلان جدید اومده یا نه
     setInterval(loadBadge, 30000);
   });
 });
