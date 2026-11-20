@@ -6,242 +6,197 @@
   <title>پنل ادمین | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
-    details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
-    summary.accordion-header:hover { background: rgba(255,255,255,0.02); }
-    summary.accordion-header::after { content: '▼'; font-size: 0.7rem; color: var(--text-dim); transition: transform 0.3s; }
+    details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+    details.accordion[open] { border-color: var(--green); }
+    summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); }
+    summary.accordion-header::after { content: '▼'; font-size: 0.7rem; color: var(--text-dim); }
     details[open] summary.accordion-header::after { transform: rotate(180deg); color: var(--green); }
-    .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    .admin-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }
-    .admin-sub { font-size: 0.78rem; color: var(--text-dim); display: block; margin-top: 4px; }
-    .tab-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-family: inherit; color: var(--text); margin-bottom: 10px; font-size: 0.9rem; }
-    .tab-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
-    details.inner-accordion { background: rgba(0,0,0,0.1); border: 1px dashed var(--border); margin-top: 16px; }
-    details.inner-accordion[open] { border-style: solid; }
-    details.inner-accordion summary.accordion-header { font-size: 0.9rem; padding: 12px; color: var(--blue); }
-    details.inner-accordion summary.accordion-header::after { color: var(--blue); }
+    .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); }
+    .admin-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; gap: 8px; flex-wrap: wrap; font-size: 0.85rem; }
+    .admin-sub { font-size: 0.75rem; color: var(--text-dim); display: block; margin-top: 4px; }
   </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="logo">پنل ادمین</div>
-    <div class="user-area">
-      <span class="user-name">—</span>
-      <div class="avatar">—</div>
-    </div>
-  </header>
+<header class="header">
+  <div class="logo">پنل ادمین</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
 
-  <main class="container">
+<main class="container">
 
-    <details class="accordion">
-      <summary class="accordion-header">📌 مدیریت اعلانات</summary>
-      <div class="accordion-content">
-        <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
-          <textarea id="noticeText" class="input" placeholder="متن اعلان..." style="min-height: 60px;"></textarea>
-          <select id="noticeType" class="input" style="margin-top: 8px;">
-            <option value="urgent">فوری</option>
-            <option value="important">مهم</option>
-            <option value="info">عادی</option>
-          </select>
-          <button id="addNoticeBtn" class="btn btn-green btn-full" style="margin-top: 8px;">ثبت اعلان</button>
-          <p id="noticeMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
-        </div>
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">لیست اعلان‌ها:</h4>
-        <div id="adminNoticesList"></div>
+  <details class="accordion">
+    <summary class="accordion-header">📌 اعلانات</summary>
+    <div class="accordion-content">
+      <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin: 10px 0;">
+        <textarea id="noticeText" class="input" placeholder="متن اعلان..." style="min-height: 60px;"></textarea>
+        <select id="noticeType" class="input" style="margin-top: 8px;">
+          <option value="urgent">فوری</option>
+          <option value="important">مهم</option>
+          <option value="info">عادی</option>
+        </select>
+        <button id="addNoticeBtn" class="btn btn-green btn-full" style="margin-top: 8px;">ثبت</button>
       </div>
-    </details>
+      <div id="adminNoticesList"></div>
+    </div>
+  </details>
 
-    <details class="accordion">
-      <summary class="accordion-header">🌟 اهدای نشان ویژه</summary>
-      <div class="accordion-content">
-        <input id="badgeUsername" class="input" placeholder="نام کاربری فرد" style="margin-bottom: 8px;">
+  <details class="accordion">
+    <summary class="accordion-header">👥 کاربران</summary>
+    <div class="accordion-content">
+      <h4 style="font-size: 0.9rem; margin: 10px 0 8px;">درخواست‌های عضویت:</h4>
+      <div id="requestsList"></div>
+      <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">کاربران تایید شده:</h4>
+      <div id="usersList"></div>
+    </div>
+  </details>
+
+  <details class="accordion">
+    <summary class="accordion-header">🌟 اهدای نشان</summary>
+    <div class="accordion-content">
+      <div style="margin: 10px 0;">
+        <input id="badgeUsername" class="input" placeholder="نام کاربری" style="margin-bottom: 8px;">
         <select id="badgeName" class="input" style="margin-bottom: 8px;">
           <option value="اولین ستاره">🌟 اولین ستاره</option>
-          <option value="پیشتاز مطالعه">🚀 پیشتاز مطالعه</option>
-          <option value="قهرمان لیگ">🏆 قهرمان لیگ</option>
+          <option value="پیشتاز مطالعه">🚀 پیشتاز</option>
         </select>
-        <button onclick="giveBadge()" class="btn btn-green btn-full" style="margin-bottom:16px;">اهدا نشان</button>
-        
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">نشان‌های اهدا شده:</h4>
-        <div id="adminBadgesList"></div>
+        <button onclick="giveBadge()" class="btn btn-green btn-full">اهدا</button>
       </div>
-    </details>
-
-    <details class="accordion">
-      <summary class="accordion-header">🎬 مدیریت سینما</summary>
-      <div class="accordion-content">
-        <input id="cinemaTitle" class="input" placeholder="اسم فیلم" style="margin-bottom: 8px;">
-        <input id="cinemaDesc" class="input" placeholder="توضیحات کوتاه" style="margin-bottom: 8px;">
-        <input id="cinemaUrl" class="input" placeholder="لینک Embed آپارات" style="margin-bottom: 8px;">
-        <input id="cinemaPrice" type="number" class="input" placeholder="قیمت بلیط (XP)" style="margin-bottom: 8px;">
-        <button onclick="addCinemaVideo()" class="btn btn-green btn-full" style="margin-bottom:16px;">➕ افزودن به سینما</button>
-        <p id="cinemaMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
-        
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">فیلم‌های موجود:</h4>
-        <div id="adminCinemaList"></div>
-      </div>
-    </details>
-<details class="accordion">
-  <summary class="accordion-header">🎯 مدیریت ماموریت‌های روزانه</summary>
-  <div class="accordion-content">
-    <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
-      <h4 style="font-size: 0.9rem; margin-bottom: 8px;">افزودن ماموریت:</h4>
-      <input id="questTitle" class="input" placeholder="عنوان ماموریت (مثلاً ۲۰ تست ریاضی)" style="margin-bottom: 8px;">
-      <select id="questType" class="input" style="margin-bottom: 8px;">
-        <option value="study">مطالعه (دقیقه)</option>
-        <option value="questions">تست (تعداد)</option>
-        <option value="streak">حفظ استریک</option>
-      </select>
-      <input id="questTarget" type="number" class="input" placeholder="هدف (مثلاً 20)" style="margin-bottom: 8px;">
-      <input id="questXp" type="number" class="input" placeholder="جایزه XP" style="margin-bottom: 8px;">
-      <button onclick="addQuest()" class="btn btn-green btn-full">➕ افزودن ماموریت</button>
+      <div id="adminBadgesList"></div>
     </div>
-    <h4 style="font-size: 0.9rem; margin-bottom: 8px;">لیست ماموریت‌ها:</h4>
-    <div id="adminQuestsList"></div>
-  </div>
-</details>
-    <details class="accordion">
-      <summary class="accordion-header">🎨 مدیریت پک‌های استیکر</summary>
-      <div class="accordion-content">
-        <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem; margin-bottom: 8px;">ساخت پک جدید:</h4>
-          <input id="newPackName" class="input" placeholder="اسم پک" style="margin-bottom: 8px;">
-          <div style="display: flex; gap: 8px;">
-            <input id="newPackPrice" type="number" class="input" placeholder="قیمت (XP)" style="flex: 1;">
-            <input id="newPackIcon" class="input" placeholder="ایموجی" style="width: 80px;">
-          </div>
-          <button onclick="createStickerPack()" class="btn btn-green btn-full" style="margin-top: 8px;">➕ ساخت پک</button>
+  </details>
+
+  <details class="accordion">
+    <summary class="accordion-header">🎬 سینما (فیلم‌ها)</summary>
+    <div class="accordion-content">
+      <div style="margin: 10px 0;">
+        <input id="cinemaTitle" class="input" placeholder="اسم فیلم" style="margin-bottom: 8px;">
+        <input id="cinemaDesc" class="input" placeholder="توضیحات" style="margin-bottom: 8px;">
+        <input id="cinemaUrl" class="input" placeholder="لینک Embed آپارات" style="margin-bottom: 8px;">
+        <input id="cinemaPrice" type="number" class="input" placeholder="قیمت (XP)" style="margin-bottom: 8px;">
+        <button onclick="addCinemaVideo()" class="btn btn-green btn-full">➕ افزودن</button>
+      </div>
+      <div id="adminCinemaList"></div>
+    </div>
+  </details>
+
+  <details class="accordion">
+    <summary class="accordion-header">🎫 تاریخچه خرید بلیط سینما</summary>
+    <div class="accordion-content">
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin: 10px 0;">چه کسی چه فیلمی خریده:</p>
+      <div id="ticketsList"></div>
+    </div>
+  </details>
+
+  <details class="accordion">
+    <summary class="accordion-header">❤️ تاریخچه لایک‌های اکسپلور</summary>
+    <div class="accordion-content">
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin: 10px 0;">چه کسی چه پستی رو لایک کرده:</p>
+      <div id="likesList"></div>
+    </div>
+  </details>
+
+  <details class="accordion">
+    <summary class="accordion-header">🎨 پک‌های استیکر</summary>
+    <div class="accordion-content">
+      <div style="margin: 10px 0;">
+        <input id="newPackName" class="input" placeholder="اسم پک" style="margin-bottom: 8px;">
+        <div style="display: flex; gap: 8px;">
+          <input id="newPackPrice" type="number" class="input" placeholder="قیمت (XP)" style="flex: 1;">
+          <input id="newPackIcon" class="input" placeholder="ایموجی" style="width: 70px;">
         </div>
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">پک‌های موجود:</h4>
-        <div id="adminPacksList"></div>
+        <button onclick="createStickerPack()" class="btn btn-green btn-full" style="margin-top: 8px;">➕ ساخت</button>
       </div>
-    </details>
+      <div id="adminPacksList"></div>
+    </div>
+  </details>
 
-    <details class="accordion">
-      <summary class="accordion-header">🎡 مدیریت گردونه شانس</summary>
-      <div class="accordion-content">
-        <div style="background: var(--bg); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem; margin-bottom: 8px;">افزودن خونه جدید:</h4>
-          <input id="wheelLabel" class="input" placeholder="متن روی گردونه (مثلاً ۱۰ XP)" style="margin-bottom: 8px;">
-          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <input id="wheelColor" type="color" class="input" style="height: 45px; padding: 4px; width: 60px;" value="#f44336">
-            <select id="wheelType" class="input" style="flex: 1;">
-              <option value="xp">جایزه XP</option>
-              <option value="item">آیتم</option>
-              <option value="none">بدون جایزه</option>
-            </select>
-            <input id="wheelValue" type="number" class="input" placeholder="مقدار" style="width: 80px;">
-          </div>
-          <button onclick="addWheelSlice()" class="btn btn-green btn-full">➕ افزودن به گردونه</button>
-        </div>
-        <div id="wheelSlicesList"></div>
-      </div>
-    </details>
-
-    <details class="accordion">
-      <summary class="accordion-header">👁️ پایش کاربران (غیبت و غیرفعال)</summary>
-      <div class="accordion-content">
-        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-          <button class="btn btn-blue btn-sm" onclick="loadUserMonitoring()" style="flex:1;">🔄 رفرش لیست</button>
-          <button class="btn btn-dim btn-sm" onclick="deactivateInactive()" style="flex:1; color:#e74c3c; border-color:#e74c3c;">⚠️ غیرفعال کردن ۱۰ روز به بالا</button>
-        </div>
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">😴 کاربران غیرفعال:</h4>
-        <div id="inactiveUsersList"></div>
-        <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">💤 کاربران نیازمند توجه (۳ روز به بالا):</h4>
-        <div id="wanderingUsersList"></div>
-      </div>
-    </details>
-
-    <details class="accordion">
-      <summary class="accordion-header">👥 کاربران و درخواست‌ها</summary>
-      <div class="accordion-content">
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">درخواست‌های عضویت:</h4>
-        <div id="requestsList"></div>
-        <details class="accordion inner-accordion">
-          <summary class="accordion-header">📋 لیست کاربران تایید شده</summary>
-          <div class="accordion-content">
-            <div id="usersList"></div>
-          </div>
-        </details>
-      </div>
-    </details>
-
-    <details class="accordion">
-      <summary class="accordion-header">📝 مدیریت آزمون‌ها</summary>
-      <div class="accordion-content">
-        <div id="examsList" style="margin-bottom: 12px;"></div>
-        <div style="background: var(--bg); padding: 12px; border-radius: 10px;">
-          <input id="examSubject" class="input" placeholder="نام درس" style="margin-bottom: 8px;">
-          <input id="examDate" type="date" class="input" style="margin-bottom: 8px;">
-          <select id="examClass" class="input" style="margin-bottom: 8px;">
-            <option value="همه">همه پایه‌ها</option>
-            <option value="هفتم">هفتم</option>
-            <option value="هشتم">هشتم</option>
-            <option value="نهم">نهم</option>
+  <details class="accordion">
+    <summary class="accordion-header">🎡 گردونه شانس</summary>
+    <div class="accordion-content">
+      <div style="margin: 10px 0;">
+        <input id="wheelLabel" class="input" placeholder="متن (مثلاً ۱۰ XP)" style="margin-bottom: 8px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <input id="wheelColor" type="color" class="input" style="height: 42px; padding: 4px; width: 60px;" value="#f44336">
+          <select id="wheelType" class="input" style="flex: 1;">
+            <option value="xp">XP</option>
+            <option value="item">آیتم</option>
           </select>
-          <button id="addExamBtn" class="btn btn-green btn-full">افزودن آزمون</button>
+          <input id="wheelValue" type="number" class="input" placeholder="مقدار" style="width: 70px;">
         </div>
+        <button onclick="addWheelSlice()" class="btn btn-green btn-full">➕ افزودن</button>
       </div>
-    </details>
+      <div id="wheelSlicesList"></div>
+    </div>
+  </details>
 
-    <details class="accordion">
-      <summary class="accordion-header">💬 مدیریت جمله‌ها</summary>
-      <div class="accordion-content">
-        <div id="quotesList" style="margin-bottom: 12px;"></div>
-        <div style="background: var(--bg); padding: 12px; border-radius: 10px;">
-          <input id="quoteText" class="input" placeholder="متن جمله..." style="margin-bottom: 8px;">
-          <button id="addQuoteBtn" class="btn btn-green btn-full">افزودن جمله</button>
-        </div>
+  <details class="accordion">
+    <summary class="accordion-header">🎯 ماموریت‌ها</summary>
+    <div class="accordion-content">
+      <div style="margin: 10px 0;">
+        <input id="questTitle" class="input" placeholder="عنوان" style="margin-bottom: 8px;">
+        <select id="questType" class="input" style="margin-bottom: 8px;">
+          <option value="study">مطالعه (دقیقه)</option>
+          <option value="questions">تست (تعداد)</option>
+          <option value="streak">استریک</option>
+        </select>
+        <input id="questTarget" type="number" class="input" placeholder="هدف" style="margin-bottom: 8px;">
+        <input id="questXp" type="number" class="input" placeholder="جایزه XP" style="margin-bottom: 8px;">
+        <button onclick="addQuest()" class="btn btn-green btn-full">➕ افزودن</button>
       </div>
-    </details>
+      <div id="adminQuestsList"></div>
+    </div>
+  </details>
 
-    <details class="accordion">
-      <summary class="accordion-header">📥 صندوق ورودی و آپلود</summary>
-      <div class="accordion-content">
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">آپلود مستقیم به اکسپلور:</h4>
-        <input id="directFile" type="file" class="input" style="margin-bottom: 8px; padding: 8px;">
-        <button id="directUploadBtn" class="btn btn-green btn-full">آپلود و انتشار</button>
-        <p id="directMsg" style="font-size: 0.85rem; margin-top: 8px; text-align: center;"></p>
-        <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">محتوای در انتظار تایید:</h4>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <button class="tab-btn active" data-tab="inbox-private">پیام‌ها</button>
-          <button class="tab-btn" data-tab="inbox-explore">اکسپلور</button>
-          <button class="tab-btn" data-tab="inbox-reports">گزارش‌ها</button>
-        </div>
-        <div id="inbox-private"></div>
-        <div id="inbox-explore" class="hidden"></div>
-        <div id="inbox-reports" class="hidden"></div>
+  <details class="accordion">
+    <summary class="accordion-header">👁️ پایش کاربران غایب</summary>
+    <div class="accordion-content">
+      <h4 style="font-size: 0.85rem; margin: 10px 0 8px;">کاربران غیرفعال:</h4>
+      <div id="inactiveUsersList"></div>
+      <h4 style="font-size: 0.85rem; margin: 16px 0 8px;">کاربران غایب (دسته‌بندی):</h4>
+      <div id="wanderingUsersList"></div>
+    </div>
+  </details>
+
+  <details class="accordion">
+    <summary class="accordion-header">📝 آزمون‌ها و جمله‌ها</summary>
+    <div class="accordion-content">
+      <h4 style="font-size: 0.85rem; margin: 10px 0 8px;">آزمون‌های مدرسه:</h4>
+      <div id="examsList"></div>
+      <div style="margin: 10px 0;">
+        <input id="examSubject" class="input" placeholder="درس" style="margin-bottom: 8px;">
+        <input id="examDate" type="date" class="input" style="margin-bottom: 8px;">
+        <button id="addExamBtn" class="btn btn-green btn-full">افزودن آزمون</button>
       </div>
-    </details>
+      <h4 style="font-size: 0.85rem; margin: 16px 0 8px;">جمله‌ها:</h4>
+      <div id="quotesList"></div>
+    </div>
+  </details>
 
-    <details class="accordion">
-      <summary class="accordion-header">📚 مدیریت کتاب‌خوانی</summary>
-      <div class="accordion-content">
-        <button id="toggleBooksBtn" class="btn btn-blue btn-full" style="margin-bottom: 10px;">نمایش/مخفی کردن کاربران</button>
-        <div id="booksContainer" class="hidden">
-          <div id="bookClubUsersList"></div>
-        </div>
-      </div>
-    </details>
+  <details class="accordion">
+    <summary class="accordion-header">📥 صندوق ورودی</summary>
+    <div class="accordion-content">
+      <div id="inboxList" style="margin-top: 10px;"></div>
+    </div>
+  </details>
 
-  </main>
+</main>
 
-  <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 خانه</a>
-    <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="books.html" class="nav-item">📚 کتاب‌خوانی</a>
-    <a href="admin.html" class="nav-item active">🛠 ادمین</a>
-    <a href="profile.html" class="nav-item">👤 پروفایل</a>
-  </nav>
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+  <a href="admin.html" class="nav-item active">🛠 ادمین</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-  <script src="auth.js"></script>
-  <script src="theme.js"></script>
-  <script src="admin.js"></script>
-  <script src="pwa.js"></script>
-  </body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+<script src="admin.js"></script>
+</body>
 </html>
