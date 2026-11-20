@@ -6,212 +6,182 @@
   <title>پروفایل | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
-    details.accordion[open] { border-color: var(--green); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); transition: background 0.2s; }
-    summary.accordion-header:hover { background: rgba(255,255,255,0.02); }
+    details.accordion { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+    details.accordion[open] { border-color: var(--green); }
+    summary.accordion-header { padding: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); }
     summary.accordion-header::after { content: '▼'; font-size: 0.7rem; color: var(--text-dim); transition: transform 0.3s; }
     details[open] summary.accordion-header::after { transform: rotate(180deg); color: var(--green); }
-    .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .progress-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .accordion-content { padding: 0 16px 16px 16px; border-top: 1px solid var(--border); }
+    .profile-card { text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 16px; margin-bottom: 16px; }
+    .profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--green), var(--blue)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #fff; margin: 0 auto 12px; }
+    .profile-name { font-size: 1.2rem; margin-bottom: 4px; }
+    .profile-class { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px; }
+    .profile-level { display: inline-block; background: rgba(46,204,113,0.15); color: var(--green); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
     .level-progress { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-top: 12px; overflow: hidden; }
-    .level-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.6s ease; }
+    .level-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 10px; transition: width 0.6s; }
     .level-next { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
-    
-    .genre-btn { background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; border-radius: 20px; color: var(--text); cursor: pointer; font-family: inherit; transition: 0.2s; margin: 4px; }
-    .genre-btn.selected { background: var(--green); color: #fff; border-color: var(--green); }
-    .genre-title-badge { display: inline-block; background: rgba(46, 204, 113, 0.15); color: var(--green); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid var(--green); margin-top: 10px; }
-
-    .w-cup, .w-tree, .w-planet { display: none; }
-    [data-theme="cafe"] .w-cup { display: block; }
-    [data-theme="cafe"] .w-bar { display: none; }
-    [data-theme="sakura"] .w-tree { display: block; }
-    [data-theme="sakura"] .w-bar { display: none; }
-    [data-theme="galaxy"] .w-planet { display: block; }
-    [data-theme="galaxy"] .w-bar { display: none; }
-
-    .cup-container { position: relative; width: 100px; height: 130px; margin: 20px auto; margin-top: 40px; }
-    .cup-body { width: 100%; height: 100%; border: 5px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); z-index: 2; box-shadow: inset -10px -10px 20px rgba(0,0,0,0.2); }
-    .cup-handle { position: absolute; right: -22px; top: 30px; width: 25px; height: 50px; border: 5px solid var(--text); border-left: none; border-radius: 0 30px 30px 0; z-index: 1; }
-    .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s ease; border-radius: 0 0 45px 45px; }
-
-    .tree-container { position: relative; width: 140px; height: 160px; margin: 20px auto; margin-top: 30px; }
-    .tree-svg { width: 100%; height: 100%; }
-    .blossom { position: absolute; width: 18px; height: 18px; background: radial-gradient(circle, #ffb7c5 0%, #ff8da1 100%); border-radius: 50%; opacity: 0; transform: scale(0); transition: all 0.5s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 3; }
-    .b1 { top: 15%; left: 25%; } .b2 { top: 10%; left: 55%; } .b3 { top: 25%; left: 15%; } .b4 { top: 30%; left: 75%; } .b5 { top: 40%; left: 35%; } .b6 { top: 35%; left: 60%; } .b7 { top: 55%; left: 20%; } .b8 { top: 50%; left: 80%; } .b9 { top: 60%; left: 45%; } .b10 { top: 25%; left: 45%; } .b11 { top: 45%; left: 55%; } .b12 { top: 70%; left: 65%; }
-
-    .planet-container { position: relative; width: 120px; height: 120px; margin: 20px auto; margin-top: 30px; }
-    .planet-body { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #8e44ad, #2c3e50); position: relative; overflow: hidden; box-shadow: inset -15px -15px 30px rgba(0,0,0,0.6); }
-    .planet-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #00d2ff, #3a7bd5); transition: height 1s ease; mix-blend-mode: screen; opacity: 0.8; }
-    .planet-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); width: 160px; height: 40px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 2; pointer-events: none; }
-
-    .simple-bar-container { margin: 40px auto; width: 80%; }
-    .simple-bar-bg { width: 100%; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
-    .simple-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 1s ease; border-radius: 10px; }
-
-    .goal-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin: 4px; transition: 0.2s; width: calc(33% - 10px); }
-    .goal-btn.active { background: var(--green); color: #fff; border-color: var(--green); box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
-    .smart-text { font-size: 0.85rem; color: var(--blue); margin-top: 15px; background: rgba(52,152,219,0.1); padding: 10px; border-radius: 8px; line-height: 1.6; display: none; }
-
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
+    .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--green); }
+    .stat-label { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+    .streak-box { text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 12px 0; }
+    .streak-number { font-size: 2rem; font-weight: 700; color: var(--green); }
+    .streak-label { font-size: 0.8rem; color: var(--text-dim); }
+    .chart-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px; }
+    .chart-buttons { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+    .chart-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 14px; border-radius: 8px; font-family: inherit; cursor: pointer; font-size: 0.8rem; }
+    .chart-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+    .subject-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px 12px; border-radius:10px; border:1px solid var(--border); margin-bottom:8px; font-size:0.85rem; }
     .level-path-item { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
     .level-path-item.current { background: rgba(46,204,113,0.1); border-radius: 8px; border-bottom: none; font-weight: bold; color: var(--green); }
-
-    .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .badge { background: var(--bg); border: 1px solid var(--green); color: var(--green); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
     .badge.locked { border-color: var(--border); color: var(--text-dim); opacity: 0.5; }
-    
-    .subject-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px 12px; border-radius:10px; border:1px solid var(--border); margin-bottom:8px; }
+    .special-badge { background: linear-gradient(135deg, #f39c12, #f1c40f); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3); }
+    .goal-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin: 4px; width: calc(33% - 10px); }
+    .goal-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+    .widget-container { text-align: center; padding: 10px; }
+    .cup-container { position: relative; width: 100px; height: 130px; margin: 20px auto; }
+    .cup-body { width: 100%; height: 100%; border: 5px solid var(--text); border-top: none; border-radius: 10px 10px 50px 50px; position: absolute; bottom: 0; overflow: hidden; background: rgba(0,0,0,0.1); }
+    .cup-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(180deg, #8B5A2B, #4A2E1B); transition: height 1s; border-radius: 0 0 45px 45px; }
+    .w-cup, .w-tree, .w-planet { display: none; }
+    [data-theme="cafe"] .w-cup { display: block; }
+    [data-theme="sakura"] .w-tree { display: block; }
+    [data-theme="galaxy"] .w-planet { display: block; }
   </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="logo">ساراگل</div>
-    <div class="user-area">
-      <span class="user-name">—</span>
-      <div class="avatar">—</div>
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+
+  <details class="accordion" open>
+    <summary class="accordion-header">📊 وضعیت من</summary>
+    <div class="accordion-content">
+      
+      <div class="profile-card">
+        <div class="profile-avatar">—</div>
+        <h2 class="profile-name">—</h2>
+        <p class="profile-class">—</p>
+        <div class="profile-level" id="levelBox">سطح ۱</div>
+        <div class="level-progress"><div class="level-bar" id="levelBar" style="width: 0%"></div></div>
+        <p class="level-next" id="levelNext"></p>
+      </div>
+
+      <div class="widget-container">
+        <div class="w-cup"><div class="cup-container"><div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div></div></div>
+      </div>
+
+      <p id="cupStatus" style="text-align: center; font-weight: bold;">در حال بارگذاری...</p>
+      <div id="goalButtons" style="display: flex; flex-wrap: wrap; justify-content: center;"></div>
+
+      <div class="streak-box">
+        <div style="font-size: 1.5rem;">🔥</div>
+        <div class="streak-number">۰</div>
+        <div class="streak-label">روز پیاپی مطالعه</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="statMinutes">۰</div><div class="stat-label">دقیقه مطالعه</div></div>
+        <div class="stat-card"><div class="stat-value" id="statXp">۰</div><div class="stat-label">XP</div></div>
+        <div class="stat-card"><div class="stat-value" id="statQuestions">۰</div><div class="stat-label">سؤال حل‌شده</div></div>
+        <div class="stat-card"><div class="stat-value" id="statAchievements">۰</div><div class="stat-label">دستاورد</div></div>
+      </div>
+
+      <div class="chart-container">
+        <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📈 نمودار مطالعه</h3>
+        <div class="chart-buttons">
+          <button class="chart-btn active" data-range="this_week" onclick="changeChartRange('this_week', this)">این هفته</button>
+          <button class="chart-btn" data-range="last_week" onclick="changeChartRange('last_week', this)">هفته قبل</button>
+          <button class="chart-btn" data-range="this_month" onclick="changeChartRange('this_month', this)">این ماه</button>
+        </div>
+        <div style="position: relative; height: 220px; width: 100%;">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📊 عملکرد درسی</h3>
+        <div id="subjectBreakdown"><p class="lock-note">در حال بارگذاری...</p></div>
+      </div>
+
     </div>
-  </header>
+  </details>
 
-  <main class="container">
+  <details class="accordion">
+    <summary class="accordion-header">🗺️ مسیر پیشرفت</summary>
+    <div class="accordion-content">
+      <div id="levelPathList" style="margin-top: 10px;"></div>
+    </div>
+  </details>
 
-    <details class="accordion" open>
-      <summary class="accordion-header">📊 وضعیت من</summary>
-      <div class="accordion-content">
-        
-        <div class="profile-card" style="margin-bottom: 16px;">
-          <div class="profile-avatar">—</div>
-          <h2 class="profile-name">—</h2>
-          <p class="profile-class">—</p>
-          <div id="genreTitleDisplay" style="display:none; margin-top: 10px;">
-            <span class="genre-title-badge">🎭 <span id="genreTitleText">—</span></span>
-          </div>
-          <div class="profile-level" id="levelBox" style="margin-top: 12px;">سطح ۱</div>
-          <div class="level-progress"><div class="level-bar" id="levelBar" style="width: 0%"></div></div>
-          <p class="level-next" id="levelNext"></p>
-        </div>
+  <details class="accordion">
+    <summary class="accordion-header">🎖 دستاوردها</summary>
+    <div class="accordion-content">
+      <div class="badges" id="badgesList"></div>
+      <h4 style="margin-top: 16px; margin-bottom: 8px; font-size: 0.9rem; color: #f1c40f;">🌟 نشان‌های ویژه:</h4>
+      <div id="specialBadgesList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+    </div>
+  </details>
 
-        <div class="widget-container" style="text-align: center; padding: 10px;">
-          <div class="w-cup"><div class="cup-container"><div class="cup-body"><div class="cup-liquid" id="cupLiquid"></div></div><div class="cup-handle"></div></div></div>
-          <div class="w-tree"><div class="tree-container"><svg class="tree-svg" viewBox="0 0 100 120"><path d="M50,120 Q48,80 50,50 M50,85 Q30,70 20,45 M50,75 Q70,60 80,40 M50,60 Q35,45 30,25 M50,55 Q65,40 70,20 M50,50 Q50,30 50,15" stroke="#5D4037" stroke-width="5" stroke-linecap="round" fill="none" /></svg><div class="blossom b1" data-val="5"></div><div class="blossom b2" data-val="10"></div><div class="blossom b3" data-val="20"></div><div class="blossom b4" data-val="30"></div><div class="blossom b5" data-val="40"></div><div class="blossom b6" data-val="50"></div><div class="blossom b7" data-val="60"></div><div class="blossom b8" data-val="70"></div><div class="blossom b9" data-val="80"></div><div class="blossom b10" data-val="90"></div><div class="blossom b11" data-val="95"></div><div class="blossom b12" data-val="100"></div></div></div>
-          <div class="w-planet"><div class="planet-container"><div class="planet-body"><div class="planet-liquid" id="galaxyLiquid"></div></div><div class="planet-ring"></div></div></div>
-          <div class="w-bar"><div class="simple-bar-container"><div class="simple-bar-bg"><div class="simple-bar-fill" id="simpleBarFill"></div></div></div></div>
-        </div>
-        
-        <p id="cupStatus" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: bold; text-align: center;">در حال بارگذاری...</p>
-        <div id="goalButtons" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; justify-content: center;"></div>
-        <div id="smartText" class="smart-text"></div>
-
-        <div class="streak-box" style="text-align: center; background: var(--bg-card); border-radius: 14px; padding: 15px; margin: 16px 0;">
-          <div class="streak-fire" style="font-size: 1.5rem;">🔥</div>
-          <div class="streak-number" style="font-size: 2rem; font-weight: bold; color: var(--green);">۰</div>
-          <div class="streak-label" style="font-size: 0.8rem; color: var(--text-dim);">روز پیاپی مطالعه</div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">دقیقه مطالعه</div></div>
-          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">XP</div></div>
-          <div class="stat-card"><div class="stat-value">۰</div><div class="stat-label">سؤال حل‌شده</div></div>
-          <div class="stat-card"><div class="stat-value" id="statAchievements">۰</div><div class="stat-label">دستاورد</div></div>
-        </div>
-
-        <!-- نمودار با فیلتر -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px;">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📈 مطالعه</h3>
-          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:12px;">
-            <button class="btn btn-green btn-sm" onclick="changeChartRange('this_week', this)">این هفته</button>
-            <button class="btn btn-dim btn-sm" onclick="changeChartRange('last_week', this)">هفته قبل</button>
-            <button class="btn btn-dim btn-sm" onclick="changeChartRange('this_month', this)">این ماه</button>
-          </div>
-          <div style="position: relative; height: 220px; width: 100%;"><canvas id="weeklyChart"></canvas></div>
-        </div>
-
-        <!-- تفکیک درس -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 16px;">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">📊 عملکرد درسی</h3>
-          <div id="subjectBreakdown"><p class="lock-note">در حال بارگذاری...</p></div>
-        </div>
-
+  <details class="accordion">
+    <summary class="accordion-header">⏳ روزشمار آزمون‌ها</summary>
+    <div class="accordion-content">
+      <div id="examCountdownList" style="margin-top: 10px;"><p class="lock-note">در حال بارگذاری...</p></div>
+      <div style="margin-top: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
+        <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--text-dim);">افزودن آزمون شخصی:</p>
+        <input id="myExamSubject" type="text" class="input" placeholder="نام درس">
+        <input id="myExamDate" type="date" class="input" style="margin-top: 8px;">
+        <button id="addMyExamBtn" class="btn btn-blue btn-full" style="margin-top: 10px;">ثبت آزمون</button>
       </div>
-    </details>
+    </div>
+  </details>
 
-    <details class="accordion">
-      <summary class="accordion-header">🗺️ مسیر پیشرفت (سطح ۱ تا ۱۰)</summary>
-      <div class="accordion-content"><div id="levelPathList" style="display:flex; flex-direction:column; gap:8px; margin-top: 10px;"></div></div>
-    </details>
-
-    <details class="accordion">
-      <summary class="accordion-header">🎖 دستاوردها</summary>
-      <div class="accordion-content">
-        <div class="badges" id="badgesList" style="margin-top: 10px;"></div>
-        <h4 style="margin-top: 16px; margin-bottom: 8px; font-size: 0.9rem; color: var(--gold);">🌟 نشان‌های ویژه:</h4>
-        <div id="specialBadgesList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;"></div>
+  <details class="accordion">
+    <summary class="accordion-header">⚙️ تنظیمات</summary>
+    <div class="accordion-content">
+      <div style="background: var(--bg); border-radius: 12px; padding: 14px; margin: 10px 0;">
+        <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎂 تاریخ تولد:</p>
+        <input type="date" id="userBirthday" class="input" style="margin-bottom: 8px;">
+        <button onclick="saveBirthday()" class="btn btn-green btn-full">ذخیره</button>
+        <p id="birthdayMsg" style="font-size: 0.8rem; margin-top: 8px;"></p>
       </div>
-    </details>
-
-    <details class="accordion">
-      <summary class="accordion-header">🎭 ژانر کتاب‌خوانی من</summary>
-      <div class="accordion-content">
-        <div class="class-box" style="margin-top: 10px;"><div class="class-info"><span class="class-name" id="myGenresList">در حال بارگذاری...</span></div><button id="selectGenreBtn" class="btn btn-blue btn-sm" style="margin-top:10px; width:100%;">تغییر ژانر</button></div>
-      </div>
-    </details>
-
-    <details class="accordion">
-      <summary class="accordion-header">⏳ روزشمار آزمون‌ها</summary>
-      <div class="accordion-content">
-        <div id="examCountdownList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"><p class="lock-note">در حال بارگذاری...</p></div>
-        <div style="margin-top: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
-          <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--text-dim);">افزودن آزمون شخصی:</p>
-          <input id="myExamSubject" type="text" class="input" placeholder="نام درس (مثلاً ریاضی)">
-          <input id="myExamDate" type="date" class="input" style="margin-top: 8px;">
-          <button id="addMyExamBtn" class="btn btn-blue btn-full" style="margin-top: 10px;">ثبت آزمون</button>
+      <div style="background: var(--bg); border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+        <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎁 کد دعوت:</p>
+        <div style="display: flex; gap: 8px;">
+          <input id="myInviteCode" class="input" readonly style="text-align: center;">
+          <button onclick="copyInviteLink()" class="btn btn-blue btn-sm">کپی</button>
         </div>
       </div>
-    </details>
+      <p style="text-align: center; font-size: 1rem; margin: 10px 0;">📱 @Aysonaizadi</p>
+      <button id="logoutBtn" class="btn btn-dim btn-full" style="color: #e74c3c; border: 1px solid #e74c3c; margin-top: 10px;">🚪 خروج</button>
+    </div>
+  </details>
 
-    <details class="accordion">
-      <summary class="accordion-header">⚙️ تنظیمات و راهنما</summary>
-      <div class="accordion-content">
-        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 15px; margin-top: 10px;">
-          <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎂 تاریخ تولدت رو ثبت کن:</p>
-          <input type="date" id="userBirthday" class="input" style="margin-bottom: 8px;">
-          <button onclick="saveBirthday()" class="btn btn-green btn-full">ذخیره تاریخ تولد</button>
-          <p id="birthdayMsg" style="font-size: 0.8rem; margin-top: 8px;"></p>
-        </div>
-        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 15px;">
-          <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 8px;">🎁 دعوت از دوستان:</p>
-          <p style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">با هر دعوت ۵ XP بگیر و به دوستت ۲ XP هدیه بده!</p>
-          <div style="display: flex; gap: 8px;"><input id="myInviteCode" class="input" readonly style="text-align: center; font-weight: bold; background: var(--bg-card);"><button onclick="copyInviteLink()" class="btn btn-blue btn-sm" style="white-space: nowrap;">کپی لینک</button></div>
-        </div>
-        <div class="guide-box"><p style="font-size:0.85rem;">هر بخشی از سایت که برات گیج‌کننده بود یا هر مشکلی داشتی، به آیدی زیر پیام بدی:</p><p style="text-align: center; margin-top: 10px; font-size: 1.1rem;">📱 @aizadi94</p></div>
-        <button id="changeThemeBtn" class="btn btn-blue btn-full" style="margin-top: 15px;">🎨 تغییر سبک سایت</button>
-        <button id="logoutBtn" class="btn btn-dim btn-full" style="margin-top: 10px; color: #e74c3c; border: 1px solid #e74c3c;">🚪 خروج از حساب</button>
-      </div>
-    </details>
+</main>
 
-    <div id="themeModal" class="modal hidden"><div class="modal-box"><h2>سبک سایت رو انتخاب کن</h2><div id="themeList" class="theme-list"></div><button id="closeThemeBtn" class="btn btn-dim btn-full" style="margin-top: 12px;">بستن</button></div></div>
-    <div id="genreModal" class="modal hidden"><div class="modal-box"><h2>ژانرهای مورد علاقه‌ت</h2><div id="genreOptions" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:16px;"></div><button id="saveGenreBtn" class="btn btn-green btn-full">ذخیره</button><button id="closeGenreBtn" class="btn btn-dim btn-full" style="margin-top:8px;">بستن</button></div></div>
-  </main>
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+  <a href="admin.html" class="nav-item">🛠 ادمین</a>
+  <a href="profile.html" class="nav-item active">👤 پروفایل</a>
+</nav>
 
-  <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 خانه</a>
-    <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
-    <a href="admin.html" class="nav-item">🛠 ادمین</a>
-    <a href="profile.html" class="nav-item active">👤 پروفایل</a>
-  </nav>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-  <script src="auth.js"></script>
-  <script src="theme.js"></script>
-  <script src="themes.js?v=2"></script>
-  <script src="notifications.js"></script>
-  <script src="profile.js"></script>
-  <script src="pwa.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="pwa.js"></script>
+<script src="profile.js"></script>
 </body>
-  
 </html>
