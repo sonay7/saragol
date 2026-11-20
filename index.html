@@ -15,7 +15,7 @@
     
     .forum-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .forum-card:hover { transform: translateY(-3px); border-color: var(--green); }
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
 
@@ -26,6 +26,8 @@
     .notice { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 0.95rem; }
     .notice-badge { background: var(--green); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
     
+    .quote-box { background: rgba(52, 152, 219, 0.1); border-right: 4px solid var(--blue); padding: 16px; border-radius: 10px; margin-bottom: 20px; font-style: italic; text-align: center; color: var(--blue); font-size: 0.95rem; }
+
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
     .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
     .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
@@ -65,6 +67,9 @@
 <main class="container">
   <a href="study.html" class="quick-start-btn"><span>🚀</span> شروع سریع مطالعه</a>
 
+  <!-- باکس جمله رندوم -->
+  <div class="quote-box" id="randomQuoteBox" style="display: none;"></div>
+
   <section class="notice-board">
     <h2>📌 تابلو اعلانات</h2>
     <div id="noticesList"><p class="lock-note">در حال بارگذاری...</p></div>
@@ -96,7 +101,6 @@
       <a href="contact.html" class="forum-card"><span class="forum-icon">🚨</span><span class="forum-name">ارتباط با ادمین</span></a>
       <a href="gift.html" class="forum-card"><span class="forum-icon">🎁</span><span class="forum-name">هدیه</span></a>
       <a href="games.html" class="forum-card"><span class="forum-icon">🎮</span><span class="forum-name">بازی و معما</span></a>
-      <a href="mafia.html" class="forum-card"><span class="forum-icon">🕵️</span><span class="forum-name">مافیا</span></a>
       <a href="explore.html" class="forum-card"><span class="forum-icon">🎬</span><span class="forum-name">اکسپلور</span></a>
       <a href="cinema.html" class="forum-card"><span class="forum-icon">🍿</span><span class="forum-name">سینما</span></a>
       <a href="mbti.html" class="forum-card"><span class="forum-icon">🧠</span><span class="forum-name">هم‌سلیقه‌یاب</span></a>
@@ -158,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.setItem('hasSeenWelcome', 'true');
   });
 
+  loadRandomQuote(); // لود جمله رندوم
   loadNotices();
   loadLeaderboard();
   loadQuests();
@@ -169,6 +174,19 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// ===== جمله رندوم =====
+function loadRandomQuote() {
+  supabaseClient.from('quotes').select('*').then(function(res) {
+    var quotes = res.data || [];
+    if (quotes.length === 0) return;
+    var randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    var box = document.getElementById('randomQuoteBox');
+    box.textContent = '💬 ' + randomQuote.text;
+    box.style.display = 'block';
+  });
+}
+
+// ===== منطق تولد =====
 function loadBirthday() {
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
@@ -218,6 +236,7 @@ function playCelebration() {
   }
 }
 
+// ===== ماموریت‌ها =====
 function loadQuests() {
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
@@ -290,6 +309,7 @@ window.claimQuest = function(uqId, xpReward) {
   });
 };
 
+// ===== اعلانات و لیگ =====
 function loadNotices() {
   supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
     var container = document.getElementById('noticesList');
