@@ -6,38 +6,45 @@
   <title>ساراگل | مدرسه‌ی ما</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
-    .quick-start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
+    .quick-start-btn { display: flex; justify-content: center; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--green), var(--blue)); color: #fff; text-decoration: none; padding: 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: transform 0.2s; margin-bottom: 20px; }
+    .quick-start-btn:hover { transform: translateY(-3px); }
     .big-league-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; margin-bottom: 20px; }
     .big-league-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--green), var(--blue)); }
     .big-league-card h2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; }
     .big-league-card .see-all { font-size: 0.8rem; background: rgba(46, 204, 113, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--green); text-decoration: none; }
-    .forum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    
+    .forum-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     .forum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex !important; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .forum-card:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     .forum-icon { font-size: 3rem; }
     .forum-name { font-size: 1rem; font-weight: 600; }
+
     .quick-access-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
     .quick-access-wrapper .forum-card { padding: 14px 8px; }
     @media (max-width: 480px) { .quick-access-wrapper { grid-template-columns: repeat(2, 1fr); } }
+    
     .notice { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 0.95rem; }
     .notice-badge { background: var(--green); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
+    
     .welcome-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
     .welcome-content { background: var(--bg-card); border: 1px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.2); }
     .welcome-content h2 { color: var(--green); margin-bottom: 12px; font-size: 1.4rem; }
     .welcome-content p { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
     .welcome-content button { margin-top: 24px; }
     .welcome-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
+    
     .birthday-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; backdrop-filter: blur(5px); }
     .birthday-modal.hidden { display: none; }
     .birthday-box { background: var(--bg-card); border: 2px solid var(--green); border-radius: 20px; padding: 30px 24px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(46, 204, 113, 0.3); position: relative; z-index: 2001; }
     .birthday-box h2 { color: var(--green); margin-bottom: 12px; font-size: 1.5rem; }
     .birthday-box p { color: var(--text); line-height: 1.6; font-size: 1rem; }
+    
     .balloon { position: fixed; bottom: -100px; width: 40px; height: 50px; border-radius: 50%; z-index: 1999; pointer-events: none; animation: floatUp 4s linear forwards; }
     .balloon::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(0,0,0,0.3); }
     @keyframes floatUp { to { transform: translateY(-120vh) rotate(10deg); } }
     .confetti { position: fixed; top: -10px; width: 10px; height: 10px; z-index: 1999; pointer-events: none; animation: fall 3s linear forwards; }
     @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+    
     .quest-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .quest-title { font-size: 0.9rem; font-weight: bold; }
     .quest-reward { font-size: 0.8rem; color: #f1c40f; }
@@ -76,8 +83,9 @@
   <section style="margin-bottom: 20px;">
     <h2 style="margin-bottom: 12px; font-size: 1.1rem;">💬 انجمن‌ها</h2>
     <div class="forum-grid">
-      <a href="books.html" class="forum-card"><span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span></a>
-      <a href="#" class="forum-card"><span class="forum-icon">🎨</span><span class="forum-name">هنری</span></a>
+      <a href="books.html" class="forum-card">
+        <span class="forum-icon">📚</span><span class="forum-name">کتاب‌خوانی</span>
+      </a>
     </div>
   </section>
 
@@ -157,34 +165,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('closeBirthdayBtn').addEventListener('click', function() {
     document.getElementById('birthdayModal').classList.add('hidden');
-    playCelebration(); // فقط انیمیشن، بدون صدا
+    playCelebration();
   });
 });
 
-// ===== منطق تولد =====
 function loadBirthday() {
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
-    
     supabaseClient.from('profiles').select('username, birthday, last_birthday_year').eq('id', uid).single().then(function(p) {
       if (!p.data || !p.data.birthday) return;
       var profile = p.data;
-      
       var today = new Date();
       var parts = profile.birthday.split('-');
       var bMonth = parseInt(parts[1], 10) - 1;
       var bDay = parseInt(parts[2], 10);
       var currentYear = today.getFullYear();
-      
       var isTodayBirthday = (today.getMonth() === bMonth && today.getDate() === bDay);
       var firstName = profile.username.split(' ')[0];
       var bdayKey = 'bday_seen_' + currentYear + '_' + uid;
-      
       if (isTodayBirthday && profile.last_birthday_year !== currentYear && !localStorage.getItem(bdayKey)) {
         localStorage.setItem(bdayKey, 'true');
         supabaseClient.from('profiles').update({ last_birthday_year: currentYear }).eq('id', uid);
-        
         document.getElementById('birthdayText').textContent = 'امیدواریم سال فوق‌العاده‌ای داشته باشی ' + firstName + ' جان! 🌟';
         document.getElementById('birthdayModal').classList.remove('hidden');
       }
@@ -193,7 +195,6 @@ function loadBirthday() {
 }
 
 function playCelebration() {
-  // فقط انیمیشن بادکنک و کانفتی (بدون هیچ صدایی)
   var colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
   for (var i = 0; i < 20; i++) {
     var balloon = document.createElement('div');
@@ -217,13 +218,11 @@ function playCelebration() {
   }
 }
 
-// ===== ماموریت‌ها =====
 function loadQuests() {
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
     var today = new Date().toISOString().split('T')[0];
-
     supabaseClient.from('user_quests').select('*, daily_quests(*)').eq('user_id', uid).eq('quest_date', today).then(function(qRes) {
       if (qRes.data && qRes.data.length > 0) {
         renderQuests(qRes.data, uid);
@@ -245,38 +244,30 @@ function renderQuests(quests, uid) {
   var box = document.getElementById('questsList');
   box.innerHTML = '';
   if (!quests || quests.length === 0) { box.innerHTML = '<p class="lock-note">ماموریتی موجود نیست.</p>'; return; }
-
   var today = new Date().toISOString().split('T')[0];
   supabaseClient.from('study_sessions').select('minutes, questions, created_at').eq('user_id', uid).then(function(sRes) {
     var rows = sRes.data || [];
     var todayMinutes = 0, todayQuestions = 0, hasSessionToday = false;
-    
     rows.forEach(function(r) {
       var d = new Date(r.created_at).toISOString().split('T')[0];
       if (d === today) { todayMinutes += r.minutes; todayQuestions += (r.questions || 0); hasSessionToday = true; }
     });
-
     quests.forEach(function(uq) {
       var q = uq.daily_quests;
       if (!q) return;
       var currentProgress = 0;
       var target = q.target_value;
-      
       if (q.type === 'study') currentProgress = todayMinutes;
       else if (q.type === 'questions') currentProgress = todayQuestions;
       else if (q.type === 'streak') currentProgress = hasSessionToday ? 1 : 0;
-
       var isCompleted = currentProgress >= target || uq.is_completed;
       var isClaimed = uq.is_claimed;
-
       var div = document.createElement('div');
       div.className = 'quest-card';
-      
       var btnHtml = '';
       if (isClaimed) btnHtml = '<button class="quest-btn" disabled>✅ دریافت شد</button>';
       else if (isCompleted) btnHtml = `<button class="quest-btn" onclick="claimQuest('${uq.id}', ${q.xp_reward})">🎁 دریافت جایزه</button>`;
       else btnHtml = `<button class="quest-btn" disabled>${currentProgress} / ${target}</button>`;
-
       div.innerHTML = `<div><div class="quest-title">${q.title}</div><div class="quest-reward">جایزه: ${q.xp_reward} XP</div></div>${btnHtml}`;
       box.appendChild(div);
     });
@@ -299,7 +290,6 @@ window.claimQuest = function(uqId, xpReward) {
   });
 };
 
-// ===== اعلانات =====
 function loadNotices() {
   supabaseClient.from('notices').select('*').order('created_at', { ascending: false }).then(function(res) {
     var container = document.getElementById('noticesList');
@@ -321,7 +311,6 @@ function loadNotices() {
   });
 }
 
-// ===== لیگ =====
 function loadLeaderboard() {
   supabaseClient.rpc('get_weekly_leaderboard').then(function(res) {
     var container = document.getElementById('homeLeaderboard');
