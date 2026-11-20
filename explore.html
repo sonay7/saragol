@@ -5,36 +5,161 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>اکسپلور | ساراگل</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* استایل فید اصلی */
+    #exploreFeed {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-bottom: 20px;
+    }
+
+    .post-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease;
+    }
+    .post-card:hover {
+      transform: translateY(-2px);
+    }
+
+    /* مدیا (عکس/ویدیو) */
+    .post-media-wrapper {
+      width: 100%;
+      background: var(--bg); /* استفاده از رنگ تم */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+      max-height: 500px;
+      overflow: hidden;
+    }
+    .post-media-wrapper video, 
+    .post-media-wrapper img {
+      width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* فوتر کارت (دکمه لایک) */
+    .post-footer {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+    }
+
+    .like-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .like-btn:hover {
+      background: var(--border);
+    }
+    .like-btn .heart {
+      transition: transform 0.2s;
+      font-size: 1.1rem;
+    }
+    .like-btn .heart.liked {
+      transform: scale(1.2);
+    }
+
+    /* استایل بخش تاریخچه ادمین */
+    .admin-history-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 30px;
+      margin-bottom: 20px;
+    }
+    .history-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.85rem;
+      gap: 10px;
+      transition: background 0.2s;
+    }
+    .history-row:hover {
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    .history-row:last-child {
+      border-bottom: none;
+    }
+    .history-row a {
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 0.8rem;
+      background: rgba(52,152,219,0.1);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+    .history-row a:hover {
+      background: rgba(52,152,219,0.2);
+    }
+  </style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="logo">ساراگل</div>
-    <div class="user-area">
-      <span class="user-name">—</span>
-      <div class="avatar">—</div>
-    </div>
-  </header>
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
 
-  <main class="container">
-    <section>
-      <h2>🎬 اکسپلور</h2>
-    </section>
-    <section id="exploreFeed">
+<main class="container">
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>🎬 اکسپلور</h2>
+  </div>
+  
+  <section id="exploreFeed">
+    <p class="lock-note">در حال بارگذاری...</p>
+  </section>
+
+  <!-- بخش تاریخچه لایک‌ها (فقط برای ادمین) -->
+  <section id="adminLikesSection" style="display: none;" class="admin-history-card">
+    <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--green);">❤️ تاریخچه لایک‌ها (ویژه ادمین)</h3>
+    <div id="adminLikesList">
       <p class="lock-note">در حال بارگذاری...</p>
-    </section>
-  </main>
+    </div>
+  </section>
+</main>
 
-  <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">🏠 خانه</a>
-    <a href="study.html" class="nav-item">⏱ مطالعه</a>
-    <a href="explore.html" class="nav-item active">🎬 اکسپلور</a>
-    <a href="profile.html" class="nav-item">👤 پروفایل</a>
-  </nav>
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="explore.html" class="nav-item active">🎬 اکسپلور</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-  <script src="auth.js"></script>
-  <script src="explore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+<script src="explore.js"></script>
 </body>
-  </html>
+</html>
