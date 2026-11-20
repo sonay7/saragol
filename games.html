@@ -43,7 +43,7 @@
 
     <div class="game-card">
       <h3>🧠 معمای روز</h3>
-      <p id="riddleQuestion" style="margin: 10px 0; font-size: 0.95rem;">در حال بارگذاری...</p>
+      <p id="riddleQuestion" style="margin: 10px 0; font-size: 0.95rem; min-height: 40px;">در حال بارگذاری...</p>
       <input type="text" id="riddleAnswer" class="input" placeholder="جوابت رو بنویس...">
       <button onclick="checkRiddle()" class="btn btn-blue btn-full" style="margin-top: 10px;">ثبت جواب</button>
       <p id="riddleMsg" style="margin-top: 10px; font-size: 0.85rem;"></p>
@@ -89,6 +89,7 @@
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
   <script src="theme.js"></script>
+  <script src="pwa.js"></script>
   <script>
     var myUid = null, myName = '', myXp = 0, myLastSpinDate = null;
     var spinning = false;
@@ -130,15 +131,25 @@
           document.querySelector('.avatar').textContent = myName.charAt(0);
         }
       });
+      loadRiddle();
     });
 
+    // ===== معما (با نمایش دقیق خطاها) =====
     function loadRiddle() {
-      supabaseClient.from('riddles').select('*').eq('is_active', true).then(function(res) {
-        var riddles = res.data || [];
-        if (riddles.length === 0) {
-          document.getElementById('riddleQuestion').textContent = 'هنوز معمایی ثبت نشده.';
+      supabaseClient.from('riddles').select('*').then(function(res) {
+        if (res.error) {
+          document.getElementById('riddleQuestion').textContent = '❌ خطا در دیتابیس: ' + res.error.message;
+          document.getElementById('riddleQuestion').style.color = '#e74c3c';
           return;
         }
+        
+        var riddles = (res.data || []).filter(function(r) { return r.is_active !== false; });
+        
+        if (riddles.length === 0) {
+          document.getElementById('riddleQuestion').textContent = 'هنوز معمایی ثبت نشده. ادمین باید معما اضافه کنه.';
+          return;
+        }
+        
         var today = new Date();
         var seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate();
         var idx = seed % riddles.length;
@@ -189,13 +200,13 @@
       }
     }
 
+    // ===== گردونه =====
     function openChestModal(cost) {
       var todayStr = getTodayDate();
       if (myLastSpinDate === todayStr) {
         alert('شما امروز شانس خود را استفاده کرده‌اید! فردا بیایید. 🎡');
         return;
       }
-
       if (myXp < cost) { alert('XP کافی نداری!'); return; }
       
       supabaseClient.from('wheel_config').select('*').eq('is_active', true).then(function(res) {
@@ -203,15 +214,12 @@
           alert('گردونه هنوز تنظیم نشده! ادمین باید خونه‌ها رو اضافه کنه.');
           return;
         }
-
         wheelSlices = res.data;
         drawWheel();
-
         document.getElementById('resultBox').style.display = 'none';
         var spinBtn = document.getElementById('spinBtn');
         spinBtn.disabled = false;
         spinBtn.textContent = 'بچرخان!';
-        
         document.getElementById('wheel').style.transform = 'rotate(0deg)';
         document.getElementById('chestModal').classList.remove('hidden');
       });
@@ -221,18 +229,14 @@
       var wheel = document.getElementById('wheel');
       var count = wheelSlices.length;
       var anglePerSlice = 360 / count;
-      
       var gradientStr = wheelSlices.map(function(s, i) {
         var start = i * anglePerSlice;
         var end = (i + 1) * anglePerSlice;
         return s.color + ' ' + start + 'deg ' + end + 'deg';
       }).join(', ');
-      
       wheel.style.background = 'conic-gradient(' + gradientStr + ')';
-
       var oldTexts = wheel.querySelectorAll('.wheel-text');
       oldTexts.forEach(function(t) { t.remove(); });
-
       wheelSlices.forEach(function(s, i) {
         var span = document.createElement('span');
         span.className = 'wheel-text';
@@ -248,7 +252,6 @@
       spinning = true;
       this.disabled = true;
       this.textContent = '...';
-
       var cost = 10;
       var todayStr = getTodayDate();
       var newXp = myXp - cost;
@@ -258,19 +261,14 @@
         myXp = newXp;
         myLastSpinDate = todayStr;
         document.getElementById('myXpDisplay').textContent = myXp;
-
         var winnerIndex = Math.floor(Math.random() * wheelSlices.length);
         var prize = wheelSlices[winnerIndex];
-        
         var anglePerSlice = 360 / wheelSlices.length;
         var deg = (5 * 360) + (360 - (winnerIndex * anglePerSlice)) - (anglePerSlice / 2);
-        
         document.getElementById('wheel').style.transform = 'rotate(' + deg + 'deg)';
-
         setTimeout(function() {
           document.getElementById('resultBox').style.display = 'block';
           document.getElementById('spinResult').textContent = prize.label;
-          
           if (prize.prize_type === 'xp' && prize.prize_value > 0) {
             supabaseClient.from('profiles').update({ xp: myXp + prize.prize_value }).eq('id', myUid).then(function() {
                myXp += prize.prize_value;
@@ -279,9 +277,7 @@
                document.getElementById('spinBtn').textContent = '✅ دریافت شد';
             });
           } else if (prize.prize_type === 'item') {
-            supabaseClient.from('user_inventory').insert({
-              user_id: myUid, item_type: 'buff', item_id: null, effect_value: prize.label
-            }).then(function() {
+            supabaseClient.from('user_inventory').insert({ user_id: myUid, item_type: 'buff', item_id: null, effect_value: prize.label }).then(function() {
                spinning = false;
                document.getElementById('spinBtn').textContent = '✅ دریافت شد';
             });
@@ -296,9 +292,6 @@
     document.getElementById('closeChestBtn').addEventListener('click', function() {
       document.getElementById('chestModal').classList.add('hidden');
     });
-
-    loadRiddle();
   </script>
-  <script src="pwa.js"></script>
 </body>
 </html>
