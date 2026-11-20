@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سینما | تماشای فیلم</title>
+  <title>سینما ساراگل | تماشای فیلم</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .cinema-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding-bottom: 80px; }
@@ -22,6 +22,11 @@
     .buy-btn { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3); }
     .buy-btn:hover { transform: translateY(-2px); }
     .buy-btn:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; box-shadow: none; transform: none; }
+    
+    /* استایل تاریخچه ادمین */
+    .admin-history-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 30px; }
+    .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .history-row:last-child { border-bottom: none; }
   </style>
 </head>
 <body>
@@ -30,7 +35,6 @@
   <div class="logo">ساراگل</div>
   <div class="user-area">
     <span class="user-name">—</span>
-    <span id="myXp" style="color:#f1c40f; font-weight:bold; font-size:0.9rem;">... XP</span>
     <div class="avatar">—</div>
   </div>
 </header>
@@ -40,6 +44,15 @@
   <div class="cinema-grid" id="cinemaGrid">
     <p class="lock-note">در حال بارگذاری فیلم‌ها...</p>
   </div>
+
+  <!-- بخش تاریخچه ادمین (فقط برای ادمین) -->
+  <section id="adminTicketsSection" style="display: none;" class="admin-history-card">
+    <h3 style="margin-bottom: 12px; font-size: 1.1rem;">🎫 تاریخچه خرید بلیط‌ها (ویژه ادمین)</h3>
+    <div id="adminTicketsList">
+      <p class="lock-note">در حال بارگذاری...</p>
+    </div>
+  </section>
+
 </main>
 
 <nav class="bottom-nav">
@@ -53,7 +66,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
-  <script src="notifications.js"></script>
 <script src="theme.js"></script>
 
 <script>
@@ -65,12 +77,21 @@
     if (!res.data.user) { window.location.href = 'login.html'; return; }
     currentUser = res.data.user;
     
-    supabaseClient.from('profiles').select('xp, username').eq('id', currentUser.id).single().then(p => {
+    // گرفتن اطلاعات کاربر
+    supabaseClient.from('profiles').select('xp, username, role').eq('id', currentUser.id).single().then(p => {
+      if (!p.data) return;
       myXp = p.data.xp || 0;
       document.getElementById('myXp').textContent = myXp + ' XP';
       document.querySelector('.user-name').textContent = p.data.username;
       document.querySelector('.avatar').textContent = p.data.username.charAt(0);
       
+      // اگه ادمین بود، تاریخچه رو لود کن
+      if (p.data.role === 'admin' || p.data.role === 'superadmin') {
+        document.getElementById('adminTicketsSection').style.display = 'block';
+        loadAdminTickets();
+      }
+
+      // گرفتن بلیط‌های کاربر
       supabaseClient.from('cinema_tickets').select('video_id').eq('user_id', currentUser.id).then(tk => {
         myTickets = (tk.data || []).map(t => t.video_id);
         loadCinema();
@@ -82,14 +103,8 @@
     var grid = document.getElementById('cinemaGrid');
     
     supabaseClient.from('cinema_videos').select('*').eq('is_active', true).order('created_at', { ascending: false }).then(res => {
-      
       grid.innerHTML = '';
       
-      if (res.error) {
-        grid.innerHTML = '<p class="lock-note" style="color:#e74c3c;">خطا در بارگذاری: ' + res.error.message + '</p>';
-        return;
-      }
-
       if (!res.data || res.data.length === 0) {
         grid.innerHTML = '<p class="lock-note">هنوز فیلمی در سینما اکران نشده است.</p>';
         return;
@@ -97,8 +112,6 @@
       
       res.data.forEach(vid => {
         var hasTicket = myTickets.includes(vid.id);
-        
-        // قفل کردن اسم فیلم
         var displayTitle = hasTicket ? vid.title : '🔒 فیلم سینمایی (برای دیدن اسم بلیط بخر)';
         
         var mediaHtml = '';
@@ -117,7 +130,6 @@
         var buyBtnHtml = '';
         if (!hasTicket) {
           var canAfford = myXp >= vid.price;
-          // ⬇️ اینجا دیگه اسم فیلم (vid.title) رو به تابع خرید پاس نمی‌دیم ⬇️
           buyBtnHtml = `
             <div class="buy-ticket-area">
               <button class="buy-btn" ${canAfford ? '' : 'disabled'} onclick="buyTicket('${vid.id}', ${vid.price})">
@@ -144,10 +156,8 @@
     });
   }
 
-  // ⬇️ تابع خرید فقط آیدی و قیمت رو می‌گیره، نه اسم رو ⬇️
   window.buyTicket = function(videoId, price) {
     if (myXp < price) { alert('XP کافی نداری!'); return; }
-    // ⬇️ پیام تایید هم دیگه اسم فیلم رو نداره ⬇️
     if (!confirm('آیا ' + price + ' XP برای خرید بلیط این فیلم پرداخت می‌کنی؟')) return;
 
     supabaseClient.from('profiles').update({ xp: myXp - price }).eq('id', currentUser.id).then(updateRes => {
@@ -162,13 +172,36 @@
           supabaseClient.from('profiles').update({ xp: myXp }).eq('id', currentUser.id);
           return;
         }
-        
         alert('🍿 بلیط با موفقیت خریداری شد! فیلم رو ببین.');
         location.reload();
       });
     });
   };
+
+  // ===== تاریخچه خرید بلیط (ویژه ادمین) =====
+  function loadAdminTickets() {
+    var list = document.getElementById('adminTicketsList');
+    supabaseClient.from('cinema_tickets')
+      .select('*, profiles(username), cinema_videos(title)')
+      .order('created_at', { ascending: false })
+      .then(function(res) {
+        list.innerHTML = '';
+        var rows = res.data || [];
+        if (rows.length === 0) { list.innerHTML = '<p class="lock-note">هنوز کسی بلیط نخریده.</p>'; return; }
+        
+        rows.forEach(function(t) {
+          var un = t.profiles ? t.profiles.username : 'ناشناس';
+          var title = t.cinema_videos ? t.cinema_videos.title : 'نامشخص';
+          var dt = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(t.created_at));
+          
+          var div = document.createElement('div');
+          div.className = 'history-row';
+          div.innerHTML = '<div><strong>' + un + '</strong> - فیلم: ' + title + '</div>' +
+            '<span style="color: var(--text-dim); font-size: 0.75rem;">' + dt + '</span>';
+          list.appendChild(div);
+        });
+      });
+  }
 </script>
-  <script src="pwa.js"></script>
 </body>
 </html>
