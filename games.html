@@ -3,29 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بازی‌ها و معما | ساراگل</title>
+  <title>بازی‌ها | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .game-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; }
-    .wheel-wrapper { position: relative; width: 300px; height: 300px; margin: 30px auto; }
-    .wheel-outer { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #d3d3d3, #9e9e9e); box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 0 10px rgba(0,0,0,0.5); padding: 15px; position: relative; }
-    .wheel-lights { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
-    .light-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 5px #fff; }
-    .light-dot:nth-child(even) { background: #fdd835; box-shadow: 0 0 5px #fdd835; }
-    .wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
-    .wheel-text { position: absolute; top: 20%; left: 50%; transform-origin: 0% 130%; font-weight: bold; font-size: 0.85rem; color: #fff; text-shadow: 1px 1px 2px #000; }
-    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 45px; height: 45px; border-radius: 50%; background: radial-gradient(circle, #fff, #fdd835); border: 4px solid #9e9e9e; z-index: 10; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-    .wheel-center::after { content: ''; width: 18px; height: 18px; background: #333; border-radius: 50%; }
-    .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 30px solid #fdd835; z-index: 20; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); }
-    .spin-btn-new { background: #fdd835; color: #000; border: none; padding: 16px 40px; border-radius: 16px; font-size: 1.3rem; font-weight: bold; font-family: inherit; cursor: pointer; box-shadow: 0 5px 15px rgba(253, 216, 53, 0.4); transition: 0.2s; margin-top: 10px; }
-    .spin-btn-new:hover { transform: scale(1.05); }
-    .spin-btn-new:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
-    .result-box-new { background: #fdd835; color: #000; border-radius: 16px; padding: 20px; margin-top: 20px; font-weight: bold; text-align: center; box-shadow: 0 5px 15px rgba(253, 216, 53, 0.4); display: none; }
-    .result-box-new h4 { margin-bottom: 10px; font-size: 0.9rem; opacity: 0.8; }
-    .result-box-new p { font-size: 1.2rem; }
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-    .modal.hidden { display: none; }
-    .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; text-align: center; }
+    .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+    .game-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.2s; }
+    .game-tile:hover { transform: translateY(-3px); border-color: var(--green); }
+    .game-icon { font-size: 3rem; }
+    .game-name { font-size: 1rem; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -49,33 +35,16 @@
       <p id="riddleMsg" style="margin-top: 10px; font-size: 0.85rem;"></p>
     </div>
 
-    <div class="game-card" style="background: transparent; border: none; padding: 0;">
-      <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
-        <button class="btn btn-green" onclick="openChestModal(10)" style="flex:1; padding: 15px; font-size:1.1rem;">🎡 چرخش شانس (۱۰ XP)</button>
-      </div>
-      <p style="text-align:center; font-size: 0.9rem; margin-bottom:10px;">XP تو: <span id="myXpDisplay" style="color:#f1c40f; font-weight:bold;">0</span></p>
+    <div class="game-grid">
+      <a href="mafia.html" class="game-tile">
+        <span class="game-icon">🕵️</span><span class="game-name">بازی مافیا</span>
+      </a>
+      <a href="mbti.html" class="game-tile">
+        <span class="game-icon">🧠</span><span class="game-name">هم‌سلیقه‌یاب</span>
+      </a>
     </div>
 
   </main>
-
-  <div id="chestModal" class="modal hidden">
-    <div class="modal-box" style="background: transparent; border: none; box-shadow: none; max-width: 350px;">
-      <div class="wheel-wrapper">
-        <div class="wheel-pointer"></div>
-        <div class="wheel-outer">
-          <div class="wheel-lights" id="wheelLights"></div>
-          <div class="wheel" id="wheel"></div>
-          <div class="wheel-center"></div>
-        </div>
-      </div>
-      <button id="spinBtn" class="spin-btn-new">بچرخان!</button>
-      <div id="resultBox" class="result-box-new">
-        <h4>نتیجه:</h4>
-        <p id="spinResult"></p>
-        <button id="closeChestBtn" class="btn btn-dim btn-sm" style="margin-top:10px;">بستن</button>
-      </div>
-    </div>
-  </div>
 
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item">🏠 خانه</a>
@@ -90,63 +59,36 @@
   <script src="auth.js"></script>
   <script src="theme.js"></script>
   <script src="pwa.js"></script>
+  
   <script>
-    var myUid = null, myName = '', myXp = 0, myLastSpinDate = null;
-    var spinning = false;
+    var myUid = null;
     var currentRiddle = null;
-    var wheelSlices = [];
-
-    function getTodayDate() {
-      var d = new Date();
-      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    }
-
-    function createLights() {
-      var lightsContainer = document.getElementById('wheelLights');
-      for (var i = 0; i < 16; i++) {
-        var angle = (i * 360) / 16;
-        var dot = document.createElement('div');
-        dot.className = 'light-dot';
-        var rad = angle * (Math.PI / 180);
-        var r = 150;
-        var x = r + (r - 10) * Math.sin(rad) - 4;
-        var y = r - (r - 10) * Math.cos(rad) - 4;
-        dot.style.left = x + 'px';
-        dot.style.top = y + 'px';
-        lightsContainer.appendChild(dot);
-      }
-    }
-    createLights();
 
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) { window.location.href = 'login.html'; return; }
       myUid = res.data.user.id;
-      supabaseClient.from('profiles').select('username, xp, last_spin_date').eq('id', myUid).single().then(function(p) {
+      
+      supabaseClient.from('profiles').select('username').eq('id', myUid).single().then(function(p) {
         if (p.data) {
-          myName = p.data.username;
-          myXp = p.data.xp || 0;
-          myLastSpinDate = p.data.last_spin_date;
-          document.getElementById('myXpDisplay').textContent = myXp;
-          document.querySelector('.user-name').textContent = myName;
-          document.querySelector('.avatar').textContent = myName.charAt(0);
+          document.querySelector('.user-name').textContent = p.data.username;
+          document.querySelector('.avatar').textContent = p.data.username.charAt(0);
         }
       });
+      
       loadRiddle();
     });
 
-    // ===== معما (با نمایش دقیق خطاها) =====
     function loadRiddle() {
       supabaseClient.from('riddles').select('*').then(function(res) {
         if (res.error) {
-          document.getElementById('riddleQuestion').textContent = '❌ خطا در دیتابیس: ' + res.error.message;
-          document.getElementById('riddleQuestion').style.color = '#e74c3c';
+          document.getElementById('riddleQuestion').textContent = '❌ خطا: ' + res.error.message;
           return;
         }
         
         var riddles = (res.data || []).filter(function(r) { return r.is_active !== false; });
         
         if (riddles.length === 0) {
-          document.getElementById('riddleQuestion').textContent = 'هنوز معمایی ثبت نشده. ادمین باید معما اضافه کنه.';
+          document.getElementById('riddleQuestion').textContent = 'هنوز معمایی ثبت نشده.';
           return;
         }
         
@@ -170,11 +112,14 @@
       var msg = document.getElementById('riddleMsg');
       if (!answer) { msg.textContent = 'جوابت رو بنویس'; msg.style.color = '#e74c3c'; return; }
 
+      // ⬇️ منطق چند جوابی (جدا شده با /)
       var normalize = function(s) {
         return s.replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/\s+/g, ' ').trim();
       };
-
-      if (normalize(answer) === normalize(currentRiddle.answer)) {
+      
+      var validAnswers = currentRiddle.answer.split('/').map(function(a) { return normalize(a); });
+      
+      if (validAnswers.indexOf(normalize(answer)) !== -1) {
         var today = new Date();
         var seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate();
         
@@ -188,10 +133,7 @@
 
         supabaseClient.from('profiles').select('xp').eq('id', myUid).single().then(function(p) {
           var newXp = ((p.data && p.data.xp) || 0) + 1;
-          supabaseClient.from('profiles').update({ xp: newXp }).eq('id', myUid).then(function() {
-             myXp = newXp;
-             document.getElementById('myXpDisplay').textContent = myXp;
-          });
+          supabaseClient.from('profiles').update({ xp: newXp }).eq('id', myUid);
         });
         document.getElementById('riddleAnswer').disabled = true;
       } else {
@@ -199,99 +141,6 @@
         msg.style.color = '#e74c3c';
       }
     }
-
-    // ===== گردونه =====
-    function openChestModal(cost) {
-      var todayStr = getTodayDate();
-      if (myLastSpinDate === todayStr) {
-        alert('شما امروز شانس خود را استفاده کرده‌اید! فردا بیایید. 🎡');
-        return;
-      }
-      if (myXp < cost) { alert('XP کافی نداری!'); return; }
-      
-      supabaseClient.from('wheel_config').select('*').eq('is_active', true).then(function(res) {
-        if (!res.data || res.data.length === 0) {
-          alert('گردونه هنوز تنظیم نشده! ادمین باید خونه‌ها رو اضافه کنه.');
-          return;
-        }
-        wheelSlices = res.data;
-        drawWheel();
-        document.getElementById('resultBox').style.display = 'none';
-        var spinBtn = document.getElementById('spinBtn');
-        spinBtn.disabled = false;
-        spinBtn.textContent = 'بچرخان!';
-        document.getElementById('wheel').style.transform = 'rotate(0deg)';
-        document.getElementById('chestModal').classList.remove('hidden');
-      });
-    }
-
-    function drawWheel() {
-      var wheel = document.getElementById('wheel');
-      var count = wheelSlices.length;
-      var anglePerSlice = 360 / count;
-      var gradientStr = wheelSlices.map(function(s, i) {
-        var start = i * anglePerSlice;
-        var end = (i + 1) * anglePerSlice;
-        return s.color + ' ' + start + 'deg ' + end + 'deg';
-      }).join(', ');
-      wheel.style.background = 'conic-gradient(' + gradientStr + ')';
-      var oldTexts = wheel.querySelectorAll('.wheel-text');
-      oldTexts.forEach(function(t) { t.remove(); });
-      wheelSlices.forEach(function(s, i) {
-        var span = document.createElement('span');
-        span.className = 'wheel-text';
-        var rotateAngle = (i * anglePerSlice) + (anglePerSlice / 2);
-        span.style.transform = 'translateX(-50%) rotate(' + rotateAngle + 'deg)';
-        span.textContent = s.label;
-        wheel.appendChild(span);
-      });
-    }
-
-    document.getElementById('spinBtn').addEventListener('click', function() {
-      if (spinning) return;
-      spinning = true;
-      this.disabled = true;
-      this.textContent = '...';
-      var cost = 10;
-      var todayStr = getTodayDate();
-      var newXp = myXp - cost;
-      
-      supabaseClient.from('profiles').update({ xp: newXp, last_spin_date: todayStr }).eq('id', myUid).then(function(res) {
-        if (res.error) { alert('خطا'); spinning = false; return; }
-        myXp = newXp;
-        myLastSpinDate = todayStr;
-        document.getElementById('myXpDisplay').textContent = myXp;
-        var winnerIndex = Math.floor(Math.random() * wheelSlices.length);
-        var prize = wheelSlices[winnerIndex];
-        var anglePerSlice = 360 / wheelSlices.length;
-        var deg = (5 * 360) + (360 - (winnerIndex * anglePerSlice)) - (anglePerSlice / 2);
-        document.getElementById('wheel').style.transform = 'rotate(' + deg + 'deg)';
-        setTimeout(function() {
-          document.getElementById('resultBox').style.display = 'block';
-          document.getElementById('spinResult').textContent = prize.label;
-          if (prize.prize_type === 'xp' && prize.prize_value > 0) {
-            supabaseClient.from('profiles').update({ xp: myXp + prize.prize_value }).eq('id', myUid).then(function() {
-               myXp += prize.prize_value;
-               document.getElementById('myXpDisplay').textContent = myXp;
-               spinning = false;
-               document.getElementById('spinBtn').textContent = '✅ دریافت شد';
-            });
-          } else if (prize.prize_type === 'item') {
-            supabaseClient.from('user_inventory').insert({ user_id: myUid, item_type: 'buff', item_id: null, effect_value: prize.label }).then(function() {
-               spinning = false;
-               document.getElementById('spinBtn').textContent = '✅ دریافت شد';
-            });
-          } else {
-            spinning = false;
-            document.getElementById('spinBtn').textContent = '✅ دریافت شد';
-          }
-        }, 4100);
-      });
-    });
-
-    document.getElementById('closeChestBtn').addEventListener('click', function() {
-      document.getElementById('chestModal').classList.add('hidden');
-    });
   </script>
 </body>
 </html>
