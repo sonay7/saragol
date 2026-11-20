@@ -84,52 +84,13 @@
   </details>
 
   <details class="accordion">
-    <summary class="accordion-header">🎫 تاریخچه خرید بلیط سینما</summary>
-    <div class="accordion-content">
-      <p style="font-size: 0.8rem; color: var(--text-dim); margin: 10px 0;">چه کسی چه فیلمی خریده:</p>
-      <div id="ticketsList"></div>
-    </div>
-  </details>
-
-  <details class="accordion">
-    <summary class="accordion-header">❤️ تاریخچه لایک‌های اکسپلور</summary>
-    <div class="accordion-content">
-      <p style="font-size: 0.8rem; color: var(--text-dim); margin: 10px 0;">چه کسی چه پستی رو لایک کرده:</p>
-      <div id="likesList"></div>
-    </div>
-  </details>
-
-  <details class="accordion">
-    <summary class="accordion-header">🎨 پک‌های استیکر</summary>
+    <summary class="accordion-header">💬 جمله‌ها</summary>
     <div class="accordion-content">
       <div style="margin: 10px 0;">
-        <input id="newPackName" class="input" placeholder="اسم پک" style="margin-bottom: 8px;">
-        <div style="display: flex; gap: 8px;">
-          <input id="newPackPrice" type="number" class="input" placeholder="قیمت (XP)" style="flex: 1;">
-          <input id="newPackIcon" class="input" placeholder="ایموجی" style="width: 70px;">
-        </div>
-        <button onclick="createStickerPack()" class="btn btn-green btn-full" style="margin-top: 8px;">➕ ساخت</button>
+        <input id="quoteText" class="input" placeholder="متن جمله..." style="margin-bottom: 8px;">
+        <button onclick="addQuote()" class="btn btn-green btn-full">➕ افزودن جمله</button>
       </div>
-      <div id="adminPacksList"></div>
-    </div>
-  </details>
-
-  <details class="accordion">
-    <summary class="accordion-header">🎡 گردونه شانس</summary>
-    <div class="accordion-content">
-      <div style="margin: 10px 0;">
-        <input id="wheelLabel" class="input" placeholder="متن (مثلاً ۱۰ XP)" style="margin-bottom: 8px;">
-        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-          <input id="wheelColor" type="color" class="input" style="height: 42px; padding: 4px; width: 60px;" value="#f44336">
-          <select id="wheelType" class="input" style="flex: 1;">
-            <option value="xp">XP</option>
-            <option value="item">آیتم</option>
-          </select>
-          <input id="wheelValue" type="number" class="input" placeholder="مقدار" style="width: 70px;">
-        </div>
-        <button onclick="addWheelSlice()" class="btn btn-green btn-full">➕ افزودن</button>
-      </div>
-      <div id="wheelSlicesList"></div>
+      <div id="adminQuotesList"></div>
     </div>
   </details>
 
@@ -152,27 +113,14 @@
   </details>
 
   <details class="accordion">
-    <summary class="accordion-header">👁️ پایش کاربران غایب</summary>
+    <summary class="accordion-header">📝 آزمون‌ها</summary>
     <div class="accordion-content">
-      <h4 style="font-size: 0.85rem; margin: 10px 0 8px;">کاربران غیرفعال:</h4>
-      <div id="inactiveUsersList"></div>
-      <h4 style="font-size: 0.85rem; margin: 16px 0 8px;">کاربران غایب (دسته‌بندی):</h4>
-      <div id="wanderingUsersList"></div>
-    </div>
-  </details>
-
-  <details class="accordion">
-    <summary class="accordion-header">📝 آزمون‌ها و جمله‌ها</summary>
-    <div class="accordion-content">
-      <h4 style="font-size: 0.85rem; margin: 10px 0 8px;">آزمون‌های مدرسه:</h4>
       <div id="examsList"></div>
       <div style="margin: 10px 0;">
         <input id="examSubject" class="input" placeholder="درس" style="margin-bottom: 8px;">
         <input id="examDate" type="date" class="input" style="margin-bottom: 8px;">
         <button id="addExamBtn" class="btn btn-green btn-full">افزودن آزمون</button>
       </div>
-      <h4 style="font-size: 0.85rem; margin: 16px 0 8px;">جمله‌ها:</h4>
-      <div id="quotesList"></div>
     </div>
   </details>
 
