@@ -152,7 +152,23 @@
       <div id="inboxList" style="margin-top: 10px;"></div>
     </div>
   </details>
-
+<details class="accordion">
+  <summary class="accordion-header">📝 فلش‌کارت‌های عمومی (نکات)</summary>
+  <div class="accordion-content">
+    <div style="margin: 10px 0; background: var(--bg); padding: 12px; border-radius: 10px;">
+      <select id="fcGrade" class="input" style="margin-bottom: 8px;">
+        <option value="هفتم">هفتم</option>
+        <option value="هشتم">هشتم</option>
+        <option value="نهم">نهم</option>
+      </select>
+      <input id="fcSubject" class="input" placeholder="درس (مثلاً ریاضی)" style="margin-bottom: 8px;">
+      <input id="fcQuestion" class="input" placeholder="سوال (مثلاً فرمول مساحت دایره)" style="margin-bottom: 8px;">
+      <input id="fcAnswer" class="input" placeholder="جواب (مثلاً πr²)" style="margin-bottom: 8px;">
+      <button onclick="addPublicFlashcard()" class="btn btn-green btn-full">➕ افزودن</button>
+    </div>
+    <div id="adminFlashcardsList"></div>
+  </div>
+</details>
 </main>
 
 <nav class="bottom-nav">
