@@ -71,16 +71,20 @@
       <div id="adminQuotesList"></div>
     </div>
   </details>
-
+  
   <!-- 4. اپلود ویدیو (اکسپلور) -->
   <details class="accordion">
     <summary class="accordion-header">🎥 آپلود ویدیو (اکسپلور)</summary>
     <div class="accordion-content">
-      <div style="margin: 10px 0;">
+      <div style="margin: 10px 0; background: var(--bg); padding: 12px; border-radius: 10px;">
         <input id="exploreTitle" class="input" placeholder="عنوان ویدیو" style="margin-bottom: 8px;">
         <input id="exploreDesc" class="input" placeholder="توضیحات" style="margin-bottom: 8px;">
-        <input id="exploreUrl" class="input" placeholder="لینک ویدیو (آپارات/یوتیوب)" style="margin-bottom: 8px;">
-        <button onclick="addExploreVideo()" class="btn btn-green btn-full">➕ افزودن</button>
+        
+        <!-- این بخش جدید اضافه شده: انتخاب فایل از گوشی/کامپیوتر -->
+        <label style="font-size: 0.85rem; color: var(--text-dim); display: block; margin-bottom: 4px;">انتخاب فایل ویدیو:</label>
+        <input id="exploreFile" type="file" accept="video/*" class="input" style="margin-bottom: 8px; padding: 8px;">
+        
+        <button id="addExploreBtn" onclick="addExploreVideo()" class="btn btn-green btn-full">➕ آپلود و افزودن</button>
       </div>
       <div id="adminExploreList"></div>
     </div>
