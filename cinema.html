@@ -81,7 +81,7 @@
     supabaseClient.from('profiles').select('xp, username, role').eq('id', currentUser.id).single().then(p => {
       if (!p.data) return;
       myXp = p.data.xp || 0;
-      document.getElementById('myXp').text = myXp + ' XP';
+      document.getElementById('myXp').textContent = myXp + ' XP';
       document.querySelector('.user-name').textContent = p.data.username;
       document.querySelector('.avatar').textContent = p.data.username.charAt(0);
       
