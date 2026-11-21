@@ -28,6 +28,7 @@
 
 <main class="container">
 
+  <!-- 1. اعلانات -->
   <details class="accordion">
     <summary class="accordion-header">📌 اعلانات</summary>
     <div class="accordion-content">
@@ -44,31 +45,7 @@
     </div>
   </details>
 
-  <details class="accordion">
-    <summary class="accordion-header">👥 کاربران</summary>
-    <div class="accordion-content">
-      <h4 style="font-size: 0.9rem; margin: 10px 0 8px;">درخواست‌های عضویت:</h4>
-      <div id="requestsList"></div>
-      <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">کاربران تایید شده:</h4>
-      <div id="usersList"></div>
-    </div>
-  </details>
-
-  <details class="accordion">
-    <summary class="accordion-header">🌟 اهدای نشان</summary>
-    <div class="accordion-content">
-      <div style="margin: 10px 0;">
-        <input id="badgeUsername" class="input" placeholder="نام کاربری" style="margin-bottom: 8px;">
-        <select id="badgeName" class="input" style="margin-bottom: 8px;">
-          <option value="اولین ستاره">🌟 اولین ستاره</option>
-          <option value="پیشتاز مطالعه">🚀 پیشتاز</option>
-        </select>
-        <button onclick="giveBadge()" class="btn btn-green btn-full">اهدا</button>
-      </div>
-      <div id="adminBadgesList"></div>
-    </div>
-  </details>
-
+  <!-- 2. سینما -->
   <details class="accordion">
     <summary class="accordion-header">🎬 سینما (فیلم‌ها)</summary>
     <div class="accordion-content">
@@ -83,6 +60,7 @@
     </div>
   </details>
 
+  <!-- 3. جمله‌ها -->
   <details class="accordion">
     <summary class="accordion-header">💬 جمله‌ها</summary>
     <div class="accordion-content">
@@ -94,6 +72,21 @@
     </div>
   </details>
 
+  <!-- 4. اپلود ویدیو (اکسپلور) -->
+  <details class="accordion">
+    <summary class="accordion-header">🎥 آپلود ویدیو (اکسپلور)</summary>
+    <div class="accordion-content">
+      <div style="margin: 10px 0;">
+        <input id="exploreTitle" class="input" placeholder="عنوان ویدیو" style="margin-bottom: 8px;">
+        <input id="exploreDesc" class="input" placeholder="توضیحات" style="margin-bottom: 8px;">
+        <input id="exploreUrl" class="input" placeholder="لینک ویدیو (آپارات/یوتیوب)" style="margin-bottom: 8px;">
+        <button onclick="addExploreVideo()" class="btn btn-green btn-full">➕ افزودن</button>
+      </div>
+      <div id="adminExploreList"></div>
+    </div>
+  </details>
+
+  <!-- 5. ماموریت‌ها -->
   <details class="accordion">
     <summary class="accordion-header">🎯 ماموریت‌ها</summary>
     <div class="accordion-content">
@@ -112,6 +105,7 @@
     </div>
   </details>
 
+  <!-- 6. آزمون‌ها -->
   <details class="accordion">
     <summary class="accordion-header">📝 آزمون‌ها</summary>
     <div class="accordion-content">
@@ -124,6 +118,34 @@
     </div>
   </details>
 
+  <!-- 7. کاربران -->
+  <details class="accordion">
+    <summary class="accordion-header">👥 کاربران</summary>
+    <div class="accordion-content">
+      <h4 style="font-size: 0.9rem; margin: 10px 0 8px;">درخواست‌های عضویت:</h4>
+      <div id="requestsList"></div>
+      <h4 style="font-size: 0.9rem; margin: 16px 0 8px;">کاربران تایید شده:</h4>
+      <div id="usersList"></div>
+    </div>
+  </details>
+
+  <!-- 8. اهدای نشان -->
+  <details class="accordion">
+    <summary class="accordion-header">🌟 اهدای نشان</summary>
+    <div class="accordion-content">
+      <div style="margin: 10px 0;">
+        <input id="badgeUsername" class="input" placeholder="نام کاربری" style="margin-bottom: 8px;">
+        <select id="badgeName" class="input" style="margin-bottom: 8px;">
+          <option value="اولین ستاره">🌟 اولین ستاره</option>
+          <option value="پیشتاز مطالعه">🚀 پیشتاز</option>
+        </select>
+        <button onclick="giveBadge()" class="btn btn-green btn-full">اهدا</button>
+      </div>
+      <div id="adminBadgesList"></div>
+    </div>
+  </details>
+
+  <!-- 9. صندوق ورودی -->
   <details class="accordion">
     <summary class="accordion-header">📥 صندوق ورودی</summary>
     <div class="accordion-content">
