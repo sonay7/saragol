@@ -124,22 +124,69 @@ function loadAdminQuotes() {
 window.delQuote = function(id) {
   if (confirm('حذف؟')) supabaseClient.from('quotes').delete().eq('id', id).then(loadAdminQuotes);
 };
-
 // ===== اکسپلور (ویدیوهای جدید) =====
 window.addExploreVideo = function() {
   var t = document.getElementById('exploreTitle').value.trim();
   var d = document.getElementById('exploreDesc').value.trim();
-  var u = document.getElementById('exploreUrl').value.trim();
-  if (!t || !u) return alert('عنوان و لینک الزامی است');
-  supabaseClient.from('explore_videos').insert({ title: t, description: d, video_url: u }).then(function(res) {
-    if (res.error) return alert('خطا: ' + res.error.message);
-    document.getElementById('exploreTitle').value = '';
-    document.getElementById('exploreDesc').value = '';
-    document.getElementById('exploreUrl').value = '';
-    loadAdminExplore();
+  var fileInput = document.getElementById('exploreFile');
+  var file = fileInput.files[0]; // گرفتن فایل انتخاب شده
+
+  if (!t || !file) return alert('عنوان و انتخاب فایل ویدیو الزامی است');
+
+  var btn = document.getElementById('addExploreBtn');
+  btn.innerText = '⏳ در حال آپلود...'; // نشون دادن وضعیت آپلود
+  btn.disabled = true;
+
+  // ساختن یک اسم یکتا برای فایل که با بقیه قاطی نشه
+  var fileName = Date.now() + '_' + file.name;
+
+  // آپلود فایل به Supabase Storage (داخل باکتی به اسم videos)
+  supabaseClient.storage.from('videos').upload(fileName, file).then(function(res) {
+    if (res.error) {
+      alert('خطا در آپلود فایل: ' + res.error.message);
+      btn.innerText = '➕ آپلود و افزودن';
+      btn.disabled = false;
+      return;
+    }
+
+    // گرفتن لینک عمومی فایل آپلود شده
+    var publicUrl = supabaseClient.storage.from('videos').getPublicUrl(fileName).data.publicUrl;
+
+    // ذخیره اطلاعات توی دیتابیس
+    supabaseClient.from('explore_videos').insert({ title: t, description: d, video_url: publicUrl }).then(function(dbRes) {
+      if (dbRes.error) return alert('خطا در دیتابیس: ' + dbRes.error.message);
+      
+      // خالی کردن فرم
+      document.getElementById('exploreTitle').value = '';
+      document.getElementById('exploreDesc').value = '';
+      fileInput.value = '';
+      
+      // برگردوندن دکمه به حالت عادی
+      btn.innerText = '➕ آپلود و افزودن';
+      btn.disabled = false;
+      
+      // آپدیت لیست
+      loadAdminExplore();
+    });
   });
 };
 
+function loadAdminExplore() {
+  var list = document.getElementById('adminExploreList'); if (!list) return;
+  supabaseClient.from('explore_videos').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    (res.data || []).forEach(function(v) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>' + v.title + '</strong><span class="admin-sub">' + (v.description || 'بدون توضیح') + '</span></div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delExplore(' + v.id + ')" style="color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+window.delExplore = function(id) {
+  if (confirm('حذف؟')) supabaseClient.from('explore_videos').delete().eq('id', id).then(loadAdminExplore);
+};
 function loadAdminExplore() {
   var list = document.getElementById('adminExploreList'); if (!list) return;
   supabaseClient.from('explore_videos').select('*').order('created_at', { ascending: false }).then(function(res) {
