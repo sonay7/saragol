@@ -330,3 +330,39 @@ window.approveInbox = function(id) {
 window.delInbox = function(id) {
   supabaseClient.from('admin_inbox').delete().eq('id', id).then(loadInbox);
 };
+// ===== فلش‌کارت‌های عمومی =====
+window.addPublicFlashcard = function() {
+  var grade = document.getElementById('fcGrade').value;
+  var subject = document.getElementById('fcSubject').value.trim();
+  var q = document.getElementById('fcQuestion').value.trim();
+  var a = document.getElementById('fcAnswer').value.trim();
+  if (!subject || !q || !a) return alert('همه فیلدها رو پر کن');
+  
+  supabaseClient.from('flashcards').insert({ grade: grade, subject: subject, question: q, answer: a }).then(function(res) {
+    if (res.error) return alert('خطا: ' + res.error.message);
+    document.getElementById('fcSubject').value = '';
+    document.getElementById('fcQuestion').value = '';
+    document.getElementById('fcAnswer').value = '';
+    loadAdminFlashcards();
+  });
+};
+
+function loadAdminFlashcards() {
+  var list = document.getElementById('adminFlashcardsList'); if (!list) return;
+  supabaseClient.from('flashcards').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    (res.data || []).forEach(function(f) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>' + f.grade + ' | ' + f.subject + '</strong><span class="admin-sub">' + f.question + ' = ' + f.answer + '</span></div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delPublicFlashcard(' + f.id + ')" style="color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+window.delPublicFlashcard = function(id) {
+  if (confirm('حذف؟')) supabaseClient.from('flashcards').delete().eq('id', id).then(loadAdminFlashcards);
+};
+
+// لود اولیه
+if (document.getElementById('adminFlashcardsList')) loadAdminFlashcards();
