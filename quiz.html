@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>آزمونک | ساراگل</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .quiz-container { max-width: 500px; margin: 40px auto; padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; text-align: center; }
+    .question-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; min-height: 50px; }
+    .progress-text { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; }
+    .result-box { font-size: 1.2rem; font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="quiz-container" id="quizBox">
+    <h2 id="quizTitle" style="color: var(--green); margin-bottom: 20px;">📝 آزمونک</h2>
+    <p id="progressText" class="progress-text"></p>
+    <p id="questionText" class="question-text">در حال بارگذاری...</p>
+    <input id="answerInput" class="input" placeholder="جوابت رو بنویس..." style="margin-bottom: 12px;">
+    <button id="submitBtn" onclick="submitAnswer()" class="btn btn-blue btn-full">ثبت جواب</button>
+    <button id="retryBtn" onclick="startQuiz()" class="btn btn-green btn-full" style="display: none; margin-top: 12px;">🔄 تلاش مجدد</button>
+    <p id="resultMsg" class="result-box"></p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+<script src="pwa.js"></script>
+
+<script>
+  var myUid = null;
+  var questId = null;
+  var allCards = [];
+  var currentIndex = 0;
+  var correctCount = 0;
+
+  supabaseClient.auth.getUser().then(function(res) {
+    if (!res.data.user) { window.location.href = 'login.html'; return; }
+    myUid = res.data.user.id;
+    
+    var urlParams = new URLSearchParams(window.location.search);
+    questId = urlParams.get('quest_id');
+
+    supabaseClient.from('profiles').select('username').eq('id', myUid).single().then(function(p) {
+      if (p.data) {
+        document.querySelector('.user-name').textContent = p.data.username;
+        document.querySelector('.avatar').textContent = p.data.username.charAt(0);
+      }
+      startQuiz();
+    });
+  });
+
+  function startQuiz() {
+    var input = document.getElementById('answerInput');
+    var submitBtn = document.getElementById('submitBtn');
+    var retryBtn = document.getElementById('retryBtn');
+    var resultMsg = document.getElementById('resultMsg');
+    
+    input.style.display = 'block';
+    submitBtn.style.display = 'block';
+    retryBtn.style.display = 'none';
+    resultMsg.textContent = '';
+    input.value = '';
+    input.disabled = false;
+
+    supabaseClient.from('user_flashcards').select('*').eq('user_id', myUid).then(function(res) {
+      allCards = res.data || [];
+      if (allCards.length === 0) {
+        document.getElementById('questionText').textContent = 'تو هنوز هیچ کارتی نساختی! اول برو به صفحه فلش‌کارت‌ها و چند تا کارت بساز.';
+        document.getElementById('answerInput').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+        return;
+      }
+      // شافل کردن کارت‌ها
+      allCards.sort(function() { return 0.5 - Math.random(); });
+      currentIndex = 0;
+      correctCount = 0;
+      showQuestion();
+    });
+  }
+
+  function showQuestion() {
+    if (currentIndex >= allCards.length) {
+      finishQuiz();
+      return;
+    }
+    document.getElementById('progressText').textContent = 'سوال ' + (currentIndex + 1) + ' از ' + allCards.length;
+    document.getElementById('questionText').textContent = allCards[currentIndex].question;
+    document.getElementById('answerInput').value = '';
+    document.getElementById('answerInput').focus();
+  }
+
+  function submitAnswer() {
+    var answer = document.getElementById('answerInput').value.trim();
+    if (!answer) return alert('جواب رو بنویس');
+    
+    var correctAnswer = allCards[currentIndex].answer.trim().toLowerCase();
+    var userAnswer = answer.toLowerCase();
+    
+    if (correctAnswer === userAnswer) {
+      correctCount++;
+      document.getElementById('resultMsg').textContent = '✅ درست!';
+      document.getElementById('resultMsg').style.color = 'var(--green)';
+    } else {
+      document.getElementById('resultMsg').textContent = '❌ اشتباه بود. جواب درست: ' + allCards[currentIndex].answer;
+      document.getElementById('resultMsg').style.color = '#e74c3c';
+    }
+
+    setTimeout(function() {
+      document.getElementById('resultMsg').textContent = '';
+      currentIndex++;
+      showQuestion();
+    }, 1500);
+  }
+
+  function finishQuiz() {
+    var percent = Math.round((correctCount / allCards.length) * 100);
+    document.getElementById('questionText').textContent = '🎉 آزمون تموم شد!';
+    document.getElementById('progressText').textContent = '';
+    document.getElementById('answerInput').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'none';
+    
+    var resultMsg = document.getElementById('resultMsg');
+    resultMsg.textContent = 'نمره شما: ' + percent + '% (' + correctCount + ' از ' + allCards.length + ')';
+    
+    if (percent >= 80) {
+      resultMsg.style.color = 'var(--green)';
+      if (questId) {
+        // مارک کردن ماموریت به عنوان انجام شده
+        supabaseClient.from('user_quests').update({ is_completed: true }).eq('id', questId).then(function() {
+          alert('🎉 آفرین! ماموریت با موفقیت انجام شد.');
+          window.location.href = 'index.html';
+        });
+      }
+    } else {
+      resultMsg.style.color = '#e74c3c';
+      document.getElementById('retryBtn').style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>
