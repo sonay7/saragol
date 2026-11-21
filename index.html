@@ -265,6 +265,7 @@ function renderQuests(quests, uid) {
   var box = document.getElementById('questsList');
   box.innerHTML = '';
   if (!quests || quests.length === 0) { box.innerHTML = '<p class="lock-note">ماموریتی موجود نیست.</p>'; return; }
+  
   var today = new Date().toISOString().split('T')[0];
   supabaseClient.from('study_sessions').select('minutes, questions, created_at').eq('user_id', uid).then(function(sRes) {
     var rows = sRes.data || [];
@@ -273,27 +274,90 @@ function renderQuests(quests, uid) {
       var d = new Date(r.created_at).toISOString().split('T')[0];
       if (d === today) { todayMinutes += r.minutes; todayQuestions += (r.questions || 0); hasSessionToday = true; }
     });
-    quests.forEach(function(uq) {
-      var q = uq.daily_quests;
-      if (!q) return;
-      var currentProgress = 0;
-      var target = q.target_value;
-      if (q.type === 'study') currentProgress = todayMinutes;
-      else if (q.type === 'questions') currentProgress = todayQuestions;
-      else if (q.type === 'streak') currentProgress = hasSessionToday ? 1 : 0;
-      var isCompleted = currentProgress >= target || uq.is_completed;
-      var isClaimed = uq.is_claimed;
-      var div = document.createElement('div');
-      div.className = 'quest-card';
-      var btnHtml = '';
-      if (isClaimed) btnHtml = '<button class="quest-btn" disabled>✅ دریافت شد</button>';
-      else if (isCompleted) btnHtml = `<button class="quest-btn" onclick="claimQuest('${uq.id}', ${q.xp_reward})">🎁 دریافت جایزه</button>`;
-      else btnHtml = `<button class="quest-btn" disabled>${currentProgress} / ${target}</button>`;
-      div.innerHTML = `<div><div class="quest-title">${q.title}</div><div class="quest-reward">جایزه: ${q.xp_reward} XP</div></div>${btnHtml}`;
-      box.appendChild(div);
+
+    // برای میانگین مطالعه
+    supabaseClient.from('study_sessions').select('minutes, created_at').eq('user_id', uid).then(function(avgRes) {
+      var avgRows = avgRes.data || [];
+      var weekMinutes = 0;
+      avgRows.forEach(function(r) {
+        var d = new Date(r.created_at);
+        if ((Date.now() - d.getTime()) < 7 * 24 * 60 * 60 * 1000) { weekMinutes += r.minutes; }
+      });
+      var avgDailyMinutes = Math.floor(weekMinutes / 7);
+
+      quests.forEach(function(uq) {
+        var q = uq.daily_quests;
+        if (!q) return;
+        var currentProgress = 0, target = q.target_value;
+        var isCompleted = uq.is_completed;
+        var isClaimed = uq.is_claimed;
+
+        if (q.type === 'study') currentProgress = todayMinutes;
+        else if (q.type === 'questions') currentProgress = todayQuestions;
+        else if (q.type === 'streak') currentProgress = hasSessionToday ? 1 : 0;
+        else if (q.type === 'avg_study') { currentProgress = avgDailyMinutes; target = 180; } // ۳ ساعت = ۱۸۰ دقیقه
+
+        isCompleted = currentProgress >= target || uq.is_completed;
+
+        var div = document.createElement('div');
+        div.className = 'quest-card';
+        var btnHtml = '';
+
+        if (isClaimed) {
+          btnHtml = '<button class="quest-btn" disabled>✅ دریافت شد</button>';
+        } else if (isCompleted) {
+          btnHtml = `<button class="quest-btn" onclick="claimQuest('${uq.id}', ${q.xp_reward})">🎁 دریافت جایزه</button>`;
+        } else if (q.type === 'quiz' || q.type === 'journal' || q.type === 'timer') {
+          // دکمه‌های خاص برای ماموریت‌های جدید
+          if (q.type === 'quiz') {
+            btnHtml = `<button class="quest-btn" onclick="window.location.href='quiz.html?quest_id=${uq.id}'">📝 شروع آزمونک</button>`;
+          } else if (q.type === 'journal') {
+            btnHtml = `<button class="quest-btn" onclick="window.location.href='journal.html'">📔 نوشتن خاطره</button>`;
+          } else if (q.type === 'timer') {
+            btnHtml = `<button class="quest-btn" onclick="startTimerQuest('${uq.id}', ${q.duration_minutes || 10})">⏱ شروع تایمر (${q.duration_minutes} دقیقه)</button>`;
+          }
+        } else {
+          btnHtml = `<button class="quest-btn" disabled>${currentProgress} / ${target}</button>`;
+        }
+
+        div.innerHTML = `<div><div class="quest-title">${q.title}</div><div class="quest-reward">جایزه: ${q.xp_reward} XP</div></div>${btnHtml}`;
+        box.appendChild(div);
+      });
     });
   });
 }
+
+// تابع تایمر برای ماموریت‌های زمان‌دار
+window.startTimerQuest = function(questId, minutes) {
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:9999; padding:20px;';
+  var timeLeft = minutes * 60;
+  var timerInterval;
+  modal.innerHTML = `<div style="background:var(--bg-card); padding:30px; border-radius:20px; text-align:center; width:100%; max-width:300px;">
+    <h3>⏱ زمان باقی‌مانده</h3>
+    <div id="timerDisplay" style="font-size:3rem; font-weight:bold; color:var(--green); margin:20px 0;">${minutes}:00</div>
+    <button onclick="clearInterval(timerInterval); this.parentElement.parentElement.remove()" class="btn btn-dim btn-full">لغو</button>
+  </div>`;
+  document.body.appendChild(modal);
+
+  timerInterval = setInterval(function() {
+    timeLeft--;
+    var m = Math.floor(timeLeft / 60);
+    var s = timeLeft % 60;
+    var display = document.getElementById('timerDisplay');
+    if (display) display.textContent = m + ':' + (s < 10 ? '0' + s : s);
+    
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      modal.remove();
+      // مارک کردن ماموریت
+      supabaseClient.from('user_quests').update({ is_completed: true }).eq('id', questId).then(function() {
+        alert('🎉 زمان تموم شد! ماموریت انجام شد. جایزه‌ت رو بگیر.');
+        loadQuests();
+      });
+    }
+  }, 1000);
+};
 
 window.claimQuest = function(uqId, xpReward) {
   supabaseClient.auth.getUser().then(function(res) {
