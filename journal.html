@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دفترچه خاطرات | ساراگل</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <h2 style="margin-bottom: 20px;">📔 دفترچه خاطرات</h2>
+  
+  <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+    <textarea id="journalInput" class="input" placeholder="امروز چه اتفاق خوبی افتاد؟" style="min-height: 100px; resize: vertical;"></textarea>
+    <button onclick="saveJournal()" class="btn btn-green btn-full" style="margin-top: 10px;">💾 ذخیره</button>
+  </div>
+
+  <div id="journalList"></div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="flashcards.html" class="nav-item">📝 فلش‌کارت</a>
+  <a href="journal.html" class="nav-item active">📔 خاطرات</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+<script src="pwa.js"></script>
+
+<script>
+  var myUid = null;
+
+  supabaseClient.auth.getUser().then(function(res) {
+    if (!res.data.user) { window.location.href = 'login.html'; return; }
+    myUid = res.data.user.id;
+    
+    supabaseClient.from('profiles').select('username').eq('id', myUid).single().then(function(p) {
+      if (p.data) {
+        document.querySelector('.user-name').textContent = p.data.username;
+        document.querySelector('.avatar').textContent = p.data.username.charAt(0);
+      }
+      loadJournals();
+    });
+  });
+
+  function loadJournals() {
+    var list = document.getElementById('journalList');
+    supabaseClient.from('user_journals').select('*').eq('user_id', myUid).order('created_at', { ascending: false }).then(function(res) {
+      list.innerHTML = '';
+      var rows = res.data || [];
+      if (rows.length === 0) { list.innerHTML = '<p class="lock-note">هنوز خاطره‌ای ننوشتی.</p>'; return; }
+      
+      rows.forEach(function(j) {
+        var div = document.createElement('div');
+        div.style.cssText = 'background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; position: relative;';
+        var dt = new Date(j.created_at).toLocaleDateString('fa-IR');
+        div.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">' + dt + '</div>' +
+          '<p style="font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;">' + j.content + '</p>' +
+          '<button onclick="editJournal(' + j.id + ')" style="position: absolute; top: 12px; left: 12px; background: none; border: none; cursor: pointer; font-size: 1.1rem;">✏️</button>';
+        list.appendChild(div);
+      });
+    });
+  }
+
+  window.saveJournal = function() {
+    var content = document.getElementById('journalInput').value.trim();
+    if (!content) return alert('متن رو بنویس');
+    
+    supabaseClient.from('user_journals').insert({ user_id: myUid, content: content }).then(function(res) {
+      if (res.error) return alert('خطا: ' + res.error.message);
+      document.getElementById('journalInput').value = '';
+      loadJournals();
+      alert('✅ خاطره ذخیره شد!');
+    });
+  };
+
+  window.editJournal = function(id) {
+    var newContent = prompt('متن جدید رو بنویس:');
+    if (newContent === null) return;
+    if (!newContent.trim()) return alert('متن خالی نباشه');
+    
+    supabaseClient.from('user_journals').update({ content: newContent.trim(), updated_at: new Date().toISOString() }).eq('id', id).then(function(res) {
+      if (res.error) return alert('خطا: ' + res.error.message);
+      loadJournals();
+    });
+  };
+</script>
+</body>
+</html>
