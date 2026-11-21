@@ -18,8 +18,17 @@ supabaseClient.auth.getUser().then(function(res) {
     document.querySelector('.user-name').textContent = p.data.username;
     document.querySelector('.avatar').textContent = p.data.username.charAt(0);
 
-    loadRequests(); loadUsers(); loadAdminNotices(); loadAdminBadges();
-    loadAdminCinema(); loadAdminQuotes(); loadAdminQuests(); loadExams(); loadInbox();
+    // لود کردن همه بخش‌ها با ترتیب جدید
+    loadAdminNotices(); 
+    loadAdminCinema(); 
+    loadAdminQuotes(); 
+    loadAdminExplore(); // بخش جدید
+    loadAdminQuests(); 
+    loadExams(); 
+    loadRequests(); 
+    loadUsers(); 
+    loadAdminBadges();
+    loadInbox();
   });
 });
 
@@ -53,6 +62,164 @@ function loadAdminNotices() {
 window.delNotice = function(id) {
   if (confirm('حذف؟')) supabaseClient.from('notices').delete().eq('id', id).then(loadAdminNotices);
 };
+
+// ===== سینما =====
+window.addCinemaVideo = function() {
+  var t = document.getElementById('cinemaTitle').value.trim();
+  var d = document.getElementById('cinemaDesc').value.trim();
+  var u = document.getElementById('cinemaUrl').value.trim();
+  var p = parseInt(document.getElementById('cinemaPrice').value);
+  if (!t || !u || !p) return alert('عنوان، لینک و قیمت الزامی');
+  supabaseClient.from('cinema_videos').insert({ title: t, description: d, video_url: u, price: p }).then(function(res) {
+    if (res.error) return alert('خطا: ' + res.error.message);
+    document.getElementById('cinemaTitle').value = '';
+    document.getElementById('cinemaDesc').value = '';
+    document.getElementById('cinemaUrl').value = '';
+    document.getElementById('cinemaPrice').value = '';
+    loadAdminCinema();
+  });
+};
+
+function loadAdminCinema() {
+  var list = document.getElementById('adminCinemaList'); if (!list) return;
+  supabaseClient.from('cinema_videos').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    (res.data || []).forEach(function(v) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>' + v.title + '</strong><span class="admin-sub">' + v.price + ' XP</span></div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delCinema(' + v.id + ')" style="color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+window.delCinema = function(id) {
+  if (confirm('حذف؟')) supabaseClient.from('cinema_videos').delete().eq('id', id).then(loadAdminCinema);
+};
+
+// ===== جمله‌ها =====
+window.addQuote = function() {
+  var t = document.getElementById('quoteText').value.trim();
+  if (t.length < 5) return alert('متن کوتاهه');
+  supabaseClient.from('quotes').insert({ text: t }).then(function(res) {
+    if (res.error) return alert('خطا در دیتابیس: ' + res.error.message); // برای دیباگ
+    document.getElementById('quoteText').value = '';
+    loadAdminQuotes();
+  });
+};
+
+function loadAdminQuotes() {
+  var list = document.getElementById('adminQuotesList'); if (!list) return;
+  supabaseClient.from('quotes').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    (res.data || []).forEach(function(q) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div>' + q.text + '</div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delQuote(' + q.id + ')" style="color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+window.delQuote = function(id) {
+  if (confirm('حذف؟')) supabaseClient.from('quotes').delete().eq('id', id).then(loadAdminQuotes);
+};
+
+// ===== اکسپلور (ویدیوهای جدید) =====
+window.addExploreVideo = function() {
+  var t = document.getElementById('exploreTitle').value.trim();
+  var d = document.getElementById('exploreDesc').value.trim();
+  var u = document.getElementById('exploreUrl').value.trim();
+  if (!t || !u) return alert('عنوان و لینک الزامی است');
+  supabaseClient.from('explore_videos').insert({ title: t, description: d, video_url: u }).then(function(res) {
+    if (res.error) return alert('خطا: ' + res.error.message);
+    document.getElementById('exploreTitle').value = '';
+    document.getElementById('exploreDesc').value = '';
+    document.getElementById('exploreUrl').value = '';
+    loadAdminExplore();
+  });
+};
+
+function loadAdminExplore() {
+  var list = document.getElementById('adminExploreList'); if (!list) return;
+  supabaseClient.from('explore_videos').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    (res.data || []).forEach(function(v) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>' + v.title + '</strong><span class="admin-sub">' + (v.description || 'بدون توضیح') + '</span></div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delExplore(' + v.id + ')" style="color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+window.delExplore = function(id) {
+  if (confirm('حذف؟')) supabaseClient.from('explore_videos').delete().eq('id', id).then(loadAdminExplore);
+};
+
+// ===== ماموریت‌ها =====
+window.addQuest = function() {
+  var t = document.getElementById('questTitle').value.trim();
+  var tp = document.getElementById('questType').value;
+  var tg = parseInt(document.getElementById('questTarget').value) || 0;
+  var xp = parseInt(document.getElementById('questXp').value) || 5;
+  if (!t || tg < 1) return alert('عنوان و هدف رو درست بزن');
+  supabaseClient.from('daily_quests').insert({ title: t, type: tp, target_value: tg, xp_reward: xp }).then(function(res) {
+    if (res.error) return alert('خطا: ' + res.error.message);
+    document.getElementById('questTitle').value = '';
+    document.getElementById('questTarget').value = '';
+    document.getElementById('questXp').value = '';
+    loadAdminQuests();
+  });
+};
+
+function loadAdminQuests() {
+  var list = document.getElementById('adminQuestsList'); if (!list) return;
+  supabaseClient.from('daily_quests').select('*').order('created_at', { ascending: false }).then(function(res) {
+    list.innerHTML = '';
+    (res.data || []).forEach(function(q) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>' + q.title + '</strong><span class="admin-sub">' + q.type + ' | هدف: ' + q.target_value + ' | ' + q.xp_reward + ' XP</span></div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delQuest(' + q.id + ')" style="color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+window.delQuest = function(id) {
+  if (confirm('حذف؟')) supabaseClient.from('daily_quests').delete().eq('id', id).then(loadAdminQuests);
+};
+
+// ===== آزمون‌ها =====
+function loadExams() {
+  var list = document.getElementById('examsList'); if (!list) return;
+  supabaseClient.from('exams').select('*').eq('is_public', true).order('exam_date', { ascending: true }).then(function(res) {
+    list.innerHTML = '';
+    (res.data || []).forEach(function(e) {
+      var div = document.createElement('div');
+      div.className = 'admin-row';
+      div.innerHTML = '<div><strong>' + e.subject + '</strong><span class="admin-sub">' + toShamsi(e.exam_date) + '</span></div>' +
+        '<button class="btn btn-dim btn-sm" onclick="delExam(' + e.id + ')" style="color:#e74c3c;">حذف</button>';
+      list.appendChild(div);
+    });
+  });
+}
+window.delExam = function(id) {
+  supabaseClient.from('exams').delete().eq('id', id).then(loadExams);
+};
+
+if (document.getElementById('addExamBtn')) {
+  document.getElementById('addExamBtn').addEventListener('click', function() {
+    var s = document.getElementById('examSubject').value.trim();
+    var d = document.getElementById('examDate').value;
+    if (!s || !d) return alert('پر کن');
+    supabaseClient.from('exams').insert({ subject: s, exam_date: d, class_name: 'همه', is_public: true, created_by: currentUser.id }).then(function() {
+      document.getElementById('examSubject').value = '';
+      document.getElementById('examDate').value = '';
+      loadExams();
+    });
+  });
+}
 
 // ===== کاربران =====
 function loadRequests() {
@@ -138,132 +305,6 @@ window.delBadge = function(id) {
     });
   }
 };
-
-// ===== سینما =====
-window.addCinemaVideo = function() {
-  var t = document.getElementById('cinemaTitle').value.trim();
-  var d = document.getElementById('cinemaDesc').value.trim();
-  var u = document.getElementById('cinemaUrl').value.trim();
-  var p = parseInt(document.getElementById('cinemaPrice').value);
-  if (!t || !u || !p) return alert('عنوان، لینک و قیمت الزامی');
-  supabaseClient.from('cinema_videos').insert({ title: t, description: d, video_url: u, price: p }).then(function(res) {
-    if (res.error) return alert('خطا: ' + res.error.message);
-    document.getElementById('cinemaTitle').value = '';
-    document.getElementById('cinemaDesc').value = '';
-    document.getElementById('cinemaUrl').value = '';
-    document.getElementById('cinemaPrice').value = '';
-    loadAdminCinema();
-  });
-};
-
-function loadAdminCinema() {
-  var list = document.getElementById('adminCinemaList'); if (!list) return;
-  supabaseClient.from('cinema_videos').select('*').order('created_at', { ascending: false }).then(function(res) {
-    list.innerHTML = '';
-    (res.data || []).forEach(function(v) {
-      var div = document.createElement('div');
-      div.className = 'admin-row';
-      div.innerHTML = '<div><strong>' + v.title + '</strong><span class="admin-sub">' + v.price + ' XP</span></div>' +
-        '<button class="btn btn-dim btn-sm" onclick="delCinema(' + v.id + ')" style="color:#e74c3c;">حذف</button>';
-      list.appendChild(div);
-    });
-  });
-}
-window.delCinema = function(id) {
-  if (confirm('حذف؟')) supabaseClient.from('cinema_videos').delete().eq('id', id).then(loadAdminCinema);
-};
-
-// ===== جمله‌ها =====
-window.addQuote = function() {
-  var t = document.getElementById('quoteText').value.trim();
-  if (t.length < 5) return alert('متن کوتاهه');
-  supabaseClient.from('quotes').insert({ text: t }).then(function(res) {
-    if (res.error) return alert('خطا: ' + res.error.message);
-    document.getElementById('quoteText').value = '';
-    loadAdminQuotes();
-  });
-};
-
-function loadAdminQuotes() {
-  var list = document.getElementById('adminQuotesList'); if (!list) return;
-  supabaseClient.from('quotes').select('*').order('created_at', { ascending: false }).then(function(res) {
-    list.innerHTML = '';
-    (res.data || []).forEach(function(q) {
-      var div = document.createElement('div');
-      div.className = 'admin-row';
-      div.innerHTML = '<div>' + q.text + '</div>' +
-        '<button class="btn btn-dim btn-sm" onclick="delQuote(' + q.id + ')" style="color:#e74c3c;">حذف</button>';
-      list.appendChild(div);
-    });
-  });
-}
-window.delQuote = function(id) {
-  if (confirm('حذف؟')) supabaseClient.from('quotes').delete().eq('id', id).then(loadAdminQuotes);
-};
-
-// ===== ماموریت‌ها =====
-window.addQuest = function() {
-  var t = document.getElementById('questTitle').value.trim();
-  var tp = document.getElementById('questType').value;
-  var tg = parseInt(document.getElementById('questTarget').value) || 0;
-  var xp = parseInt(document.getElementById('questXp').value) || 5;
-  if (!t || tg < 1) return alert('عنوان و هدف رو درست بزن');
-  supabaseClient.from('daily_quests').insert({ title: t, type: tp, target_value: tg, xp_reward: xp }).then(function(res) {
-    if (res.error) return alert('خطا: ' + res.error.message);
-    document.getElementById('questTitle').value = '';
-    document.getElementById('questTarget').value = '';
-    document.getElementById('questXp').value = '';
-    loadAdminQuests();
-  });
-};
-
-function loadAdminQuests() {
-  var list = document.getElementById('adminQuestsList'); if (!list) return;
-  supabaseClient.from('daily_quests').select('*').order('created_at', { ascending: false }).then(function(res) {
-    list.innerHTML = '';
-    (res.data || []).forEach(function(q) {
-      var div = document.createElement('div');
-      div.className = 'admin-row';
-      div.innerHTML = '<div><strong>' + q.title + '</strong><span class="admin-sub">' + q.type + ' | هدف: ' + q.target_value + ' | ' + q.xp_reward + ' XP</span></div>' +
-        '<button class="btn btn-dim btn-sm" onclick="delQuest(' + q.id + ')" style="color:#e74c3c;">حذف</button>';
-      list.appendChild(div);
-    });
-  });
-}
-window.delQuest = function(id) {
-  if (confirm('حذف؟')) supabaseClient.from('daily_quests').delete().eq('id', id).then(loadAdminQuests);
-};
-
-// ===== آزمون‌ها =====
-function loadExams() {
-  var list = document.getElementById('examsList'); if (!list) return;
-  supabaseClient.from('exams').select('*').eq('is_public', true).order('exam_date', { ascending: true }).then(function(res) {
-    list.innerHTML = '';
-    (res.data || []).forEach(function(e) {
-      var div = document.createElement('div');
-      div.className = 'admin-row';
-      div.innerHTML = '<div><strong>' + e.subject + '</strong><span class="admin-sub">' + toShamsi(e.exam_date) + '</span></div>' +
-        '<button class="btn btn-dim btn-sm" onclick="delExam(' + e.id + ')" style="color:#e74c3c;">حذف</button>';
-      list.appendChild(div);
-    });
-  });
-}
-window.delExam = function(id) {
-  supabaseClient.from('exams').delete().eq('id', id).then(loadExams);
-};
-
-if (document.getElementById('addExamBtn')) {
-  document.getElementById('addExamBtn').addEventListener('click', function() {
-    var s = document.getElementById('examSubject').value.trim();
-    var d = document.getElementById('examDate').value;
-    if (!s || !d) return alert('پر کن');
-    supabaseClient.from('exams').insert({ subject: s, exam_date: d, class_name: 'همه', is_public: true, created_by: currentUser.id }).then(function() {
-      document.getElementById('examSubject').value = '';
-      document.getElementById('examDate').value = '';
-      loadExams();
-    });
-  });
-}
 
 // ===== صندوق ورودی =====
 function loadInbox() {
