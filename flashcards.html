@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فلش‌کارت‌های من | ساراگل</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tab-bar { display: flex; background: var(--bg-card); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text-dim); font-family: inherit; cursor: pointer; font-weight: bold; }
+    .tab-btn.active { background: var(--green); color: #fff; }
+    .card-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 10px; position: relative; }
+    .card-q { font-weight: bold; color: var(--green); margin-bottom: 8px; }
+    .card-a { font-size: 0.9rem; color: var(--text); }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-dim); position: absolute; top: 12px; left: 12px; }
+    .action-btn:hover { color: #e74c3c; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">ساراگل</div>
+  <div class="user-area">
+    <span class="user-name">—</span>
+    <div class="avatar">—</div>
+  </div>
+</header>
+
+<main class="container">
+  <h2 style="margin-bottom: 20px;">📝 فلش‌کارت‌ها</h2>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('my')">کارت‌های من</button>
+    <button class="tab-btn" onclick="switchTab('public')">نکات و فرمول‌ها</button>
+  </div>
+
+  <!-- تب کارت‌های من -->
+  <div id="myTab">
+    <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+      <input id="newQuestion" class="input" placeholder="سوال (مثلاً: فرمول مساحت دایره؟)" style="margin-bottom: 8px;">
+      <input id="newAnswer" class="input" placeholder="جواب (مثلاً: πr²)">
+      <button onclick="addCard()" class="btn btn-green btn-full" style="margin-top: 8px;">➕ افزودن کارت</button>
+    </div>
+    <div id="myCardsList"></div>
+  </div>
+
+  <!-- تب نکات عمومی -->
+  <div id="publicTab" style="display: none;">
+    <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px;">این نکات توسط ادمین ثبت شدن. می‌تونی به کارت‌های خودت اضافه‌شون کنی تا توی آزمونک ازت پرسیده بشن.</p>
+    <div id="publicCardsList"></div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="flashcards.html" class="nav-item active">📝 فلش‌کارت</a>
+  <a href="journal.html" class="nav-item">📔 خاطرات</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="theme.js"></script>
+<script src="pwa.js"></script>
+
+<script>
+  var myUid = null;
+  var myGrade = '';
+
+  supabaseClient.auth.getUser().then(function(res) {
+    if (!res.data.user) { window.location.href = 'login.html'; return; }
+    myUid = res.data.user.id;
+    
+    supabaseClient.from('profiles').select('username, class_name').eq('id', myUid).single().then(function(p) {
+      if (p.data) {
+        document.querySelector('.user-name').textContent = p.data.username;
+        document.querySelector('.avatar').textContent = p.data.username.charAt(0);
+        // گرفتن پایه از اسم کلاس (مثلاً "نهم 1" میشه "نهم")
+        myGrade = p.data.class_name ? p.data.class_name.replace(/[0-9 ]/g, '') : 'نهم';
+        loadMyCards();
+        loadPublicCards();
+      }
+    });
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    event.target.classList.add('active');
+    
+    document.getElementById('myTab').style.display = tab === 'my' ? 'block' : 'none';
+    document.getElementById('publicTab').style.display = tab === 'public' ? 'block' : 'none';
+  }
+
+  function loadMyCards() {
+    var list = document.getElementById('myCardsList');
+    supabaseClient.from('user_flashcards').select('*').eq('user_id', myUid).order('created_at', { ascending: false }).then(function(res) {
+      list.innerHTML = '';
+      var rows = res.data || [];
+      if (rows.length === 0) { list.innerHTML = '<div class="empty-state">هنوز کارتی نساختی. اولین کارت رو بساز!</div>'; return; }
+      rows.forEach(function(c) {
+        var div = document.createElement('div');
+        div.className = 'card-item';
+        div.innerHTML = '<button class="action-btn" onclick="delCard(' + c.id + ')">🗑️</button>' +
+          '<div class="card-q">❓ ' + c.question + '</div>' +
+          '<div class="card-a">✅ ' + c.answer + '</div>';
+        list.appendChild(div);
+      });
+    });
+  }
+
+  window.addCard = function() {
+    var q = document.getElementById('newQuestion').value.trim();
+    var a = document.getElementById('newAnswer').value.trim();
+    if (!q || !a) return alert('سوال و جواب رو پر کن');
+    supabaseClient.from('user_flashcards').insert({ user_id: myUid, question: q, answer: a }).then(function(res) {
+      if (res.error) return alert('خطا: ' + res.error.message);
+      document.getElementById('newQuestion').value = '';
+      document.getElementById('newAnswer').value = '';
+      loadMyCards();
+    });
+  };
+
+  window.delCard = function(id) {
+    if (confirm('حذف بشه؟')) {
+      supabaseClient.from('user_flashcards').delete().eq('id', id).then(loadMyCards);
+    }
+  };
+
+  function loadPublicCards() {
+    var list = document.getElementById('publicCardsList');
+    supabaseClient.from('flashcards').select('*').eq('grade', myGrade).order('created_at', { ascending: false }).then(function(res) {
+      list.innerHTML = '';
+      var rows = res.data || [];
+      if (rows.length === 0) { list.innerHTML = '<div class="empty-state">هنوز نکته‌ای برای پایه شما ثبت نشده.</div>'; return; }
+      rows.forEach(function(c) {
+        var div = document.createElement('div');
+        div.className = 'card-item';
+        div.innerHTML = '<div class="card-q">📌 ' + c.subject + ': ' + c.question + '</div>' +
+          '<div class="card-a">✅ ' + c.answer + '</div>' +
+          '<button class="btn btn-blue btn-sm" style="margin-top: 8px;" onclick="copyToMyCards(\'' + c.question.replace(/'/g, "\\'") + '\', \'' + c.answer.replace(/'/g, "\\'") + '\')">➕ افزودن به کارت‌های من</button>';
+        list.appendChild(div);
+      });
+    });
+  }
+
+  window.copyToMyCards = function(q, a) {
+    supabaseClient.from('user_flashcards').insert({ user_id: myUid, question: q, answer: a }).then(function(res) {
+      if (res.error) return alert('خطا: ' + res.error.message);
+      alert('✅ به کارت‌های تو اضافه شد!');
+      loadMyCards();
+    });
+  };
+</script>
+</body>
+</html>
