@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>دفترچه خاطرات | ساراگل</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .journal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .journal-textarea { width: 100%; min-height: 150px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; resize: vertical; box-sizing: border-box; font-size: 0.95rem; line-height: 1.8; }
+    .journal-entry { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; position: relative; }
+    .journal-date { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px; }
+    .journal-content { font-size: 0.95rem; line-height: 1.8; white-space: pre-wrap; }
+    .edit-btn { position: absolute; top: 12px; left: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--blue); }
+  </style>
 </head>
 <body>
 
@@ -17,21 +25,25 @@
 </header>
 
 <main class="container">
-  <h2 style="margin-bottom: 20px;">📔 دفترچه خاطرات</h2>
+  <h2 style="margin-bottom: 20px;">📔 دفترچه خاطرات من</h2>
   
-  <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
-    <textarea id="journalInput" class="input" placeholder="امروز چه اتفاق خوبی افتاد؟" style="min-height: 100px; resize: vertical;"></textarea>
-    <button onclick="saveJournal()" class="btn btn-green btn-full" style="margin-top: 10px;">💾 ذخیره</button>
+  <div class="journal-box">
+    <p style="font-size: 0.9rem; margin-bottom: 12px; font-weight: bold;">اتفاقات خوب امروزت رو بنویس:</p>
+    <textarea id="journalInput" class="journal-textarea" placeholder="امروز چه خبر خوبی بود؟..."></textarea>
+    <button onclick="saveJournal()" class="btn btn-green btn-full" style="margin-top: 12px;">💾 ذخیره</button>
+    <p id="journalMsg" style="font-size: 0.8rem; margin-top: 8px; text-align: center;"></p>
   </div>
 
+  <h3 style="margin-bottom: 12px; font-size: 1.1rem;">📖 یادداشت‌های قبلی:</h3>
   <div id="journalList"></div>
+
 </main>
 
 <nav class="bottom-nav">
   <a href="index.html" class="nav-item">🏠 خانه</a>
   <a href="study.html" class="nav-item">⏱ مطالعه</a>
-  <a href="flashcards.html" class="nav-item">📝 فلش‌کارت</a>
-  <a href="journal.html" class="nav-item active">📔 خاطرات</a>
+  <a href="journal.html" class="nav-item active">📔 دفترچه</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
   <a href="profile.html" class="nav-item">👤 پروفایل</a>
 </nav>
 
@@ -39,64 +51,64 @@
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
 <script src="theme.js"></script>
-<script src="pwa.js"></script>
-
 <script>
-  var myUid = null;
+  var currentUserId = null;
 
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
-    myUid = res.data.user.id;
-    
-    supabaseClient.from('profiles').select('username').eq('id', myUid).single().then(function(p) {
+    currentUserId = res.data.user.id;
+    supabaseClient.from('profiles').select('username').eq('id', currentUserId).single().then(function(p) {
       if (p.data) {
         document.querySelector('.user-name').textContent = p.data.username;
         document.querySelector('.avatar').textContent = p.data.username.charAt(0);
       }
+    });
+    loadJournals();
+  });
+
+  window.saveJournal = function() {
+    var text = document.getElementById('journalInput').value.trim();
+    if (text.length < 5) return alert('یه کم بیشتر بنویس');
+    
+    supabaseClient.from('user_journals').insert({ user_id: currentUserId, content: text }).then(function(res) {
+      if (res.error) return alert('خطا: ' + res.error.message);
+      document.getElementById('journalInput').value = '';
+      document.getElementById('journalMsg').textContent = '✅ ذخیره شد!';
+      document.getElementById('journalMsg').style.color = 'var(--green)';
       loadJournals();
     });
-  });
+  };
 
   function loadJournals() {
     var list = document.getElementById('journalList');
-    supabaseClient.from('user_journals').select('*').eq('user_id', myUid).order('created_at', { ascending: false }).then(function(res) {
+    supabaseClient.from('user_journals').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).then(function(res) {
       list.innerHTML = '';
       var rows = res.data || [];
-      if (rows.length === 0) { list.innerHTML = '<p class="lock-note">هنوز خاطره‌ای ننوشتی.</p>'; return; }
+      if (rows.length === 0) { list.innerHTML = '<p class="lock-note">هنوز یادداشتی ننوشتی.</p>'; return; }
       
       rows.forEach(function(j) {
         var div = document.createElement('div');
-        div.style.cssText = 'background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; position: relative;';
-        var dt = new Date(j.created_at).toLocaleDateString('fa-IR');
-        div.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">' + dt + '</div>' +
-          '<p style="font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;">' + j.content + '</p>' +
-          '<button onclick="editJournal(' + j.id + ')" style="position: absolute; top: 12px; left: 12px; background: none; border: none; cursor: pointer; font-size: 1.1rem;">✏️</button>';
+        div.className = 'journal-entry';
+        div.id = 'journal_' + j.id;
+        var dateStr = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(j.created_at));
+        
+        div.innerHTML = `<div class="journal-date">${dateStr}</div>
+          <div class="journal-content" id="content_${j.id}">${j.content}</div>
+          <button class="edit-btn" onclick="editJournal('${j.id}')">✏️</button>`;
         list.appendChild(div);
       });
     });
   }
 
-  window.saveJournal = function() {
-    var content = document.getElementById('journalInput').value.trim();
-    if (!content) return alert('متن رو بنویس');
-    
-    supabaseClient.from('user_journals').insert({ user_id: myUid, content: content }).then(function(res) {
-      if (res.error) return alert('خطا: ' + res.error.message);
-      document.getElementById('journalInput').value = '';
-      loadJournals();
-      alert('✅ خاطره ذخیره شد!');
-    });
-  };
-
   window.editJournal = function(id) {
-    var newContent = prompt('متن جدید رو بنویس:');
-    if (newContent === null) return;
-    if (!newContent.trim()) return alert('متن خالی نباشه');
-    
-    supabaseClient.from('user_journals').update({ content: newContent.trim(), updated_at: new Date().toISOString() }).eq('id', id).then(function(res) {
-      if (res.error) return alert('خطا: ' + res.error.message);
-      loadJournals();
-    });
+    var contentEl = document.getElementById('content_' + id);
+    var oldText = contentEl.textContent;
+    var newText = prompt('متن جدید رو بنویس:', oldText);
+    if (newText !== null && newText.trim() !== '' && newText !== oldText) {
+      supabaseClient.from('user_journals').update({ content: newText, updated_at: new Date().toISOString() }).eq('id', id).then(function(res) {
+        if (!res.error) loadJournals();
+      });
+    }
   };
 </script>
 </body>
