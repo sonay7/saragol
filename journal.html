@@ -6,102 +6,23 @@
   <title>دفترچه خاطرات | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .journal-container {
-      max-width: 600px;
-      margin: 20px auto;
-      background: #fff9f0; /* رنگ کرم دفترچه */
-      border: 2px solid #e8d8c3;
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      color: #4a3b32;
-      position: relative;
-      background-image: radial-gradient(#e0d0b8 1px, transparent 1px);
-      background-size: 20px 20px; /* افکت خط‌چین */
-    }
-    .journal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      background: rgba(255,255,255,0.7);
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #e8d8c3;
-    }
-    .journal-header h2 {
-      font-size: 1.2rem;
-      color: #8b5a2b;
-    }
-    .journal-date {
-      font-size: 0.85rem;
-      color: #a48f7b;
-      font-weight: bold;
-    }
-    .note-card {
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      border-left: 5px solid #f7b731;
-      position: relative;
-    }
-    .note-card.pink { border-left-color: #ff9ff3; }
-    .note-card.blue { border-left-color: #48dbfb; }
-    .note-card.green { border-left-color: #1dd1a1; }
-    .note-text {
-      font-size: 0.95rem;
-      line-height: 1.8;
-      white-space: pre-wrap;
-    }
-    .note-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-      font-size: 0.7rem;
-      color: #a48f7b;
-    }
-    .edit-btn, .delete-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.8rem;
-      margin-left: 8px;
-    }
-    .new-note-area textarea {
-      width: 100%;
-      min-height: 120px;
-      border: 1px solid #e8d8c3;
-      border-radius: 12px;
-      padding: 15px;
-      font-family: inherit;
-      font-size: 0.95rem;
-      background: #ffffff;
-      resize: vertical;
-      outline: none;
-    }
-    .new-note-area textarea:focus {
-      border-color: #f7b731;
-    }
-    .btn-journal {
-      background: #f7b731;
-      color: #fff;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      width: 100%;
-      transition: 0.2s;
-    }
-    .btn-journal:hover {
-      background: #e1a622;
-    }
+    .journal-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .journal-date { text-align: center; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 16px; font-weight: bold; }
+    
+    .mood-selector { display: flex; justify-content: space-around; margin-bottom: 16px; background: var(--bg); padding: 10px; border-radius: 12px; border: 1px solid var(--border); }
+    .mood-item { font-size: 1.8rem; cursor: pointer; transition: 0.2s; opacity: 0.4; filter: grayscale(1); }
+    .mood-item:hover { transform: scale(1.2); opacity: 1; filter: grayscale(0); }
+    .mood-item.selected { opacity: 1; filter: grayscale(0); transform: scale(1.2); }
+
+    .journal-textarea { width: 100%; min-height: 150px; padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; font-size: 1rem; line-height: 1.8; resize: vertical; box-sizing: border-box; }
+    .journal-textarea:focus { outline: none; border-color: var(--green); }
+
+    .past-entries { margin-top: 30px; }
+    .entry-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 8px; }
+    .entry-date { font-size: 0.8rem; color: var(--text-dim); }
+    .entry-mood { font-size: 1.5rem; }
+    .entry-text { font-size: 0.95rem; line-height: 1.8; }
   </style>
 </head>
 <body>
@@ -115,27 +36,35 @@
 </header>
 
 <main class="container">
+  <h2 style="text-align: center; margin-bottom: 20px;">📔 دفترچه خاطرات</h2>
+  
   <div class="journal-container">
-    <div class="journal-header">
-      <h2>📔 دفترچه خاطرات</h2>
-      <span class="journal-date" id="todayDate">—</span>
+    <div class="journal-date" id="todayDate"></div>
+    
+    <div class="mood-selector" id="moodSelector">
+      <span class="mood-item" data-mood="😄" onclick="selectMood(this)">😄</span>
+      <span class="mood-item" data-mood="🙂" onclick="selectMood(this)">🙂</span>
+      <span class="mood-item" data-mood="😐" onclick="selectMood(this)">😐</span>
+      <span class="mood-item" data-mood="😔" onclick="selectMood(this)">😔</span>
+      <span class="mood-item" data-mood="😡" onclick="selectMood(this)">😡</span>
     </div>
 
-    <div class="new-note-area">
-      <textarea id="noteInput" placeholder="امروز چه اتفاق خوبی افتاد؟..."></textarea>
-      <button class="btn-journal" id="saveNoteBtn">✏️ ثبت خاطره</button>
-    </div>
+    <textarea id="journalText" class="journal-textarea" placeholder="امروز چه خبر؟ هر چیزی که دلت می‌خواد بنویس..."></textarea>
+    
+    <button onclick="saveJournal()" class="btn btn-green btn-full" style="margin-top: 12px;">💾 ثبت خاطره</button>
+    <p id="journalMsg" style="text-align: center; font-size: 0.85rem; margin-top: 8px;"></p>
+  </div>
 
-    <div id="notesList" style="margin-top: 20px;">
-      <p class="lock-note">در حال بارگذاری...</p>
-    </div>
+  <div class="past-entries" id="pastEntries">
+    <h3 style="font-size: 1rem; margin-bottom: 12px;">📖 خاطرات قبلی من:</h3>
+    <p class="lock-note">در حال بارگذاری...</p>
   </div>
 </main>
 
 <nav class="bottom-nav">
   <a href="index.html" class="nav-item">🏠 خانه</a>
   <a href="study.html" class="nav-item">⏱ مطالعه</a>
-  <a href="journal.html" class="nav-item active">📔 دفترچه</a>
+  <a href="journal.html" class="nav-item active">📔 خاطرات</a>
   <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
   <a href="profile.html" class="nav-item">👤 پروفایل</a>
 </nav>
@@ -144,93 +73,102 @@
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
 <script src="theme.js"></script>
-<script src="pwa.js"></script>
-
 <script>
-  var currentUser = null;
-  var editingNoteId = null;
-  var noteColors = ['pink', 'blue', 'green', '']; // رنگ‌های پس‌زمینه
+  var myUid = null, currentSelectedMood = '🙂', editingEntryId = null;
+
+  // تنظیم تاریخ امروز
+  var today = new Date();
+  document.getElementById('todayDate').textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(today);
 
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
-    currentUser = res.data.user;
+    myUid = res.data.user.id;
     
-    supabaseClient.from('profiles').select('username').eq('id', currentUser.id).single().then(function(p) {
+    supabaseClient.from('profiles').select('username').eq('id', myUid).single().then(function(p) {
       if (p.data) {
         document.querySelector('.user-name').textContent = p.data.username;
         document.querySelector('.avatar').textContent = p.data.username.charAt(0);
       }
     });
 
-    var today = new Date();
-    document.getElementById('todayDate').textContent = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(today);
-    loadNotes();
+    loadJournals();
   });
 
-  document.getElementById('saveNoteBtn').addEventListener('click', function() {
-    var text = document.getElementById('noteInput').value.trim();
-    if (text.length < 3) { alert('یه کم بیشتر بنویس!'); return; }
+  window.selectMood = function(el) {
+    document.querySelectorAll('.mood-item').forEach(function(m) { m.classList.remove('selected'); });
+    el.classList.add('selected');
+    currentSelectedMood = el.getAttribute('data-mood');
+  };
 
-    if (editingNoteId) {
+  // انتخاب پیش‌فرض
+  document.querySelector('.mood-item[data-mood="🙂"]').classList.add('selected');
+
+  window.saveJournal = function() {
+    var text = document.getElementById('journalText').value.trim();
+    var msg = document.getElementById('journalMsg');
+    if (text.length < 5) { msg.textContent = 'یه کم بیشتر بنویس!'; msg.style.color = '#e74c3c'; return; }
+    msg.textContent = 'در حال ذخیره...'; msg.style.color = 'var(--text-dim)';
+
+    if (editingEntryId) {
       // ویرایش
-      supabaseClient.from('user_journals').update({ text: text, updated_at: new Date().toISOString() }).eq('id', editingNoteId).then(function(res) {
-        if (res.error) { alert('خطا'); return; }
-        document.getElementById('noteInput').value = '';
-        editingNoteId = null;
-        document.getElementById('saveNoteBtn').textContent = '✏️ ثبت خاطره';
-        loadNotes();
+      supabaseClient.from('user_journals').update({ text: text, mood: currentSelectedMood, updated_at: new Date().toISOString() }).eq('id', editingEntryId).then(function(res) {
+        if (res.error) { msg.textContent = 'خطا: ' + res.error.message; msg.style.color = '#e74c3c'; return; }
+        msg.textContent = '✅ ویرایش شد!'; msg.style.color = 'var(--green)';
+        document.getElementById('journalText').value = '';
+        editingEntryId = null;
+        loadJournals();
       });
     } else {
       // ثبت جدید
-      supabaseClient.from('user_journals').insert({
-        user_id: currentUser.id,
-        text: text,
-        created_at: new Date().toISOString()
-      }).then(function(res) {
-        if (res.error) { alert('خطا: ' + res.error.message); return; }
-        document.getElementById('noteInput').value = '';
-        loadNotes();
+      supabaseClient.from('user_journals').insert({ user_id: myUid, text: text, mood: currentSelectedMood }).then(function(res) {
+        if (res.error) { msg.textContent = 'خطا: ' + res.error.message; msg.style.color = '#e74c3c'; return; }
+        msg.textContent = '✅ ثبت شد!'; msg.style.color = 'var(--green)';
+        document.getElementById('journalText').value = '';
+        loadJournals();
       });
     }
-  });
+  };
 
-  function loadNotes() {
-    var list = document.getElementById('notesList');
-    supabaseClient.from('user_journals').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).then(function(res) {
-      list.innerHTML = '';
+  function loadJournals() {
+    var box = document.getElementById('pastEntries');
+    supabaseClient.from('user_journals').select('*').eq('user_id', myUid).order('created_at', { ascending: false }).then(function(res) {
+      box.innerHTML = '<h3 style="font-size: 1rem; margin-bottom: 12px;">📖 خاطرات قبلی من:</h3>';
       var rows = res.data || [];
-      if (rows.length === 0) { list.innerHTML = '<p class="lock-note">هنوز خاطره‌ای ننوشتی.</p>'; return; }
-      
-      rows.forEach(function(note, index) {
-        var colorClass = noteColors[index % noteColors.length];
+      if (rows.length === 0) { box.innerHTML += '<p class="lock-note">هنوز خاطره‌ای ننوشتی.</p>'; return; }
+
+      rows.forEach(function(j) {
         var div = document.createElement('div');
-        div.className = 'note-card ' + colorClass;
-        var dt = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(note.created_at));
-        
-        div.innerHTML = '<div class="note-text">' + note.text.replace(/\n/g, '<br>') + '</div>' +
-          '<div class="note-footer">' +
-            '<span>' + dt + '</span>' +
-            '<div>' +
-              '<button class="edit-btn" onclick="editNote(' + note.id + ', \'' + note.text.replace(/'/g, "\\'") + '\')">✏️</button>' +
-              '<button class="delete-btn" onclick="deleteNote(' + note.id + ')">🗑️</button>' +
-            '</div>' +
-          '</div>';
-        list.appendChild(div);
+        div.className = 'entry-card';
+        var dt = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(j.created_at));
+        div.innerHTML = `
+          <div class="entry-header">
+            <span class="entry-date">${dt}</span>
+            <span class="entry-mood">${j.mood || '🙂'}</span>
+          </div>
+          <div class="entry-text">${j.text}</div>
+          <div style="margin-top: 10px; text-align: left;">
+            <button class="btn btn-dim btn-sm" onclick="editJournal('${j.id}', '${j.text.replace(/'/g, "\\'")}', '${j.mood}')">✏️ ویرایش</button>
+            <button class="btn btn-dim btn-sm" style="color:#e74c3c;" onclick="deleteJournal('${j.id}')">🗑️</button>
+          </div>
+        `;
+        box.appendChild(div);
       });
     });
   }
 
-  window.editNote = function(id, text) {
-    document.getElementById('noteInput').value = text;
-    editingNoteId = id;
-    document.getElementById('saveNoteBtn').textContent = '💾 ذخیره ویرایش';
-    document.getElementById('noteInput').focus();
+  window.editJournal = function(id, text, mood) {
+    editingEntryId = id;
+    document.getElementById('journalText').value = text;
+    currentSelectedMood = mood || '🙂';
+    
+    document.querySelectorAll('.mood-item').forEach(function(m) { m.classList.remove('selected'); });
+    document.querySelector('.mood-item[data-mood="' + currentSelectedMood + '"]').classList.add('selected');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  window.deleteNote = function(id) {
-    if (confirm('این خاطره پاک بشه؟')) {
-      supabaseClient.from('user_journals').delete().eq('id', id).then(function() { loadNotes(); });
+  window.deleteJournal = function(id) {
+    if (confirm('این خاطره حذف بشه؟')) {
+      supabaseClient.from('user_journals').delete().eq('id', id).then(function() { loadJournals(); });
     }
   };
 </script>
