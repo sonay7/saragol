@@ -1,46 +1,33 @@
 var currentUserId = null;
 
-// شروع
 supabaseClient.auth.getUser().then(function(res) {
   if (!res.data.user) { window.location.href = 'login.html'; return; }
   currentUserId = res.data.user.id;
   
-  // گرفتن اطلاعات کاربر
   supabaseClient.from('profiles').select('username, role').eq('id', currentUserId).single().then(function(p) {
     if (p.data) {
       document.querySelector('.user-name').textContent = p.data.username;
       document.querySelector('.avatar').textContent = p.data.username.charAt(0);
-
-      // اگه ادمین بود، تاریخچه رو نشون بده
       if (p.data.role === 'admin' || p.data.role === 'superadmin') {
-        document.getElementById('adminLikesSection').style.display = 'block';
-        loadAdminLikes();
+        document.getElementById('uploadFab').classList.remove('hidden');
       }
     }
   });
-
   loadExplore();
 });
 
-// ===== لود کردن پست‌های اکسپلور =====
 function loadExplore() {
   var feed = document.getElementById('exploreFeed');
   
   supabaseClient.from('admin_inbox')
-    .select('id, file_url, file_type, created_at, explore_likes(user_id)')
+    .select('id, file_url, file_type, created_at, explore_likes(user_id, profiles(username))')
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
     .then(function(res) {
-      if (res.error) {
-        feed.innerHTML = '<p class="lock-note">خطا در بارگذاری: ' + res.error.message + '</p>';
-        return;
-      }
+      if (res.error) { feed.innerHTML = '<p class="lock-note">خطا: ' + res.error.message + '</p>'; return; }
       
       var rows = res.data || [];
-      if (rows.length === 0) {
-        feed.innerHTML = '<div style="text-align:center; padding: 40px 20px; background: var(--bg-card); border-radius: 16px; border: 1px dashed var(--border);"><p style="font-size: 3rem; margin-bottom: 10px;">🎬</p><p style="color: var(--text-dim);">هنوز چیزی توی اکسپلور نیست. اولین نفر باش!</p></div>';
-        return;
-      }
+      if (rows.length === 0) { feed.innerHTML = '<p class="lock-note">هنوز پستی نیست.</p>'; return; }
 
       feed.innerHTML = '';
       rows.forEach(function(item) {
@@ -52,36 +39,29 @@ function loadExplore() {
         div.className = 'post-card';
 
         var isVideo = item.file_type && item.file_type.indexOf('video') === 0;
-        
-        // مدیا
-        var mediaHtml = '';
-        if (isVideo) {
-          mediaHtml = '<video src="' + item.file_url + '" controls preload="metadata" playsinline crossorigin="anonymous"></video>';
-        } else {
-          mediaHtml = '<img src="' + item.file_url + '" loading="lazy" alt="پست اکسپلور">';
-        }
+        var mediaHtml = isVideo 
+          ? '<video src="' + item.file_url + '" controls preload="metadata" playsinline></video>'
+          : '<img src="' + item.file_url + '" loading="lazy">';
 
-        // دکمه لایک
         var heartClass = iLiked ? 'liked' : '';
         var heartIcon = iLiked ? '❤️' : '🤍';
 
-        div.innerHTML = `
-          <div class="post-media-wrapper">
-            ${mediaHtml}
-          </div>
-          <div class="post-footer">
+        // دکمه دیدن لایک‌ها
+        var likesBtn = likeCount > 0 ? `<button class="view-likes-btn" onclick='showLikes(${JSON.stringify(likes)})'>👀 مشاهده</button>` : '';
+
+        div.innerHTML = mediaHtml + 
+          `<div class="post-footer">
             <button class="like-btn" data-id="${item.id}">
               <span class="heart ${heartClass}">${heartIcon}</span>
-              <span style="font-weight: bold;">${likeCount}</span>
+              <span>${likeCount}</span>
             </button>
+            ${likesBtn}
             <span style="font-size: 0.7rem; color: var(--text-dim);">${new Date(item.created_at).toLocaleDateString('fa-IR')}</span>
-          </div>
-        `;
+          </div>`;
 
         feed.appendChild(div);
       });
 
-      // اضافه کردن رویداد کلیک به دکمه‌های لایک
       document.querySelectorAll('.like-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var inboxId = btn.getAttribute('data-id');
@@ -91,54 +71,58 @@ function loadExplore() {
     });
 }
 
-// ===== لایک / آنلایک =====
+window.showLikes = function(likes) {
+  var list = document.getElementById('likesList');
+  list.innerHTML = '';
+  if (!likes || likes.length === 0) { list.innerHTML = '<p class="lock-note">هیچ کسی لایک نکرده.</p>'; return; }
+  likes.forEach(function(l) {
+    var un = l.profiles ? l.profiles.username : 'ناشناس';
+    var div = document.createElement('div');
+    div.className = 'user-like-row';
+    div.innerHTML = `<div class="user-like-avatar">${un.charAt(0)}</div><strong>${un}</strong>`;
+    list.appendChild(div);
+  });
+  document.getElementById('likesModal').classList.remove('hidden');
+};
+
 function toggleLike(inboxId, btn) {
   var heartEl = btn.querySelector('.heart');
   var countEl = btn.querySelector('span:last-child');
   var isLiked = heartEl.classList.contains('liked');
 
   if (isLiked) {
-    // آنلایک
     supabaseClient.from('explore_likes').delete().eq('inbox_id', inboxId).eq('user_id', currentUserId).then(function() {
-      heartEl.textContent = '🤍';
-      heartEl.classList.remove('liked');
+      heartEl.textContent = '🤍'; heartEl.classList.remove('liked');
       countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
     });
   } else {
-    // لایک
     supabaseClient.from('explore_likes').insert({ inbox_id: inboxId, user_id: currentUserId }).then(function(res) {
       if (!res.error) {
-        heartEl.textContent = '❤️';
-        heartEl.classList.add('liked');
+        heartEl.textContent = '❤️'; heartEl.classList.add('liked');
         countEl.textContent = parseInt(countEl.textContent) + 1;
       }
     });
   }
 }
 
-// ===== تاریخچه لایک‌ها (ویژه ادمین) =====
-function loadAdminLikes() {
-  var list = document.getElementById('adminLikesList');
+// ===== آپلود =====
+window.openUploadModal = function() { document.getElementById('uploadModal').classList.remove('hidden'); };
+
+window.uploadPost = function() {
+  var file = document.getElementById('uploadFile').files[0];
+  var btn = document.getElementById('uploadBtn');
+  var msg = document.getElementById('uploadMsg');
+  if (!file) { msg.textContent = 'یه فایل انتخاب کن'; msg.style.color = '#e74c3c'; return; }
   
-  supabaseClient.from('explore_likes')
-    .select('*, profiles(username), admin_inbox(file_url, file_type)')
-    .order('created_at', { ascending: false })
-    .then(function(res) {
-      list.innerHTML = '';
-      var rows = res.data || [];
-      if (rows.length === 0) { list.innerHTML = '<p class="lock-note">هنوز کسی لایک نکرده.</p>'; return; }
-      
-      rows.forEach(function(l) {
-        var un = l.profiles ? l.profiles.username : 'ناشناس';
-        var postType = l.admin_inbox && l.admin_inbox.file_type && l.admin_inbox.file_type.indexOf('video') === 0 ? '🎬 ویدیو' : '🖼️ عکس';
-        var url = l.admin_inbox ? l.admin_inbox.file_url : '#';
-        var dt = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(l.created_at));
-        
-        var div = document.createElement('div');
-        div.className = 'history-row';
-        div.innerHTML = `<div><strong>${un}</strong> - ${postType}<br><span style="color: var(--text-dim); font-size: 0.7rem;">${dt}</span></div>` +
-          (url !== '#' ? `<a href="${url}" target="_blank">مشاهده</a>` : '');
-        list.appendChild(div);
-      });
+  btn.disabled = true; btn.textContent = 'در حال آپلود...';
+  var fn = 'direct_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+  
+  supabaseClient.storage.from('videos').upload(fn, file, { contentType: file.type || 'video/mp4' }).then(function(u) {
+    if (u.error) { msg.textContent = 'خطا: ' + u.error.message; btn.disabled = false; btn.textContent = 'آپلود و انتشار'; return; }
+    var url = supabaseClient.storage.from('videos').getPublicUrl(fn).data.publicUrl;
+    supabaseClient.from('admin_inbox').insert({ user_id: currentUserId, file_url: url, file_type: file.type || 'video/mp4', status: 'approved' }).then(function() {
+      msg.textContent = '✅ منتشر شد'; msg.style.color = 'var(--green)';
+      setTimeout(() => location.reload(), 1000);
     });
-}
+  });
+};
