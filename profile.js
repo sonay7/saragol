@@ -1,4 +1,4 @@
-// ===== توابع کمکی سطح (به صورت لوکال تعریف شدن) =====
+// ===== توابع سطح =====
 var LEVEL_HOURS = [0, 5, 15, 35, 65, 105, 155, 215, 285, 360];
 
 function getLevel(minutes) {
@@ -26,7 +26,6 @@ var currentChartRange = 'this_week';
 var currentStreak = 0;
 var totalQuestions = 0;
 var hasMorningStudy = false;
-var totalSpecialBadges = 0;
 var allSessionsData = [];
 
 // ===== شروع =====
@@ -38,13 +37,38 @@ supabaseClient.auth.getUser().then(function(res) {
     if (p.error || !p.data) return;
     var profile = p.data;
 
-    // اطلاعات پایه
+    // آواتار و اسم
     var nameEl = document.querySelector('.profile-name'); if(nameEl) nameEl.textContent = profile.username;
     var classEl = document.querySelector('.profile-class'); if(classEl) classEl.textContent = profile.class_name;
     var pAvatarEl = document.querySelector('.profile-avatar'); if(pAvatarEl) pAvatarEl.textContent = profile.username.charAt(0);
     var uNameEl = document.querySelector('.user-name'); if(uNameEl) uNameEl.textContent = profile.username;
     var avatarEl = document.querySelector('.avatar'); if(avatarEl) avatarEl.textContent = profile.username.charAt(0);
 
+    // MBTI
+    if (profile.mbti_type) {
+      var mbtiBox = document.getElementById('mbtiBox');
+      var mbtiIcon = document.getElementById('mbtiIcon');
+      var mbtiName = document.getElementById('mbtiName');
+      
+      var personalities = {
+        "INTJ": { name: "معمار", icon: "🏛️" }, "INTP": { name: "متفکر", icon: "🔬" },
+        "ENTJ": { name: "فرمانده", icon: "⚔️" }, "ENTP": { name: "مبتکر", icon: "💡" },
+        "INFJ": { name: "مشاور", icon: "📜" }, "INFP": { name: "رویاپرداز", icon: "🌙" },
+        "ENFJ": { name: "الهام‌بخش", icon: "📣" }, "ENFP": { name: "قهرمان", icon: "🎉" },
+        "ISTJ": { name: "بازرس", icon: "🛡️" }, "ISFJ": { name: "محافظ", icon: "🍀" },
+        "ESTJ": { name: "مجری", icon: "👑" }, "ESFJ": { name: "حامی", icon: "🤝" },
+        "ISTP": { name: "صنعتگر", icon: "🔧" }, "ISFP": { name: "هنرمند", icon: "🎨" },
+        "ESTP": { name: "ماجراجو", icon: "🎯" }, "ESFP": { name: "سرگرم‌کننده", icon: "🎤" }
+      };
+      
+      if (personalities[profile.mbti_type]) {
+        mbtiBox.style.display = 'inline-block';
+        mbtiIcon.textContent = personalities[profile.mbti_type].icon;
+        mbtiName.textContent = personalities[profile.mbti_type].name;
+      }
+    }
+
+    // کد دعوت
     var inviteInput = document.getElementById('myInviteCode');
     if (inviteInput && profile.invite_code) inviteInput.value = profile.invite_code;
 
@@ -59,8 +83,7 @@ supabaseClient.auth.getUser().then(function(res) {
     // سطح
     var minutes = profile.total_minutes || 0;
     var level = getLevel(minutes);
-    var title = getTitle(level);
-    document.getElementById('levelBox').textContent = 'سطح ' + level + ' • ' + title;
+    document.getElementById('levelBox').textContent = 'سطح ' + level + ' • ' + getTitle(level);
 
     var nextH = getNextLevelHours(level);
     var bar = document.getElementById('levelBar');
@@ -83,15 +106,12 @@ supabaseClient.auth.getUser().then(function(res) {
     loadGoalButtons(uid);
     loadSessions(uid);
     loadExams();
-    loadSpecialBadges(uid);
     loadChartData(uid);
   });
 });
 
-// ===== مسیر پیشرفت =====
 function renderLevelPath(currentLevel) {
-  var list = document.getElementById('levelPathList');
-  if (!list) return;
+  var list = document.getElementById('levelPathList'); if (!list) return;
   list.innerHTML = '';
   for (var i = 0; i < LEVEL_HOURS.length; i++) {
     var div = document.createElement('div');
@@ -101,7 +121,6 @@ function renderLevelPath(currentLevel) {
   }
 }
 
-// ===== جلسات مطالعه (استریک، سوال، دستاورد) =====
 function loadSessions(uid) {
   supabaseClient.from('study_sessions').select('questions, minutes, created_at, subject').eq('user_id', uid).then(function(s) {
     var rows = s.data || [];
@@ -117,7 +136,6 @@ function loadSessions(uid) {
 
     document.getElementById('statQuestions').textContent = totalQuestions;
 
-    // استریک
     var days = {};
     rows.forEach(function(r) {
       var d = new Date(r.created_at);
@@ -137,7 +155,6 @@ function loadSessions(uid) {
     }
 
     document.querySelector('.streak-number').textContent = currentStreak;
-
     var unlockedCount = renderBadges();
     loadSpecialBadges(uid).then(function(spCount) {
       document.getElementById('statAchievements').textContent = unlockedCount + spCount;
@@ -145,10 +162,8 @@ function loadSessions(uid) {
   });
 }
 
-// ===== دستاوردها =====
 function renderBadges() {
-  var list = document.getElementById('badgesList');
-  if (!list) return 0;
+  var list = document.getElementById('badgesList'); if (!list) return 0;
   var badgesData = [
     { name: '۱۰۰ دقیقه', unlocked: (getTotalMinutes() >= 100) },
     { name: '۵۰۰ دقیقه', unlocked: (getTotalMinutes() >= 500) },
@@ -170,24 +185,16 @@ function renderBadges() {
 }
 
 function getTotalMinutes() {
-  var total = 0;
-  allSessionsData.forEach(function(r) { total += r.minutes || 0; });
-  return total;
+  var total = 0; allSessionsData.forEach(function(r) { total += r.minutes || 0; }); return total;
 }
 
-// ===== نشان‌های ویژه =====
 function loadSpecialBadges(uid) {
   return new Promise(function(resolve) {
     supabaseClient.from('user_badges').select('*').eq('user_id', uid).then(function(badgeRes) {
-      var list = document.getElementById('specialBadgesList');
-      if (!list) { resolve(0); return; }
+      var list = document.getElementById('specialBadgesList'); if (!list) { resolve(0); return; }
       var badges = badgeRes.data || [];
       list.innerHTML = '';
-      if (badges.length === 0) {
-        list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim);">هنوز نشان ویژه‌ای نداری.</p>';
-        resolve(0);
-        return;
-      }
+      if (badges.length === 0) { list.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-dim);">هنوز نشان ویژه‌ای نداری.</p>'; resolve(0); return; }
       badges.forEach(function(b) {
         var span = document.createElement('span');
         span.className = 'special-badge';
@@ -199,12 +206,10 @@ function loadSpecialBadges(uid) {
   });
 }
 
-// ===== اهداف مطالعه (فنجون) =====
 function loadGoalButtons(uid) {
   var today = new Date();
   var todayStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
-  var yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  var yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
   var yesterdayStr = yesterday.getFullYear() + '-' + (yesterday.getMonth()+1) + '-' + yesterday.getDate();
 
   var yMin = 0, tMin = 0;
@@ -221,16 +226,12 @@ function loadGoalButtons(uid) {
     var opt2 = yMin === 0 ? 60 : yMin + 60;
     var opt3 = yMin === 0 ? 15 : yMin;
 
-    var btnContainer = document.getElementById('goalButtons');
-    btnContainer.innerHTML = '';
-
+    var btnContainer = document.getElementById('goalButtons'); btnContainer.innerHTML = '';
     [{ id: 1, v: opt1 }, { id: 2, v: opt2 }, { id: 3, v: opt3 }].forEach(function(d) {
       var btn = document.createElement('button');
       btn.className = 'goal-btn';
       btn.textContent = d.v + ' دقیقه';
-      btn.onclick = function() {
-        window.location.href = 'study.html?goal=' + d.v;
-      };
+      btn.onclick = function() { window.location.href = 'study.html?goal=' + d.v; };
       btnContainer.appendChild(btn);
     });
 
@@ -238,19 +239,15 @@ function loadGoalButtons(uid) {
   });
 }
 
-// ===== نمودار (شنبه تا جمعه) =====
 window.changeChartRange = function(range, btn) {
   currentChartRange = range;
   document.querySelectorAll('.chart-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
-  supabaseClient.auth.getUser().then(function(res) {
-    if (res.data.user) loadChartData(res.data.user.id);
-  });
+  supabaseClient.auth.getUser().then(function(res) { if (res.data.user) loadChartData(res.data.user.id); });
 };
 
 function loadChartData(uid) {
-  var canvas = document.getElementById('weeklyChart');
-  if (!canvas) return;
+  var canvas = document.getElementById('weeklyChart'); if (!canvas) return;
   if (myChartInstance) myChartInstance.destroy();
 
   var labels = [], dateKeys = [];
@@ -258,30 +255,24 @@ function loadChartData(uid) {
 
   if (currentChartRange === 'this_week' || currentChartRange === 'last_week') {
     var dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
-    var day = today.getDay();
-    var diff = (day + 1) % 7;
+    var day = today.getDay(); var diff = (day + 1) % 7;
     var start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - diff);
     if (currentChartRange === 'last_week') start.setDate(start.getDate() - 7);
-
     for (var i = 0; i < 7; i++) {
-      var d = new Date(start);
-      d.setDate(start.getDate() + i);
-      labels.push(dayNames[i]);
-      dateKeys.push(d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
+      var d = new Date(start); d.setDate(start.getDate() + i);
+      labels.push(dayNames[i]); dateKeys.push(d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
     }
   } else {
     var daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     for (var i = 1; i <= daysInMonth; i++) {
       var d = new Date(today.getFullYear(), today.getMonth(), i);
-      labels.push(i);
-      dateKeys.push(d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
+      labels.push(i); dateKeys.push(d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
     }
   }
 
   supabaseClient.from('study_sessions').select('subject, minutes, questions, created_at').eq('user_id', uid).then(function(res) {
     var rows = res.data || [];
-    var dataByDate = {};
-    var subjectData = {};
+    var dataByDate = {}; var subjectData = {};
 
     rows.forEach(function(r) {
       var d = new Date(r.created_at);
@@ -292,64 +283,46 @@ function loadChartData(uid) {
       if (dateKeys.indexOf(key) !== -1) {
         var subj = r.subject || 'عمومی';
         if (!subjectData[subj]) subjectData[subj] = { minutes: 0, questions: 0 };
-        subjectData[subj].minutes += r.minutes;
-        subjectData[subj].questions += (r.questions || 0);
+        subjectData[subj].minutes += r.minutes; subjectData[subj].questions += (r.questions || 0);
       }
     });
 
     var chartData = dateKeys.map(function(key) { return dataByDate[key] || 0; });
     var ctx = canvas.getContext('2d');
     var gradient = ctx.createLinearGradient(0, 0, 0, 220);
-    gradient.addColorStop(0, '#2ecc71');
-    gradient.addColorStop(1, '#3498db');
+    gradient.addColorStop(0, '#2ecc71'); gradient.addColorStop(1, '#3498db');
 
     myChartInstance = new Chart(ctx, {
       type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{ label: 'دقیقه مطالعه', data: chartData, backgroundColor: gradient, borderRadius: 6 }]
-      },
+      data: { labels: labels, datasets: [{ label: 'دقیقه', data: chartData, backgroundColor: gradient, borderRadius: 6 }] },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
-          x: { grid: { display: false }, ticks: { color: '#888' } }
-        }
+        scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } }, x: { grid: { display: false }, ticks: { color: '#888' } } }
       }
     });
 
-    // تفکیک درس
-    var sbBox = document.getElementById('subjectBreakdown');
-    sbBox.innerHTML = '';
+    var sbBox = document.getElementById('subjectBreakdown'); sbBox.innerHTML = '';
     var subjects = Object.keys(subjectData);
-    if (subjects.length === 0) {
-      sbBox.innerHTML = '<p class="lock-note">در این بازه مطالعه‌ای ثبت نکردی.</p>';
-      return;
-    }
+    if (subjects.length === 0) { sbBox.innerHTML = '<p class="lock-note">در این بازه مطالعه‌ای ثبت نکردی.</p>'; return; }
     subjects.forEach(function(subj) {
       var data = subjectData[subj];
-      var div = document.createElement('div');
-      div.className = 'subject-row';
-      div.innerHTML = '<div style="font-weight:bold;">📖 ' + subj + '</div><div style="display:flex; gap:16px;">' +
-        '<span>⏱ ' + data.minutes + ' دقیقه</span><span>✍️ ' + data.questions + ' تست</span></div>';
+      var div = document.createElement('div'); div.className = 'subject-row';
+      div.innerHTML = '<div style="font-weight:bold;">📖 ' + subj + '</div><div style="display:flex; gap:16px;">' + '<span>⏱ ' + data.minutes + ' دقیقه</span><span>✍️ ' + data.questions + ' تست</span></div>';
       sbBox.appendChild(div);
     });
   });
 }
 
-// ===== آزمون‌ها =====
 function loadExams() {
-  var listEl = document.getElementById('examCountdownList');
-  if (!listEl) return;
+  var listEl = document.getElementById('examCountdownList'); if (!listEl) return;
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) return;
     var uid = res.data.user.id;
     supabaseClient.from('profiles').select('class_name').eq('id', uid).single().then(function(pRes) {
       var userClassName = pRes.data ? pRes.data.class_name : '';
       supabaseClient.from('exams').select('*').or('is_public.eq.true,user_id.eq.' + uid).order('exam_date', { ascending: true }).then(function(examRes) {
-        var rows = examRes.data || [];
-        var today = new Date(); today.setHours(0, 0, 0, 0);
+        var rows = examRes.data || []; var today = new Date(); today.setHours(0, 0, 0, 0);
         var upcoming = rows.filter(function(e) {
           if (new Date(e.exam_date) < today) return false;
           if (e.is_public && e.class_name !== 'همه' && userClassName.indexOf(e.class_name) === -1) return false;
@@ -360,12 +333,10 @@ function loadExams() {
         upcoming.forEach(function(exam) {
           var examDate = new Date(exam.exam_date); examDate.setHours(0, 0, 0, 0);
           var diffDays = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
-          var div = document.createElement('div');
-          div.className = 'subject-row';
+          var div = document.createElement('div'); div.className = 'subject-row';
           var label = exam.is_public ? '🏫 مدرسه' : '📝 شخصی';
           var countdown = diffDays === 0 ? 'امروز!' : (diffDays === 1 ? 'فردا' : diffDays + ' روز');
-          div.innerHTML = '<div><strong>' + exam.subject + '</strong> <span style="font-size:0.7rem; color:var(--text-dim);">' + label + '</span></div>' +
-            '<span style="color:' + (diffDays <= 3 ? '#e74c3c' : 'var(--green)') + ';font-weight:700;">⏳ ' + countdown + '</span>';
+          div.innerHTML = '<div><strong>' + exam.subject + '</strong> <span style="font-size:0.7rem; color:var(--text-dim);">' + label + '</span></div>' + '<span style="color:' + (diffDays <= 3 ? '#e74c3c' : 'var(--green)') + ';font-weight:700;">⏳ ' + countdown + '</span>';
           listEl.appendChild(div);
         });
       });
@@ -381,15 +352,12 @@ if (document.getElementById('addMyExamBtn')) {
     supabaseClient.auth.getUser().then(function(res) {
       if (!res.data.user) return;
       supabaseClient.from('exams').insert({ subject: subject, exam_date: examDate, class_name: 'شخصی', is_public: false, user_id: res.data.user.id }).then(function() {
-        document.getElementById('myExamSubject').value = '';
-        document.getElementById('myExamDate').value = '';
-        loadExams();
+        document.getElementById('myExamSubject').value = ''; document.getElementById('myExamDate').value = ''; loadExams();
       });
     });
   });
 }
 
-// ===== تولد و دعوت =====
 window.saveBirthday = function() {
   var bday = document.getElementById('userBirthday').value;
   var msg = document.getElementById('birthdayMsg');
@@ -412,8 +380,6 @@ window.copyInviteLink = function() {
 
 if (document.getElementById('logoutBtn')) {
   document.getElementById('logoutBtn').addEventListener('click', function() {
-    if (confirm('خارج می‌شی؟')) {
-      supabaseClient.auth.signOut().then(function() { window.location.href = 'login.html'; });
-    }
+    if (confirm('خارج می‌شی؟')) { supabaseClient.auth.signOut().then(function() { window.location.href = 'login.html'; }); }
   });
 }
