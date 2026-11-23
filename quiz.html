@@ -6,10 +6,12 @@
   <title>آزمونک | ساراگل</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .quiz-container { max-width: 500px; margin: 40px auto; padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; text-align: center; }
-    .question-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; min-height: 50px; }
-    .progress-text { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; }
-    .result-box { font-size: 1.2rem; font-weight: bold; margin-top: 20px; }
+    .quiz-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; }
+    .progress-bar { width: 100%; height: 8px; background: var(--border); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s; }
+    .question-text { font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; }
+    .result-box { text-align: center; }
+    .result-box h2 { font-size: 1.5rem; margin-bottom: 12px; }
   </style>
 </head>
 <body>
@@ -23,132 +25,112 @@
 </header>
 
 <main class="container">
-  <div class="quiz-container" id="quizBox">
-    <h2 id="quizTitle" style="color: var(--green); margin-bottom: 20px;">📝 آزمونک</h2>
-    <p id="progressText" class="progress-text"></p>
-    <p id="questionText" class="question-text">در حال بارگذاری...</p>
-    <input id="answerInput" class="input" placeholder="جوابت رو بنویس..." style="margin-bottom: 12px;">
-    <button id="submitBtn" onclick="submitAnswer()" class="btn btn-blue btn-full">ثبت جواب</button>
-    <button id="retryBtn" onclick="startQuiz()" class="btn btn-green btn-full" style="display: none; margin-top: 12px;">🔄 تلاش مجدد</button>
-    <p id="resultMsg" class="result-box"></p>
+  <div id="quizScreen" class="quiz-box">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px;">سوال <span id="qNum">1</span> از <span id="qTotal">10</span></p>
+    <div class="question-text" id="questionText">...</div>
+    <input id="answerInput" class="input" placeholder="جواب رو بنویس..." style="margin-bottom: 12px;">
+    <button onclick="submitAnswer()" class="btn btn-green btn-full">ثبت جواب</button>
+  </div>
+
+  <div id="resultScreen" class="quiz-box" style="display: none;">
+    <div class="result-box">
+      <div style="font-size: 4rem; margin-bottom: 12px;" id="resultIcon">🎉</div>
+      <h2 id="resultText">...</h2>
+      <p id="resultSub" style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 20px;"></p>
+      <button onclick="location.reload()" class="btn btn-blue btn-full">🔄 تلاش مجدد</button>
+      <button onclick="location.href='flashcards.html'" class="btn btn-dim btn-full" style="margin-top: 8px;">بازگشت</button>
+    </div>
   </div>
 </main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">🏠 خانه</a>
+  <a href="study.html" class="nav-item">⏱ مطالعه</a>
+  <a href="flashcards.html" class="nav-item">🃏 فلش‌کارت</a>
+  <a href="shop.html" class="nav-item">🛒 فروشگاه</a>
+  <a href="profile.html" class="nav-item">👤 پروفایل</a>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
 <script src="theme.js"></script>
-<script src="pwa.js"></script>
-
 <script>
-  var myUid = null;
-  var questId = null;
-  var allCards = [];
-  var currentIndex = 0;
+  var currentUserId = null;
+  var quizCards = [];
+  var currentIdx = 0;
   var correctCount = 0;
 
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
-    myUid = res.data.user.id;
-    
-    var urlParams = new URLSearchParams(window.location.search);
-    questId = urlParams.get('quest_id');
-
-    supabaseClient.from('profiles').select('username').eq('id', myUid).single().then(function(p) {
+    currentUserId = res.data.user.id;
+    supabaseClient.from('profiles').select('username').eq('id', currentUserId).single().then(function(p) {
       if (p.data) {
         document.querySelector('.user-name').textContent = p.data.username;
         document.querySelector('.avatar').textContent = p.data.username.charAt(0);
       }
-      startQuiz();
+    });
+    
+    supabaseClient.from('user_flashcards').select('*').eq('user_id', currentUserId).then(function(cRes) {
+      var all = cRes.data || [];
+      if (all.length < 3) { 
+        document.getElementById('questionText').textContent = 'برای آزمون به حداقل ۳ کارت نیاز داری.';
+        document.getElementById('answerInput').style.display = 'none';
+        return;
+      }
+      
+      // شافل و انتخاب ۵ کارت (یا هر چی بود)
+      all.sort(function() { return 0.5 - Math.random(); });
+      quizCards = all.slice(0, Math.min(10, all.length));
+      
+      document.getElementById('qTotal').textContent = quizCards.length;
+      renderQuestion();
     });
   });
 
-  function startQuiz() {
-    var input = document.getElementById('answerInput');
-    var submitBtn = document.getElementById('submitBtn');
-    var retryBtn = document.getElementById('retryBtn');
-    var resultMsg = document.getElementById('resultMsg');
-    
-    input.style.display = 'block';
-    submitBtn.style.display = 'block';
-    retryBtn.style.display = 'none';
-    resultMsg.textContent = '';
-    input.value = '';
-    input.disabled = false;
-
-    supabaseClient.from('user_flashcards').select('*').eq('user_id', myUid).then(function(res) {
-      allCards = res.data || [];
-      if (allCards.length === 0) {
-        document.getElementById('questionText').textContent = 'تو هنوز هیچ کارتی نساختی! اول برو به صفحه فلش‌کارت‌ها و چند تا کارت بساز.';
-        document.getElementById('answerInput').style.display = 'none';
-        document.getElementById('submitBtn').style.display = 'none';
-        return;
-      }
-      // شافل کردن کارت‌ها
-      allCards.sort(function() { return 0.5 - Math.random(); });
-      currentIndex = 0;
-      correctCount = 0;
-      showQuestion();
-    });
-  }
-
-  function showQuestion() {
-    if (currentIndex >= allCards.length) {
-      finishQuiz();
-      return;
-    }
-    document.getElementById('progressText').textContent = 'سوال ' + (currentIndex + 1) + ' از ' + allCards.length;
-    document.getElementById('questionText').textContent = allCards[currentIndex].question;
+  function renderQuestion() {
+    if (currentIdx >= quizCards.length) { finishQuiz(); return; }
+    document.getElementById('qNum').textContent = currentIdx + 1;
+    document.getElementById('questionText').textContent = quizCards[currentIdx].question;
     document.getElementById('answerInput').value = '';
-    document.getElementById('answerInput').focus();
+    document.getElementById('progressFill').style.width = ((currentIdx) / quizCards.length * 100) + '%';
   }
 
-  function submitAnswer() {
-    var answer = document.getElementById('answerInput').value.trim();
-    if (!answer) return alert('جواب رو بنویس');
+  window.submitAnswer = function() {
+    var ans = document.getElementById('answerInput').value.trim();
+    var correct = quizCards[currentIdx].answer.trim();
     
-    var correctAnswer = allCards[currentIndex].answer.trim().toLowerCase();
-    var userAnswer = answer.toLowerCase();
+    if (ans === correct) { correctCount++; }
     
-    if (correctAnswer === userAnswer) {
-      correctCount++;
-      document.getElementById('resultMsg').textContent = '✅ درست!';
-      document.getElementById('resultMsg').style.color = 'var(--green)';
-    } else {
-      document.getElementById('resultMsg').textContent = '❌ اشتباه بود. جواب درست: ' + allCards[currentIndex].answer;
-      document.getElementById('resultMsg').style.color = '#e74c3c';
-    }
-
-    setTimeout(function() {
-      document.getElementById('resultMsg').textContent = '';
-      currentIndex++;
-      showQuestion();
-    }, 1500);
-  }
+    currentIdx++;
+    renderQuestion();
+  };
 
   function finishQuiz() {
-    var percent = Math.round((correctCount / allCards.length) * 100);
-    document.getElementById('questionText').textContent = '🎉 آزمون تموم شد!';
-    document.getElementById('progressText').textContent = '';
-    document.getElementById('answerInput').style.display = 'none';
-    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
     
-    var resultMsg = document.getElementById('resultMsg');
-    resultMsg.textContent = 'نمره شما: ' + percent + '% (' + correctCount + ' از ' + allCards.length + ')';
-    
+    var percent = Math.round((correctCount / quizCards.length) * 100);
     if (percent >= 80) {
-      resultMsg.style.color = 'var(--green)';
-      if (questId) {
-        // مارک کردن ماموریت به عنوان انجام شده
-        supabaseClient.from('user_quests').update({ is_completed: true }).eq('id', questId).then(function() {
-          alert('🎉 آفرین! ماموریت با موفقیت انجام شد.');
-          window.location.href = 'index.html';
-        });
-      }
+      document.getElementById('resultIcon').textContent = '🎉';
+      document.getElementById('resultText').textContent = 'آفرین! قبول شدی';
+      document.getElementById('resultText').style.color = 'var(--green)';
+      // ثبت ماموریت
+      markQuestDone();
     } else {
-      resultMsg.style.color = '#e74c3c';
-      document.getElementById('retryBtn').style.display = 'block';
+      document.getElementById('resultIcon').textContent = '😔';
+      document.getElementById('resultText').textContent = 'متاسفانه قبول نشدی';
+      document.getElementById('resultText').style.color = '#e74c3c';
     }
+    document.getElementById('resultSub').textContent = 'نمره شما: ' + percent + '% (' + correctCount + ' از ' + quizCards.length + ')';
+  }
+
+  function markQuestDone() {
+    supabaseClient.auth.getUser().then(function(res) {
+      if (!res.data.user) return;
+      // اینجا می‌تونیم ماموریت رو ثبت کنیم (در فاز بعد)
+    });
   }
 </script>
 </body>
