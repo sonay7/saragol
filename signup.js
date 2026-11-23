@@ -14,21 +14,16 @@ if (signupBtn) {
   signupBtn.addEventListener('click', function(e) {
     e.preventDefault();
     
-    // چک کردن فیلدها
     var firstNameEl = document.getElementById('firstName');
     var lastNameEl = document.getElementById('lastName');
     var passEl = document.getElementById('password');
     var classEl = document.getElementById('className');
     
     if (!firstNameEl || !lastNameEl || !passEl || !classEl) {
-      if (msgEl) {
-        msgEl.textContent = 'خطا: فیلدهای فرم پیدا نشدند. صفحه را رفرش کنید.';
-        msgEl.style.color = '#e74c3c';
-      }
+      if (msgEl) { msgEl.textContent = 'خطا: فیلدها پیدا نشدند.'; msgEl.style.color = '#e74c3c'; }
       return;
     }
 
-    // گرفتن مقادیر
     var firstName = firstNameEl.value.trim();
     var lastName = lastNameEl.value.trim();
     var fullName = firstName + ' ' + lastName;
@@ -37,96 +32,62 @@ if (signupBtn) {
     var inviteCode = inviteCodeInput ? inviteCodeInput.value.trim() : '';
 
     if (!firstName || !lastName || !password || !class_name) {
-      if (msgEl) {
-        msgEl.textContent = 'همه فیلدها (به جز کد دعوت) را پر کنید!';
-        msgEl.style.color = '#e74c3c';
-      }
+      if (msgEl) { msgEl.textContent = 'همه فیلدها را پر کنید!'; msgEl.style.color = '#e74c3c'; }
       return;
     }
 
     if (password.length < 6) {
-      if (msgEl) {
-        msgEl.textContent = 'رمز عبور باید حداقل ۶ کاراکتر باشه!';
-        msgEl.style.color = '#e74c3c';
-      }
+      if (msgEl) { msgEl.textContent = 'رمز باید حداقل ۶ کاراکتر باشد!'; msgEl.style.color = '#e74c3c'; }
       return;
     }
 
-    if (msgEl) {
-      msgEl.textContent = 'در حال ثبت‌نام...';
-      msgEl.style.color = 'var(--text-dim)';
-    }
+    if (msgEl) { msgEl.textContent = 'در حال ثبت‌نام...'; msgEl.style.color = 'var(--text-dim)'; }
     signupBtn.disabled = true;
 
-    // ⬇️ ساخت ایمیل فیک
     var fakeEmail = 'user_' + Math.floor(Math.random() * 1000000) + '@saragol.local';
 
-    // ۱. ساخت کاربر در Supabase Auth
-    supabaseClient.auth.signUp({
-      email: fakeEmail,
-      password: password,
-    }).then(function(res) {
+    supabaseClient.auth.signUp({ email: fakeEmail, password: password }).then(function(res) {
       if (res.error) {
-        if (msgEl) {
-          msgEl.textContent = 'خطا: ' + res.error.message;
-          msgEl.style.color = '#e74c3c';
-        }
+        if (msgEl) { msgEl.textContent = 'خطا: ' + res.error.message; msgEl.style.color = '#e74c3c'; }
         signupBtn.disabled = false;
         return;
       }
 
       var userId = res.data.user.id;
-
-      // ۲. ساخت کد دعوت هوشمند (اسم + ۳ عدد)
       var cleanUsername = firstName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
       if (cleanUsername === '') cleanUsername = 'user';
       var randomNum = Math.floor(100 + Math.random() * 900);
       var generatedInviteCode = cleanUsername + randomNum;
 
-      // ۳. ساخت پروفایل توی دیتابیس (با ذخیره ایمیل فیک)
       supabaseClient.from('profiles').insert({
         id: userId,
         username: fullName,
         class_name: class_name,
         role: 'student',
-        status: 'approved',
+        status: 'pending', // ⬅️ اینجا برگشت به pending
         xp: 0,
         total_minutes: 0,
         invite_code: generatedInviteCode,
-        email: fakeEmail // ⬅️ ذخیره ایمیل فیک برای ورود
+        email: fakeEmail
       }).then(function(profileRes) {
         if (profileRes.error) {
-          if (msgEl) {
-            msgEl.textContent = 'خطا در ساخت پروفایل: ' + profileRes.error.message;
-            msgEl.style.color = '#e74c3c';
-          }
+          if (msgEl) { msgEl.textContent = 'خطا در ساخت پروفایل: ' + profileRes.error.message; msgEl.style.color = '#e74c3c'; }
           signupBtn.disabled = false;
           return;
         }
 
-        // ۴. پردازش کد دعوت
         if (inviteCode) {
-          supabaseClient.rpc('process_invite', {
-            new_user_id: userId,
-            code: inviteCode
-          }).then(function(inviteRes) {
-            if (inviteRes.error) console.error('خطا در ثبت دعوت:', inviteRes.error);
-            finishSignup();
-          });
-        } else {
-          finishSignup();
+          supabaseClient.rpc('process_invite', { new_user_id: userId, code: inviteCode });
         }
+
+        if (msgEl) {
+          msgEl.textContent = '✅ ثبت‌نام انجام شد! منتظر تایید ادمین باشید.';
+          msgEl.style.color = 'var(--green)';
+        }
+        setTimeout(function() {
+          window.location.href = 'login.html';
+        }, 3000);
       });
     });
   });
-}
-
-function finishSignup() {
-  if (msgEl) {
-    msgEl.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
-    msgEl.style.color = 'var(--green)';
-  }
-  setTimeout(function() {
-    window.location.href = 'index.html';
-  }, 1500);
 }
