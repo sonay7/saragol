@@ -4,36 +4,236 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>دفترچه خاطرات | ساراگل</title>
+  
+  <!-- اضافه کردن فونت زیبای وزیرمتن -->
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  
   <style>
-    .journal-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    .journal-date { text-align: center; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 16px; font-weight: bold; }
+    /* تنظیمات کلی صفحه */
+    body {
+      font-family: 'Vazirmatn', sans-serif;
+      background: var(--bg, #0f172a);
+      color: var(--text, #e2e8f0);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      padding-bottom: 80px; /* برای اینکه با منوی پایین تداخل نکنه */
+    }
+
+    /* کارت اصلی ژورنال با افکت شیشه‌ای */
+    .journal-container { 
+      background: rgba(30, 41, 59, 0.7); 
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 24px; 
+      padding: 24px; 
+      margin-bottom: 24px; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05); 
+    }
+
+    .journal-date { 
+      text-align: center; 
+      font-size: 0.95rem; 
+      color: var(--text-dim, #94a3b8); 
+      margin-bottom: 20px; 
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
     
-    /* استایل جدید برای باکس سوال روز */
-    .daily-prompt-box { background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(46, 204, 113, 0.05)); border: 1px dashed var(--green); border-radius: 12px; padding: 15px; margin-bottom: 16px; text-align: center; }
-    .daily-prompt-title { font-size: 0.8rem; color: var(--green); margin-bottom: 8px; font-weight: bold; }
-    .daily-prompt-text { font-size: 1rem; color: var(--text); line-height: 1.6; font-weight: 500; }
+    /* باکس سوال روز با افکت درخشش */
+    .daily-prompt-box { 
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05)); 
+      border: 1px solid rgba(16, 185, 129, 0.3); 
+      border-radius: 16px; 
+      padding: 20px; 
+      margin-bottom: 24px; 
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);
+    }
+    .daily-prompt-box::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      transform: skewX(-20deg);
+      animation: shine 6s infinite;
+    }
+    @keyframes shine {
+      0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; }
+    }
+    .daily-prompt-title { 
+      font-size: 0.85rem; 
+      color: #10b981; 
+      margin-bottom: 10px; 
+      font-weight: 700; 
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .daily-prompt-text { 
+      font-size: 1.05rem; 
+      color: #f1f5f9; 
+      line-height: 1.8; 
+      font-weight: 500; 
+    }
 
-    .mood-selector { display: flex; justify-content: space-around; margin-bottom: 16px; background: var(--bg); padding: 10px; border-radius: 12px; border: 1px solid var(--border); }
-    .mood-item { font-size: 1.8rem; cursor: pointer; transition: 0.2s; opacity: 0.4; filter: grayscale(1); }
-    .mood-item:hover { transform: scale(1.2); opacity: 1; filter: grayscale(0); }
-    .mood-item.selected { opacity: 1; filter: grayscale(0); transform: scale(1.2); }
+    /* انتخاب مود (حال و هوا) */
+    .mood-selector { 
+      display: flex; 
+      justify-content: space-around; 
+      margin-bottom: 20px; 
+      background: rgba(15, 23, 42, 0.6); 
+      padding: 15px 10px; 
+      border-radius: 16px; 
+      border: 1px solid rgba(255, 255, 255, 0.05); 
+    }
+    .mood-item { 
+      font-size: 2rem; 
+      cursor: pointer; 
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+      opacity: 0.4; 
+      filter: grayscale(1); 
+      position: relative;
+    }
+    .mood-item:hover { 
+      transform: translateY(-5px) scale(1.15); 
+      opacity: 1; 
+      filter: grayscale(0); 
+    }
+    .mood-item.selected { 
+      opacity: 1; 
+      filter: grayscale(0); 
+      transform: translateY(-5px) scale(1.3); 
+      text-shadow: 0 0 20px rgba(255,255,255,0.5);
+    }
 
-    .journal-textarea { width: 100%; min-height: 150px; padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; font-size: 1rem; line-height: 1.8; resize: vertical; box-sizing: border-box; }
-    .journal-textarea:focus { outline: none; border-color: var(--green); }
+    /* ناحیه نوشتن متن */
+    .textarea-wrapper {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    .journal-textarea { 
+      width: 100%; 
+      min-height: 180px; 
+      padding: 18px; 
+      border-radius: 16px; 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      background: rgba(15, 23, 42, 0.8); 
+      color: #f8fafc; 
+      font-family: inherit; 
+      font-size: 1.05rem; 
+      line-height: 2; 
+      resize: vertical; 
+      box-sizing: border-box; 
+      transition: all 0.3s ease;
+      box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .journal-textarea:focus { 
+      outline: none; 
+      border-color: #10b981; 
+      box-shadow: inset 0 4px 15px rgba(0,0,0,0.2), 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    .journal-textarea::placeholder {
+      color: #475569;
+    }
+    
+    /* شمارنده کاراکتر */
+    .char-counter {
+      position: absolute;
+      bottom: 12px;
+      left: 15px;
+      font-size: 0.75rem;
+      color: #64748b;
+      pointer-events: none;
+    }
 
-    .past-entries { margin-top: 30px; }
-    .entry-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
-    .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 8px; }
-    .entry-date { font-size: 0.8rem; color: var(--text-dim); }
+    /* دکمه ثبت */
+    .btn-green { 
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white; 
+      border: none; 
+      padding: 14px 20px; 
+      border-radius: 14px; 
+      font-family: inherit; 
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      width: 100%;
+    }
+    .btn-green:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    .btn-green:active {
+      transform: translateY(0);
+    }
+    .btn-green:disabled {
+      opacity: 0.7; cursor: not-allowed; transform: none;
+    }
+
+    /* لیست خاطرات قبلی */
+    .past-entries { 
+      margin-top: 30px; 
+    }
+    .past-entries h3 {
+      font-weight: 700; color: #cbd5e1; font-size: 1.1rem;
+      margin-bottom: 16px;
+    }
+    .entry-card { 
+      background: rgba(30, 41, 59, 0.5); 
+      border: 1px solid rgba(255, 255, 255, 0.05); 
+      border-radius: 16px; 
+      padding: 20px; 
+      margin-bottom: 16px; 
+      transition: all 0.3s ease;
+    }
+    .entry-card:hover {
+      transform: translateY(-3px);
+      background: rgba(30, 41, 59, 0.8);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .entry-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 12px; 
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1); 
+      padding-bottom: 12px; 
+    }
+    .entry-date { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
     .entry-mood { font-size: 1.5rem; }
-    .entry-text { font-size: 0.95rem; line-height: 1.8; white-space: pre-wrap; }
+    .entry-text { 
+      font-size: 1rem; 
+      line-height: 1.9; 
+      white-space: pre-wrap; 
+      color: #e2e8f0;
+    }
 
-    .mood-stats-container { display: flex; gap: 10px; justify-content: space-between; margin-bottom: 20px; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap;}
-    .mood-stat-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 50px; }
-    .mood-stat-bar-wrapper { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
-    .mood-stat-bar { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.5s ease; }
-    .mood-stat-label { font-size: 0.7rem; color: var(--text-dim); }
+    /* آمار حال و هوا */
+    .mood-stats-container { 
+      display: flex; gap: 15px; justify-content: space-between; 
+      margin-bottom: 24px; 
+      background: rgba(30, 41, 59, 0.5); 
+      padding: 15px 20px; border-radius: 16px; 
+      border: 1px solid rgba(255, 255, 255, 0.05); 
+      flex-wrap: wrap;
+    }
+    .mood-stat-item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; min-width: 50px; }
+    .mood-stat-bar-wrapper { width: 100%; height: 6px; background: rgba(15, 23, 42, 0.8); border-radius: 4px; overflow: hidden; }
+    .mood-stat-bar { height: 100%; background: linear-gradient(90deg, #34d399, #10b981); border-radius: 4px; transition: width 1s ease; }
+    .mood-stat-label { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+    
+    .btn-dim { background: rgba(255,255,255,0.05); border: none; color: #cbd5e1; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .btn-dim:hover { background: rgba(255,255,255,0.1); }
+    .lock-note { text-align: center; color: #64748b; font-size: 0.9rem; }
   </style>
 </head>
 <body>
@@ -47,7 +247,7 @@
 </header>
 
 <main class="container">
-  <h2 style="text-align: center; margin-bottom: 20px;">📔 دفترچه خاطرات</h2>
+  <h2 style="text-align: center; margin-bottom: 24px; font-weight: 700; color: #f8fafc; font-size: 1.6rem;">📔 دفترچه خاطرات</h2>
 
   <!-- بخش آمار حال و هوا -->
   <div id="moodStats" class="mood-stats-container" style="display: none;"></div>
@@ -69,14 +269,17 @@
       <span class="mood-item" data-mood="😡" onclick="selectMood(this)">😡</span>
     </div>
 
-    <textarea id="journalText" class="journal-textarea" placeholder="امروز چه خبر؟ هر چیزی که دلت می‌خواد بنویس..."></textarea>
+    <div class="textarea-wrapper">
+      <textarea id="journalText" class="journal-textarea" placeholder="امروز چه خبر؟ هر چیزی که دلت می‌خواد بنویس..." maxlength="1000"></textarea>
+      <div class="char-counter" id="charCount">۰ / ۱۰۰۰</div>
+    </div>
     
-    <button onclick="saveJournal()" id="saveBtn" class="btn btn-green btn-full" style="margin-top: 12px;">💾 ثبت خاطره</button>
-    <p id="journalMsg" style="text-align: center; font-size: 0.85rem; margin-top: 8px;"></p>
+    <button onclick="saveJournal()" id="saveBtn" class="btn-green" style="margin-top: 5px;">💾 ثبت خاطره</button>
+    <p id="journalMsg" style="text-align: center; font-size: 0.85rem; margin-top: 12px; font-weight: 500;"></p>
   </div>
 
   <div class="past-entries" id="pastEntries">
-    <h3 style="font-size: 1rem; margin-bottom: 12px;">📖 خاطرات قبلی من:</h3>
+    <h3>📖 خاطرات قبلی من:</h3>
     <p class="lock-note">در حال بارگذاری...</p>
   </div>
 </main>
@@ -99,9 +302,7 @@
   var editingEntryId = null;
   var allJournals = []; 
 
-  // ==========================================
-  // لیست سوالات عمیق (بر اساس تاییدیه تو)
-  // ==========================================
+  // سوالات عمیق
   var deepPrompts = [
     "اگر امروز می‌تونستی یه قانون توی دنیا رو تغییر بدی، اون قانون چی بود؟",
     "امروز چه ماسکی به چهره زدی که فقط خودت می‌دونی واقعی نیست؟",
@@ -136,33 +337,47 @@
     "چه چیزی توی زندگیت هست که حاضری براش بجنگی، ولی تا حالا به کسی نگفتی؟"
   ];
 
-  // تنظیم تاریخ امروز و انتخاب سوال روز
+  // تنظیم تاریخ و سوال روز
   var today = new Date();
   document.getElementById('todayDate').textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(today);
   
-  // محاسبه اینکه امروز چندمین روز از سال است (برای تغییر روزانه سوال)
   var start = new Date(today.getFullYear(), 0, 0);
   var diff = (today - start) + ((start.getTimezoneOffset() - today.getTimezoneOffset()) * 60 * 1000);
   var oneDay = 1000 * 60 * 60 * 24;
   var dayOfYear = Math.floor(diff / oneDay);
   
-  // انتخاب سوال بر اساس روز سال
   var todayPrompt = deepPrompts[dayOfYear % deepPrompts.length];
   document.getElementById('dailyPromptText').textContent = todayPrompt;
 
+  // تبدیل اعداد انگلیسی به فارسی برای شمارنده
+  function toPersianNum(num) {
+    var persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return num.toString().replace(/\d/g, function(x) { return persianDigits[x]; });
+  }
 
-  // --- ذخیره خودکار (Autosave) ---
+  // مدیریت شمارنده کاراکتر و ذخیره خودکار
   var textarea = document.getElementById('journalText');
+  var charCountLabel = document.getElementById('charCount');
+  
+  function updateCharCount() {
+    var len = textarea.value.length;
+    charCountLabel.textContent = toPersianNum(len) + ' / ' + toPersianNum(1000);
+    if (len > 900) charCountLabel.style.color = '#e74c3c';
+    else charCountLabel.style.color = '#64748b';
+  }
+
   var draft = localStorage.getItem('journalDraft');
   if (draft) {
     textarea.value = draft;
+    updateCharCount();
   }
 
   textarea.addEventListener('input', function() {
     localStorage.setItem('journalDraft', this.value);
+    updateCharCount();
   });
 
-  // --- احراز هویت و لود اولیه ---
+  // احراز هویت
   supabaseClient.auth.getUser().then(function(res) {
     if (!res.data.user) { window.location.href = 'login.html'; return; }
     myUid = res.data.user.id;
@@ -185,7 +400,6 @@
 
   document.querySelector('.mood-item[data-mood="🙂"]').classList.add('selected');
 
-  // --- ذخیره خاطره ---
   window.saveJournal = function() {
     var text = textarea.value.trim();
     var msg = document.getElementById('journalMsg');
@@ -194,7 +408,7 @@
     if (text.length < 5) { msg.textContent = 'یه کم بیشتر بنویس!'; msg.style.color = '#e74c3c'; return; }
     
     msg.textContent = 'در حال ذخیره...'; 
-    msg.style.color = 'var(--text-dim)';
+    msg.style.color = '#94a3b8';
     saveBtn.disabled = true; 
 
     if (editingEntryId) {
@@ -202,7 +416,7 @@
         saveBtn.disabled = false;
         if (res.error) { msg.textContent = 'خطا: ' + res.error.message; msg.style.color = '#e74c3c'; return; }
         msg.textContent = '✅ ویرایش شد!'; 
-        msg.style.color = 'var(--green)';
+        msg.style.color = '#10b981';
         clearForm();
         loadJournals();
       });
@@ -211,7 +425,7 @@
         saveBtn.disabled = false;
         if (res.error) { msg.textContent = 'خطا: ' + res.error.message; msg.style.color = '#e74c3c'; return; }
         msg.textContent = '✅ ثبت شد!'; 
-        msg.style.color = 'var(--green)';
+        msg.style.color = '#10b981';
         clearForm();
         loadJournals();
       });
@@ -225,13 +439,14 @@
     localStorage.removeItem('journalDraft'); 
     document.querySelectorAll('.mood-item').forEach(function(m) { m.classList.remove('selected'); });
     document.querySelector('.mood-item[data-mood="🙂"]').classList.add('selected');
+    updateCharCount();
   }
 
   function loadJournals() {
     var box = document.getElementById('pastEntries');
     
     supabaseClient.from('user_journals').select('*').eq('user_id', myUid).order('created_at', { ascending: false }).limit(20).then(function(res) {
-      box.innerHTML = '<h3 style="font-size: 1rem; margin-bottom: 12px;">📖 خاطرات قبلی من:</h3>';
+      box.innerHTML = '<h3>📖 خاطرات قبلی من:</h3>';
       
       if (res.error) {
         box.innerHTML += '<p class="lock-note" style="color:#e74c3c;">خطا در دریافت خاطرات. سوپابیس در دسترس نیست.</p>';
@@ -263,10 +478,10 @@
         textDiv.textContent = j.text; 
         
         var btnDiv = document.createElement('div');
-        btnDiv.style = 'margin-top: 10px; text-align: left;';
+        btnDiv.style = 'margin-top: 15px; text-align: left; display: flex; gap: 8px; justify-content: flex-end;';
         btnDiv.innerHTML = `
-          <button class="btn btn-dim btn-sm" onclick="editJournal('${j.id}')">✏️ ویرایش</button>
-          <button class="btn btn-dim btn-sm" style="color:#e74c3c;" onclick="deleteJournal('${j.id}')">🗑️</button>
+          <button class="btn-dim" onclick="editJournal('${j.id}')">✏️ ویرایش</button>
+          <button class="btn-dim" style="color:#ef4444;" onclick="deleteJournal('${j.id}')">🗑️ حذف</button>
         `;
 
         div.appendChild(header);
@@ -297,11 +512,11 @@
       var item = document.createElement('div');
       item.className = 'mood-stat-item';
       item.innerHTML = `
-        <span style="font-size: 1.2rem;">${mood}</span>
+        <span style="font-size: 1.3rem; margin-bottom: 4px;">${mood}</span>
         <div class="mood-stat-bar-wrapper">
           <div class="mood-stat-bar" style="width: ${percent}%;"></div>
         </div>
-        <span class="mood-stat-label">${Math.round(percent)}٪</span>
+        <span class="mood-stat-label">${toPersianNum(Math.round(percent))}٪</span>
       `;
       statsBox.appendChild(item);
     });
@@ -314,6 +529,7 @@
     editingEntryId = id;
     textarea.value = journal.text;
     currentSelectedMood = journal.mood || '🙂';
+    updateCharCount();
     
     document.querySelectorAll('.mood-item').forEach(function(m) { m.classList.remove('selected'); });
     var moodEl = document.querySelector('.mood-item[data-mood="' + currentSelectedMood + '"]');
