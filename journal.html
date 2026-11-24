@@ -9,6 +9,11 @@
     .journal-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     .journal-date { text-align: center; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 16px; font-weight: bold; }
     
+    /* استایل جدید برای باکس سوال روز */
+    .daily-prompt-box { background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(46, 204, 113, 0.05)); border: 1px dashed var(--green); border-radius: 12px; padding: 15px; margin-bottom: 16px; text-align: center; }
+    .daily-prompt-title { font-size: 0.8rem; color: var(--green); margin-bottom: 8px; font-weight: bold; }
+    .daily-prompt-text { font-size: 1rem; color: var(--text); line-height: 1.6; font-weight: 500; }
+
     .mood-selector { display: flex; justify-content: space-around; margin-bottom: 16px; background: var(--bg); padding: 10px; border-radius: 12px; border: 1px solid var(--border); }
     .mood-item { font-size: 1.8rem; cursor: pointer; transition: 0.2s; opacity: 0.4; filter: grayscale(1); }
     .mood-item:hover { transform: scale(1.2); opacity: 1; filter: grayscale(0); }
@@ -22,9 +27,8 @@
     .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 8px; }
     .entry-date { font-size: 0.8rem; color: var(--text-dim); }
     .entry-mood { font-size: 1.5rem; }
-    .entry-text { font-size: 0.95rem; line-height: 1.8; white-space: pre-wrap; } /* white-space: pre-wrap خطوط جدید رو حفظ میکنه */
+    .entry-text { font-size: 0.95rem; line-height: 1.8; white-space: pre-wrap; }
 
-    /* استایل برای نمودار حال و هوا */
     .mood-stats-container { display: flex; gap: 10px; justify-content: space-between; margin-bottom: 20px; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap;}
     .mood-stat-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 50px; }
     .mood-stat-bar-wrapper { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
@@ -46,13 +50,17 @@
   <h2 style="text-align: center; margin-bottom: 20px;">📔 دفترچه خاطرات</h2>
 
   <!-- بخش آمار حال و هوا -->
-  <div id="moodStats" class="mood-stats-container" style="display: none;">
-    <!-- توسط جاوااسکریپت پر میشه -->
-  </div>
+  <div id="moodStats" class="mood-stats-container" style="display: none;"></div>
   
   <div class="journal-container">
     <div class="journal-date" id="todayDate"></div>
     
+    <!-- باکس سوال روز -->
+    <div class="daily-prompt-box" id="dailyPromptBox">
+      <div class="daily-prompt-title">✨ سوال امروز برای تفکر</div>
+      <div class="daily-prompt-text" id="dailyPromptText">در حال بارگذاری...</div>
+    </div>
+
     <div class="mood-selector" id="moodSelector">
       <span class="mood-item" data-mood="😄" onclick="selectMood(this)">😄</span>
       <span class="mood-item" data-mood="🙂" onclick="selectMood(this)">🙂</span>
@@ -89,22 +97,67 @@
   var myUid = null;
   var currentSelectedMood = '🙂';
   var editingEntryId = null;
-  var allJournals = []; // برای نگه داشتن دیتا و جلوگیری از باگ دکمه ویرایش
+  var allJournals = []; 
 
-  // تنظیم تاریخ امروز
+  // ==========================================
+  // لیست سوالات عمیق (بر اساس تاییدیه تو)
+  // ==========================================
+  var deepPrompts = [
+    "اگر امروز می‌تونستی یه قانون توی دنیا رو تغییر بدی، اون قانون چی بود؟",
+    "امروز چه ماسکی به چهره زدی که فقط خودت می‌دونی واقعی نیست؟",
+    "آخرین باری که از ته دل خندیدی کِی بود و بابت چی بود؟",
+    "چه چیزی هست که خیلی وقته می‌خوای ببخشیش ولی هنوز نتونستی؟",
+    "اگر ۵ سال دیگه یه نامه به خودِ امروزت بنویسی، توش چی می‌نویسی؟",
+    "امروز از چه چیزی فرار کردی؟ (حتی اگه فقط فکر کردن بهش بوده)",
+    "کدوم تصمیم کوچیک امروزت، می‌تونه آینده‌ت رو عوض کنه؟",
+    "چه ویژگی‌ای توی خودت داری که بقیه ازش بی‌خبرن؟",
+    "امروز بابت چه چیزِ ساده‌ای (که قبلا برات عادی بود) شکرگزار بودی؟",
+    "اگر قرار بود امروز فقط یک جمله از تو توی تاریخ بمونه، اون جمله چی بود؟",
+    "آخرین باری که از خودت واقعاً خجالت کشیدی کِی بود و چه چیزی باعثش شد؟",
+    "اگه قرار بود امروز یکی از ترس‌هات رو یه قدم به عقب هل بدی، اون ترس چی بود؟",
+    "چه چیزی رو خیلی وقته با خودت حمل می‌کنی که دیگه مال تو نیست و باید بذاریش زمین؟",
+    "اگه امروز می‌تونستی یه ویژگی از شخصیتت رو برای همیشه حذف کنی، کدوم رو انتخاب می‌کردی و چرا؟",
+    "چه چیزی هست که فقط خودت ازش خبر داری و هرگز به کسی نگفتی؟",
+    "امروز چه زمانی حس کردی که 'کاملاً خودت بودی'؟",
+    "چه سوالی هست که خیلی وقته از خودت می‌پرسی ولی جوابش رو پیدا نکردی؟",
+    "آخرین باری که یه نفر حرفی زد و 'قلبت رو شکست' کِی بود؟ (حتی اگه طرف مقابل قصدش بد نبوده)",
+    "چه کسی رو توی زندگیت داری که خیلی دوستش داری ولی بهش نگفتی؟",
+    "اگه می‌تونستی به یه نفر که دیگه توی زندگیت نیست یه جمله بگی، به کی می‌گفتی و چی می‌گفتی؟",
+    "آخرین باری که یه نفر باعث شد به خودت افتخار کنی کِی بود؟",
+    "چه چیزی رو توی یه رابطه، خیلی دیر فهمیدی؟",
+    "اگه قرار بود امروز یکی از دوستات رو 'ببخشی' (حتی فقط توی دلت)، اون کی بود؟",
+    "امروز چه چیزی باعث شد از کوره در بری؟ اگه دوباره اتفاق بیفته، چطور می‌خوای واکنش نشون بدی؟",
+    "آخرین باری که گریه کردی، دلیل واقعیش چی بود؟ (نه دلیلی که به بقیه گفتی)",
+    "چه چیزی هست که همیشه باعث میشه حالت بد بشه، ولی هیچ‌وقت به کسی نگفتی؟",
+    "امروز چه لحظه‌ای بود که حس کردی 'انگار یه چیزی توی دلت سنگینی می‌کنه'؟",
+    "اگه امروز قرار بود فقط یه احساس رو با خودت به خواب ببری، کدوم رو انتخاب می‌کردی؟",
+    "چه زمانی حس کردی که داری به یه الگوی تکراری توی زندگیت برمی‌گردی؟",
+    "امروز چه کاری کردی که 'بهتر از دیروزت' بودی، حتی اگه خیلی کوچیک بود؟",
+    "چه چیزی توی زندگیت هست که حاضری براش بجنگی، ولی تا حالا به کسی نگفتی؟"
+  ];
+
+  // تنظیم تاریخ امروز و انتخاب سوال روز
   var today = new Date();
   document.getElementById('todayDate').textContent = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(today);
+  
+  // محاسبه اینکه امروز چندمین روز از سال است (برای تغییر روزانه سوال)
+  var start = new Date(today.getFullYear(), 0, 0);
+  var diff = (today - start) + ((start.getTimezoneOffset() - today.getTimezoneOffset()) * 60 * 1000);
+  var oneDay = 1000 * 60 * 60 * 24;
+  var dayOfYear = Math.floor(diff / oneDay);
+  
+  // انتخاب سوال بر اساس روز سال
+  var todayPrompt = deepPrompts[dayOfYear % deepPrompts.length];
+  document.getElementById('dailyPromptText').textContent = todayPrompt;
+
 
   // --- ذخیره خودکار (Autosave) ---
   var textarea = document.getElementById('journalText');
-  
-  // لود کردن متن ذخیره شده (اگر کاربر قبلا تایپ کرده و صفحه رو بسته)
   var draft = localStorage.getItem('journalDraft');
   if (draft) {
     textarea.value = draft;
   }
 
-  // ذخیره متن با هر بار تایپ کردن
   textarea.addEventListener('input', function() {
     localStorage.setItem('journalDraft', this.value);
   });
@@ -130,10 +183,9 @@
     currentSelectedMood = el.getAttribute('data-mood');
   };
 
-  // انتخاب پیش‌فرض
   document.querySelector('.mood-item[data-mood="🙂"]').classList.add('selected');
 
-  // --- ذخیره خاطره (جدید یا ویرایش) ---
+  // --- ذخیره خاطره ---
   window.saveJournal = function() {
     var text = textarea.value.trim();
     var msg = document.getElementById('journalMsg');
@@ -143,25 +195,21 @@
     
     msg.textContent = 'در حال ذخیره...'; 
     msg.style.color = 'var(--text-dim)';
-    saveBtn.disabled = true; // غیرفعال کردن دکمه تا زمانی که عملیات تموم بشه
+    saveBtn.disabled = true; 
 
     if (editingEntryId) {
-      // ویرایش
       supabaseClient.from('user_journals').update({ text: text, mood: currentSelectedMood, updated_at: new Date().toISOString() }).eq('id', editingEntryId).then(function(res) {
         saveBtn.disabled = false;
         if (res.error) { msg.textContent = 'خطا: ' + res.error.message; msg.style.color = '#e74c3c'; return; }
-        
         msg.textContent = '✅ ویرایش شد!'; 
         msg.style.color = 'var(--green)';
         clearForm();
         loadJournals();
       });
     } else {
-      // ثبت جدید
       supabaseClient.from('user_journals').insert({ user_id: myUid, text: text, mood: currentSelectedMood }).then(function(res) {
         saveBtn.disabled = false;
         if (res.error) { msg.textContent = 'خطا: ' + res.error.message; msg.style.color = '#e74c3c'; return; }
-        
         msg.textContent = '✅ ثبت شد!'; 
         msg.style.color = 'var(--green)';
         clearForm();
@@ -174,16 +222,14 @@
     textarea.value = '';
     editingEntryId = null;
     currentSelectedMood = '🙂';
-    localStorage.removeItem('journalDraft'); // پاک کردن ذخیره خودکار بعد از ثبت موفق
+    localStorage.removeItem('journalDraft'); 
     document.querySelectorAll('.mood-item').forEach(function(m) { m.classList.remove('selected'); });
     document.querySelector('.mood-item[data-mood="🙂"]').classList.add('selected');
   }
 
-  // --- لود کردن خاطرات و ساخت نمودار ---
   function loadJournals() {
     var box = document.getElementById('pastEntries');
     
-    // محدودیت 20 تایی برای جلوگیری از کندی سایت
     supabaseClient.from('user_journals').select('*').eq('user_id', myUid).order('created_at', { ascending: false }).limit(20).then(function(res) {
       box.innerHTML = '<h3 style="font-size: 1rem; margin-bottom: 12px;">📖 خاطرات قبلی من:</h3>';
       
@@ -192,7 +238,7 @@
         return;
       }
 
-      allJournals = res.data || []; // ذخیره دیتا برای استفاده در دکمه ویرایش
+      allJournals = res.data || []; 
       
       if (allJournals.length === 0) { 
         box.innerHTML += '<p class="lock-note">هنوز خاطره‌ای ننوشتی.</p>'; 
@@ -200,7 +246,7 @@
         return; 
       }
 
-      renderMoodStats(allJournals); // ساخت نمودار حال و هوا
+      renderMoodStats(allJournals); 
 
       allJournals.forEach(function(j) {
         var div = document.createElement('div');
@@ -208,14 +254,13 @@
         
         var dt = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(j.created_at));
         
-        // ساخت المان‌ها به صورت امن (جلوگیری از XSS)
         var header = document.createElement('div');
         header.className = 'entry-header';
         header.innerHTML = `<span class="entry-date">${dt}</span><span class="entry-mood">${j.mood || '🙂'}</span>`;
         
         var textDiv = document.createElement('div');
         textDiv.className = 'entry-text';
-        textDiv.textContent = j.text; // متن به صورت خام و امن قرار میگیره
+        textDiv.textContent = j.text; 
         
         var btnDiv = document.createElement('div');
         btnDiv.style = 'margin-top: 10px; text-align: left;';
@@ -232,7 +277,6 @@
     });
   }
 
-  // --- ساخت نمودار حال و هوا ---
   function renderMoodStats(journals) {
     var statsBox = document.getElementById('moodStats');
     statsBox.style.display = 'flex';
@@ -248,7 +292,7 @@
 
     moods.forEach(function(mood) {
       var percent = total > 0 ? (counts[mood] / total) * 100 : 0;
-      if (percent === 0) return; // اگه صفر بود نشون نده
+      if (percent === 0) return;
 
       var item = document.createElement('div');
       item.className = 'mood-stat-item';
@@ -263,7 +307,6 @@
     });
   }
 
-  // --- ویرایش (رفع باگ) ---
   window.editJournal = function(id) {
     var journal = allJournals.find(function(j) { return j.id === id; });
     if (!journal) return;
